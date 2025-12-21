@@ -1,6 +1,9 @@
+import GameCanvas from './GameCanvas'
+
 function App() {
   return (
     <>
+      <GameCanvas />
     </>
   )
 }
