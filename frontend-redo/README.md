@@ -12,25 +12,26 @@ The simulation is designed so that outcomes emerge from explicit rules and playe
 
 ## Design Principles
 
-- Deterministic simulation  
-- Explicit time progression  
-- Clear cause → effect relationships  
-- No hidden or background state changes  
-- Systems favor clarity over realism  
+- Deterministic simulation
+- Explicit time progression
+- Clear cause → effect relationships
+- No hidden or background state changes
+- Systems favor clarity over realism
 
 All core mechanics are intended to be inspectable and testable.
 
 ## Technology
 
-- Vite + React + TypeScript  
-- Phaser for rendering  
-- Zustand for state management  
-- ESLint + Prettier  
-- Jest for testing  
+- Vite + React + TypeScript
+- Phaser for rendering
+- Zustand for state management
+- ESLint + Prettier
+- Jest for testing
 
 The codebase is organized to keep simulation logic separate from rendering and UI concerns.
 
 ## Project Structure
+
 ```
 src/
 ├── core/       # simulation logic
