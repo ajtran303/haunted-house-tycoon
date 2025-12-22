@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 
 import type { Cell } from '../domain/cell';
-import { createGrid, type Grid,setCell } from '../domain/grid';
-
+import { createGrid, type Grid, setCell } from '../domain/grid';
+import type { PlaceRoomResult } from '../domain/placeRoomResult';
+import type { RoomType } from '../domain/rooms';
+import { ROOM_DEFS } from '../domain/rooms';
 
 export type GameState = {
   day: number;
@@ -18,6 +20,7 @@ export type GameState = {
   gridVersion: number;
 
   setCellAt: (x: number, y: number, cell: Cell) => void;
+  placeRoomAt: (x: number, y: number, roomType: RoomType) => PlaceRoomResult
 
   tick: (resetTimeSinceLastTick?: boolean) => void;
   advanceTime: (delta: number) => void;
@@ -38,6 +41,40 @@ export const useGameStore = create<GameState>((set, get) => ({
   setCellAt: (x, y, cell) => {
     const { grid } = get();
     set({ grid: setCell(grid, x, y, cell) });
+  },
+
+  placeRoomAt: (x, y, roomType) => {
+    const state = get();
+    const def = ROOM_DEFS[roomType];
+    if (!def) return { ok: false, reason: 'unknown_room_type' };
+
+    // bounds
+    if (x < 0 || x >= state.gridWidth || y < 0 || y >= state.gridHeight) {
+      return { ok: false, reason: 'out_of_bounds'};
+    }
+
+    // convery logical y (bottom-left) -> storage row (top-left)
+    const row = (state.gridHeight - 1) - y;
+    const current = state.grid[row][x];
+
+    if (current.occupied) return { ok: false, reason: 'cell_occupied' };
+    if (current.type !== 'empty') return { ok: false, reason: 'cell_not_empty' };
+    if (state.money < def.cost) return { ok: false, reason: 'not_enough_money'};
+
+    const roomId = `${roomType}-${state.totalTime.toFixed(0)}-${x}-${y}`;
+    const nextGrid = setCell(state.grid, x, row, {
+      type: def.cellType,
+      occupied: true,
+      roomId
+    });
+
+    set({
+      grid: nextGrid,
+      money: state.money - def.cost,
+      gridVersion: state.gridVersion + 1
+    });
+
+    return { ok: true, roomId: roomId };
   },
 
   tick: () => {
