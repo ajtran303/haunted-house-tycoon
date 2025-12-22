@@ -5,8 +5,6 @@ import { useGameStore } from '../../store/gameStore';
 export const MAIN_SCENE_KEY = 'MainScene';
 
 export default class MainScene extends Phaser.Scene {
-  private tickAccumulator: number;
-
   private dayText?: Phaser.GameObjects.Text;
   private timeText?: Phaser.GameObjects.Text;
   private moneyText?: Phaser.GameObjects.Text;
@@ -14,7 +12,6 @@ export default class MainScene extends Phaser.Scene {
 
   constructor() {
     super(MAIN_SCENE_KEY);
-    this.tickAccumulator = 1000;
   }
 
   create(): void {

@@ -115,4 +115,13 @@ describe('Game Store', () => {
     expect(state.money).toBe(1000 + 2 * 100 + 2 * 100);
     expect(state.timeSinceLastTick).toBe(500);
   });
+
+  it('updates a grid cell via setCellAt', () => {
+    const store = useGameStore.getState();
+    store.setCellAt(0, 0, { type: 'floor', occupied: true, roomId: 'room-1' });
+
+    const updated = useGameStore.getState();
+    expect(updated.grid[0][0]).toEqual({ type: 'floor', occupied: true, roomId: 'room-1' });
+  });
+
 });
