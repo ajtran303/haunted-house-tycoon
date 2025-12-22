@@ -24,5 +24,5 @@ export default function GameCanvas() {
     };
   }, []);
 
-  return <div id="game-container" />
+  return <div id="game-container" />;
 }

@@ -49,20 +49,11 @@ export default class MainScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     const store = useGameStore.getState();
-
     store.advanceTime(delta);
 
-    this.timeText?.setText(`Time: ${store.timeElapsed.toFixed(0)} ms`);
-    
-    this.tickAccumulator += delta;
-    if (this.tickAccumulator >= 1000) {
-      this.tickAccumulator -= 1000;
-
-      store.tick();
-
-      this.dayText!.setText(`Day: ${store.day}`);
-      this.visitorsText!.setText(`Visitors: ${store.visitors}`);
-      this.moneyText!.setText(`Money: $${store.money}`);
-    }
+    this.timeText?.setText(`Time: ${store.totalTime.toFixed(0)} ms`);
+    this.dayText?.setText(`Day: ${store.day}`);
+    this.visitorsText?.setText(`Visitors: ${store.visitors}`);
+    this.moneyText?.setText(`Money: $${store.money}`);
   }
 }
