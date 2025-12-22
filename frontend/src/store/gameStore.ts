@@ -16,11 +16,10 @@ export const useGameStore = create<GameState>((set) => ({
   visitors: 0,
   tick: () =>
     set((state) => {
-      const newVisitors = state.visitors + 2;
       return {
-        visitors: newVisitors,
+        visitors: state.visitors + 2,
         day: state.day + 1,
-        money: state.money + newVisitors * 2, 
+        money: state.money + state.visitors * 2, 
       };
     }),
   advanceTime: (delta) => {

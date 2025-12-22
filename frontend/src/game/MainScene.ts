@@ -61,8 +61,8 @@ export default class MainScene extends Phaser.Scene {
       store.tick();
 
       this.dayText!.setText(`Day: ${store.day}`);
-      this.moneyText!.setText(`Money: $${store.money}`);
       this.visitorsText!.setText(`Visitors: ${store.visitors}`);
+      this.moneyText!.setText(`Money: $${store.money}`);
     }
   }
 }
