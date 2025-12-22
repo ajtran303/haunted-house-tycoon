@@ -17,8 +17,6 @@ export type GameState = {
   gridHeight: number;
   grid: Grid;
 
-  gridVersion: number;
-
   setCellAt: (x: number, y: number, cell: Cell) => void;
   placeRoomAt: (x: number, y: number, roomType: RoomType) => PlaceRoomResult
 
@@ -36,7 +34,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   gridWidth: 20,
   gridHeight: 15,
   grid: createGrid(20, 15),
-  gridVersion: 0,
 
   setCellAt: (x, y, cell) => {
     const { grid } = get();
@@ -46,35 +43,65 @@ export const useGameStore = create<GameState>((set, get) => ({
   placeRoomAt: (x, y, roomType) => {
     const state = get();
     const def = ROOM_DEFS[roomType];
-    if (!def) return { ok: false, reason: 'unknown_room_type' };
+
+    if (!def) {
+      return {
+        ok: false,
+        reason: 'unknown_room_type',
+        feedback: { type: 'toast', message: 'Unknown room type' },
+      };
+    }
 
     // bounds
     if (x < 0 || x >= state.gridWidth || y < 0 || y >= state.gridHeight) {
-      return { ok: false, reason: 'out_of_bounds'};
+      return {
+        ok: false,
+        reason: 'out_of_bounds',
+        feedback: { type: 'toast', message: 'Out of bounds' },
+      };
     }
 
-    // convery logical y (bottom-left) -> storage row (top-left)
+    // convert logical y (bottom-left) -> storage row (top-left)
     const row = (state.gridHeight - 1) - y;
     const current = state.grid[row][x];
 
-    if (current.occupied) return { ok: false, reason: 'cell_occupied' };
-    if (current.type !== 'empty') return { ok: false, reason: 'cell_not_empty' };
-    if (state.money < def.cost) return { ok: false, reason: 'not_enough_money'};
+    if (current.occupied) {
+      return {
+        ok: false,
+        reason: 'cell_occupied',
+        feedback: { type: 'flash_cell', x, y },
+      };
+    }
+
+    if (current.type !== 'empty') {
+      return {
+        ok: false,
+        reason: 'cell_not_empty',
+        feedback: { type: 'flash_cell', x, y },
+      };
+    }
+
+    if (state.money < def.cost) {
+      return {
+        ok: false,
+        reason: 'not_enough_money',
+        feedback: { type: 'toast', message: 'Not enough money' },
+      };
+    }
 
     const roomId = `${roomType}-${state.totalTime.toFixed(0)}-${x}-${y}`;
     const nextGrid = setCell(state.grid, x, row, {
       type: def.cellType,
       occupied: true,
-      roomId
+      roomId,
     });
 
     set({
       grid: nextGrid,
       money: state.money - def.cost,
-      gridVersion: state.gridVersion + 1
     });
 
-    return { ok: true, roomId: roomId };
+    return { ok: true, roomId };
   },
 
   tick: () => {

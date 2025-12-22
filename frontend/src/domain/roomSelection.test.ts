@@ -34,6 +34,6 @@ describe('room selection reducer', () => {
 
     expect(prev.selected).toBe('hallway');
     expect(next.selected).toBe('entry');
-    expect(next.selected).not.toBe(prev);
+    expect(next).not.toBe(prev);
   });
 });
