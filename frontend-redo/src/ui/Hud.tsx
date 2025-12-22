@@ -17,6 +17,13 @@ export const Hud = () => {
     setShowBanner(true);
   };
 
+  const startRun = useGameStore((s) => s.startRun);
+
+  const pause = useGameStore((s) => s.pause);
+
+  const buttonStyle =
+    'mt-2 border px-2 py-1 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md';
+
   return (
     <div className="fixed top-2 left-2 border bg-white p-2 text-sm">
       {showBanner && (
@@ -24,6 +31,7 @@ export const Hud = () => {
           New Game Started
         </div>
       )}
+
       <div className="mb-1 font-bold">Haunted House Tycoon</div>
 
       <div>Lifecycle: {lifecycle}</div>
@@ -32,11 +40,16 @@ export const Hud = () => {
       <div>Money: ${money}</div>
       <div>Visitors: {visitorCount}</div>
 
-      <button
-        onClick={handleNewGame}
-        className="mt-2 border px-2 py-1 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md"
-      >
+      <button onClick={handleNewGame} className={buttonStyle}>
         New Game
+      </button>
+
+      <button className={buttonStyle} onClick={pause}>
+        Pause
+      </button>
+
+      <button className={buttonStyle} onClick={startRun}>
+        Start/Resume
       </button>
     </div>
   );
