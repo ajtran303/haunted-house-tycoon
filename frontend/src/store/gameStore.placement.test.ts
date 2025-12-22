@@ -24,7 +24,7 @@ describe('placeRoomAt(x, y, roomType)', () => {
     const store = useGameStore.getState();
 
     const result = store.placeRoomAt(2, 2, 'hallway');
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, 'roomId': 'hallway-0-2-2' });
 
     const updated = useGameStore.getState();
     expect(updated.money).toBe(900); // hallway cost 100
@@ -51,7 +51,7 @@ describe('placeRoomAt(x, y, roomType)', () => {
     const store = useGameStore.getState();
 
     // First placement ok
-    expect(store.placeRoomAt(1, 1, 'hallway')).toEqual({ ok: true });
+    expect(store.placeRoomAt(1, 1, 'hallway')).toEqual({ ok: true, 'roomId': 'hallway-0-1-1' });
 
     // Second placement same spot fails
     const result2 = useGameStore.getState().placeRoomAt(1, 1, 'entry');

@@ -13,6 +13,10 @@ export default class MainScene extends Phaser.Scene {
 
   private gridGraphics?: Phaser.GameObjects.Graphics;
 
+  private readonly cellSize = 24;
+  private readonly offsetX = 40;
+  private readonly offsetY = 260;
+
   constructor() {
     super(MAIN_SCENE_KEY);
   }
@@ -56,26 +60,39 @@ export default class MainScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.gridGraphics = this.add.graphics();
-
-    // temp demo cells (logical coords: bottom-left origin)
-    store.setCellAt(2, 2, { type: 'floor', occupied: false, roomId: 'room-1' });
-    store.setCellAt(3, 2, { type: 'floor', occupied: true, roomId: 'room-1' });
-    store.setCellAt(4, 2, { type: 'wall', occupied: false, roomId: null });
-    // remove later
-
-    this.lastRenderedGridVersion = store.gridVersion;
-    this.renderGrid();
-
     this.add
       .text(width / 2, height - 30, 'Grid Prototype', {
         color: '#ffffff',
         fontSize: '18px',
       })
       .setOrigin(0.5);
-  }
 
-  private lastRenderedGridVersion = -1;
+    this.gridGraphics = this.add.graphics();
+
+    // temp demo cells (logical coords: bottom-left origin)
+    store.setCellAt(2, 2, { type: 'floor', occupied: false, roomId: 'room-1' });
+    store.setCellAt(3, 2, { type: 'floor', occupied: true, roomId: 'room-1' });
+    store.setCellAt(4, 2, { type: 'wall', occupied: false, roomId: null });
+    // remove above later
+
+    // render once after initial setup
+    this.renderGrid();
+
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      const pos = this.screenToLogicalCell(pointer.x, pointer.y);
+      if (!pos) return;
+
+      // hardcoded room type for now
+      const result = useGameStore.getState().placeRoomAt(pos.x, pos.y, 'hallway');
+
+      if (result.ok) {
+        this.renderGrid(); // render after successful placement
+      // } else {
+        // optional: show a tiny message / flash the cell later
+        // console.log('place failed:', result.reason);
+      }
+    });
+  }
 
   update(_time: number, delta: number): void {
     const store = useGameStore.getState();
@@ -86,11 +103,19 @@ export default class MainScene extends Phaser.Scene {
     this.dayText?.setText(`Day: ${store.day}`);
     this.visitorsText?.setText(`Visitors: ${store.visitors}`);
     this.moneyText?.setText(`Money: $${store.money}`);
+  }
 
-    if (store.gridVersion !== this.lastRenderedGridVersion) {
-      this.lastRenderedGridVersion = store.gridVersion;
-      this.renderGrid();
-    }
+  private screenToLogicalCell(pointerX: number, pointerY: number): { x: number; y: number } | null {
+    const store = useGameStore.getState();
+
+    const localX = pointerX - this.offsetX;
+    const localY = pointerY - this.offsetY;
+
+    const x = Math.floor(localX / this.cellSize);
+    const y = Math.floor(localY / this.cellSize);
+
+    if (x < 0 || x >= store.gridWidth || y < 0 || y >= store.gridHeight) return null;
+    return { x, y };
   }
 
   private renderGrid(): void {
@@ -107,9 +132,9 @@ export default class MainScene extends Phaser.Scene {
 
     g.clear();
 
-    // We render using logical coords where (0,0) is bottom-left.
-    // Storage remains grid[row][col] (top-left), so we flip y when reading:
-    // renderRow = (gridHeight - 1) - logicalY
+    // Render using logical coords where (0,0) is bottom-left.
+    // Storage remains grid[row][col] (top-left), so flip y when reading:
+    // row = (gridHeight - 1) - logicalY
     for (let logicalY = 0; logicalY < gridHeight; logicalY++) {
       const renderRow = (gridHeight - 1) - logicalY;
 
