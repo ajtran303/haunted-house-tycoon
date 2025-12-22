@@ -15,10 +15,13 @@ const config: Config = {
     '\\.(css|less|scss|sass)$': '<rootDir>/tests/helpers/styleMock.ts',
   },
 
-  globals: {
-    'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.json',
-    },
+  transform: {
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.json',
+      },
+    ],
   },
 };
 

@@ -1,0 +1,7 @@
+export const GRID_WIDTH = 12;
+export const GRID_HEIGHT = 8;
+
+export const START_DAY = 1;
+export const START_TICK = 0;
+
+export const STARTING_MONEY = 1000;
