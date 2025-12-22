@@ -1,32 +1,42 @@
 import Phaser from 'phaser';
 
+import { useGameStore } from '../store/gameStore';
+
 export const MAIN_SCENE_KEY = 'MainScene';
 
 export default class MainScene extends Phaser.Scene {
-  private timeElapsed: number;
-  private day: number;
   private tickAccumulator: number;
 
   private dayText?: Phaser.GameObjects.Text;
   private timeText?: Phaser.GameObjects.Text;
-
+  private moneyText?: Phaser.GameObjects.Text;
+  private visitorsText?: Phaser.GameObjects.Text;
 
   constructor() {
     super(MAIN_SCENE_KEY);
-    this.timeElapsed = 0;
-    this.day = 1;
-    this.tickAccumulator = 0;
+    this.tickAccumulator = 1000;
   }
 
   create(): void {
     const { width, height } = this.scale;
+    const store = useGameStore.getState();
 
-    this.dayText = this.add.text(width /2, 50, `Day: ${this.day}`, {
+    this.timeText = this.add.text(width /2, 100, 'Time: 0 ms', {
       color: '#ffffff',
       fontSize: '24px'
     }).setOrigin(0.5);
 
-    this.timeText = this.add.text(width /2, 100, 'Time: 0 ms', {
+    this.dayText = this.add.text(width /2, 50, `Day: ${store.day}`, {
+      color: '#ffffff',
+      fontSize: '24px'
+    }).setOrigin(0.5);
+
+    this.visitorsText = this.add.text(width /2, 150, `Visitors: ${store.visitors}`, {
+      color: '#ffffff',
+      fontSize: '24px'
+    }).setOrigin(0.5);
+
+    this.moneyText = this.add.text(width /2, 200, `Money: $${store.money}`, {
       color: '#ffffff',
       fontSize: '24px'
     }).setOrigin(0.5);
@@ -38,20 +48,21 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    this.timeElapsed += delta;
+    const store = useGameStore.getState();
+
+    store.advanceTime(delta);
+
+    this.timeText?.setText(`Time: ${store.timeElapsed.toFixed(0)} ms`);
+    
     this.tickAccumulator += delta;
-
-    if (this.timeText) {
-      this.timeText.setText(`Time: ${this.timeElapsed.toFixed(0)} ms`);
-    }
-
     if (this.tickAccumulator >= 1000) {
       this.tickAccumulator -= 1000;
-      this.day += 1;
 
-      if (this.dayText) {
-        this.dayText.setText(`Day: ${this.day}`)
-      }
+      store.tick();
+
+      this.dayText!.setText(`Day: ${store.day}`);
+      this.moneyText!.setText(`Money: $${store.money}`);
+      this.visitorsText!.setText(`Visitors: ${store.visitors}`);
     }
   }
 }
