@@ -14,6 +14,12 @@ const config: Config = {
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': '<rootDir>/tests/helpers/styleMock.ts',
   },
+
+  globals: {
+    'ts-jest': {
+      tsconfig: '<rootDir>/tsconfig.json',
+    },
+  },
 };
 
 export default config;
