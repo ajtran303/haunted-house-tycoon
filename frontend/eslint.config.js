@@ -33,6 +33,7 @@ export default defineConfig([
 
     rules: {
       'quotes': ['error', 'single', { 'avoidEscape': true }],
+      "semi": ["error", "always"],
 
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
