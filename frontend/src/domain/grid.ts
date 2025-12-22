@@ -1,3 +1,8 @@
+// Coordinate convention:
+// - All public APIs use (x, y)
+// - Internal storage is grid[y][x]
+// - x = column, y = row
+
 import type { Cell } from './cell';
 
 export type Grid = Cell[][];

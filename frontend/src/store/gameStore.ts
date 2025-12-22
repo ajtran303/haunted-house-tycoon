@@ -15,6 +15,8 @@ export type GameState = {
   gridHeight: number;
   grid: Grid;
 
+  gridVersion: number;
+
   setCellAt: (x: number, y: number, cell: Cell) => void;
 
   tick: (resetTimeSinceLastTick?: boolean) => void;
@@ -31,6 +33,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   gridWidth: 20,
   gridHeight: 15,
   grid: createGrid(20, 15),
+  gridVersion: 0,
 
   setCellAt: (x, y, cell) => {
     const { grid } = get();
