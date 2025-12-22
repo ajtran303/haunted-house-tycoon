@@ -1,11 +1,24 @@
 import { create } from 'zustand';
 
+import type { Cell } from '../domain/cell';
+import { createGrid, type Grid,setCell } from '../domain/grid';
+
+
 export type GameState = {
   day: number;
   totalTime: number;
   timeSinceLastTick: number;
   money: number;
   visitors: number;
+
+  gridWidth: number;
+  gridHeight: number;
+  grid: Grid;
+
+  gridVersion: number;
+
+  setCellAt: (x: number, y: number, cell: Cell) => void;
+
   tick: (resetTimeSinceLastTick?: boolean) => void;
   advanceTime: (delta: number) => void;
 }
@@ -16,6 +29,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   timeSinceLastTick: 0,
   money: 1000,
   visitors: 0,
+
+  gridWidth: 20,
+  gridHeight: 15,
+  grid: createGrid(20, 15),
+  gridVersion: 0,
+
+  setCellAt: (x, y, cell) => {
+    const { grid } = get();
+    set({ grid: setCell(grid, x, y, cell) });
+  },
 
   tick: () => {
     const state = get();
