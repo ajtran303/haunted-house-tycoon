@@ -52,7 +52,7 @@ export default class MainScene extends Phaser.Scene {
 
     store.advanceTime(delta);
 
-    this.timeText?.setText(`Time: ${store.timeElapsed.toFixed(0)} ms`);
+    this.timeText?.setText(`Time: ${store.totalTime.toFixed(0)} ms`);
     
     this.tickAccumulator += delta;
     if (this.tickAccumulator >= 1000) {
