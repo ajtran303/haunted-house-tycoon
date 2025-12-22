@@ -13,7 +13,7 @@ export default function GameCanvas() {
       type: Phaser.AUTO,
       width: 800,
       height: 600,
-      parent: "game-container",
+      parent: 'game-container',
       backgroundColor: '#000000',
       scene: MainScene
     });

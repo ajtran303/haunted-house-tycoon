@@ -1,18 +1,18 @@
-import js from "@eslint/js";
-import globals from "globals";
-import importPlugin from "eslint-plugin-import";
-import simpleImportSort from "eslint-plugin-simple-import-sort";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
-import tseslint from "typescript-eslint";
-import { defineConfig, globalIgnores } from "eslint/config";
+import js from '@eslint/js';
+import globals from 'globals';
+import importPlugin from 'eslint-plugin-import';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
   // 🔹 Ignore build output
-  globalIgnores(["dist", ".vite"]),
+  globalIgnores(['dist', '.vite']),
 
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ['**/*.{ts,tsx}'],
 
     extends: [
       js.configs.recommended,
@@ -23,7 +23,7 @@ export default defineConfig([
 
     plugins: {
       import: importPlugin,
-      "simple-import-sort": simpleImportSort,
+      'simple-import-sort': simpleImportSort,
     },
 
     languageOptions: {
@@ -32,20 +32,14 @@ export default defineConfig([
     },
 
     rules: {
-      // ✅ Import sorting
-      "simple-import-sort/imports": "error",
-      "simple-import-sort/exports": "error",
+      'quotes': ['error', 'single', { 'avoidEscape': true }],
 
-      // ✅ Import hygiene
-      "import/first": "error",
-      "import/newline-after-import": "error",
-      "import/no-duplicates": "error",
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
 
-      // 🔹 Game-friendly defaults
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_" },
-      ],
+      'import/first': 'error',
+      'import/newline-after-import': 'error',
+      'import/no-duplicates': 'error',
     },
   },
 ]);
