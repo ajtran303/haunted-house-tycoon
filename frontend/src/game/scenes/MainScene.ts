@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import { useGameStore } from '../store/gameStore';
+import { useGameStore } from '../../store/gameStore';
 
 export const MAIN_SCENE_KEY = 'MainScene';
 

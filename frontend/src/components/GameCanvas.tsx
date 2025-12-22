@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { useEffect, useRef } from 'react';
 
-import MainScene from './game/MainScene';
+import MainScene from '../game/scenes/MainScene';
 
 export default function GameCanvas() {
   const gameRef = useRef<Phaser.Game | null>(null);
