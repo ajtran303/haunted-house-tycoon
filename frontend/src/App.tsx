@@ -1,11 +1,11 @@
-import GameCanvas from './GameCanvas'
+import GameCanvas from './GameCanvas';
 
 function App() {
   return (
     <>
       <GameCanvas />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
