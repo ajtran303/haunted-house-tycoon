@@ -1,3 +1,10 @@
+import { PhaserHost } from './ui/phaser/PhaserHost';
+
 export default function App() {
-  return <div>Haunted House Tycoon</div>;
+  return (
+    <>
+      <h1>Haunted House Tycoon</h1>
+      <PhaserHost />
+    </>
+  );
 }
