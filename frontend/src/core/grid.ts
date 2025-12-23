@@ -1,10 +1,10 @@
-// src/core/grid.ts
 import type { Cell, Grid } from './types';
 
 export const createCell = (): Cell => ({
   type: 'floor',
   occupied: false,
   roomId: null,
+  roomType: null,
 });
 
 export const createGrid = (width: number, height: number): Grid => {

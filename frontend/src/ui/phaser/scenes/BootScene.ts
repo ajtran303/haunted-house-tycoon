@@ -1,46 +1,62 @@
 import { useGameStore } from '../../../runtime/store';
-import { renderGrid } from '../render/renderGrid';
+import { createGridRenderer } from '../render/renderGrid';
 
 const MS_PER_TICK = 1000;
 const MAX_STEPS_PER_FRAME = 10;
 
 export class BootScene {
-  // Phaser accepts a "key" string for scene identification.
-  // (Using a static property avoids needing Phaser.Scene typing.)
   static key = 'boot';
 
   private accumulatedMs = 0;
+  private unsubscribeGrid?: () => void;
+  private unsubscribeLifecycle?: () => void;
 
-  // Phaser will call create() when the scene starts.
-  // At runtime (in the browser), `this` will be a Phaser.Scene instance.
+  private gridRenderer?: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    draw: (grid: any) => void;
+    destroy: () => void;
+    setEnabled: (enabled: boolean) => void;
+  };
+
   create() {
-    // Use `any` here intentionally to avoid importing Phaser types.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const self = this as any;
 
-    self.add.text(20, 20, 'Phaser OK', {
-      fontSize: '20px',
-      color: '#ffffff',
+    self.add.text(20, 20, 'Phaser OK', { fontSize: '20px', color: '#ffffff' });
+
+    const initial = useGameStore.getState();
+
+    this.gridRenderer = createGridRenderer(self, initial.grid, (x, y) => {
+      useGameStore.getState().dispatchInput({ type: 'clickCell', x, y });
     });
 
-    renderGrid(self);
+    this.gridRenderer.setEnabled(initial.lifecycle === 'running');
+
+    this.unsubscribeGrid = useGameStore.subscribe(
+      (s) => s.grid,
+      (grid) => this.gridRenderer?.draw(grid),
+    );
+
+    this.unsubscribeLifecycle = useGameStore.subscribe(
+      (s) => s.lifecycle,
+      (lifecycle) => this.gridRenderer?.setEnabled(lifecycle === 'running'),
+    );
   }
 
-  // Phase runs this every frame
+  shutdown() {
+    this.unsubscribeGrid?.();
+    this.unsubscribeLifecycle?.();
+    this.gridRenderer?.destroy();
+  }
+
   update(_time: number, delta: number) {
-    if (!Number.isFinite(delta) || delta < 0) {
-      throw new Error(`Invalid delta ${delta}`);
-    }
+    if (!Number.isFinite(delta) || delta < 0) throw new Error(`Invalid delta ${delta}`);
 
     const state = useGameStore.getState();
-
     if (state.lifecycle !== 'running') return;
 
     const speed = state.speed;
-
-    if (!Number.isFinite(speed) || speed <= 0) {
-      throw new Error(`Invalid speed ${speed}`);
-    }
+    if (!Number.isFinite(speed) || speed <= 0) throw new Error(`Invalid speed ${speed}`);
 
     this.accumulatedMs += delta * speed;
 
@@ -50,10 +66,7 @@ export class BootScene {
       this.accumulatedMs -= MS_PER_TICK;
 
       steps++;
-      if (steps > MAX_STEPS_PER_FRAME) {
-        // guard from spiraling out of control
-        throw new Error('Exceeded max tick steps per frame');
-      }
+      if (steps > MAX_STEPS_PER_FRAME) throw new Error('Exceeded max tick steps per frame');
     }
   }
 }

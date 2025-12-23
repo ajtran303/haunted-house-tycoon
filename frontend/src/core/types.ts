@@ -7,6 +7,7 @@ export type Cell = {
   type: CellType;
   occupied: boolean;
   roomId: string | null;
+  roomType: RoomType | null;
 };
 
 export type Grid = Cell[][];
@@ -37,7 +38,10 @@ export type GameState = {
   entrance: Vector;
 
   nextRoomId: number;
+  selectedRoomType: RoomType;
 
   // for MVP
   staffEnabled: false;
 };
+
+export type RoomType = 'entry' | 'hallway' | 'scare';

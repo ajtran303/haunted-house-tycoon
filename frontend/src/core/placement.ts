@@ -1,6 +1,4 @@
-import type { Cell, Grid } from './types';
-
-export type RoomType = 'entry' | 'hallway' | 'scare';
+import type { Cell, Grid, RoomType } from './types';
 
 export type PlaceRoomOk = {
   ok: true;
@@ -62,6 +60,7 @@ export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
     ...newGrid[y][x],
     occupied: true,
     roomId: id,
+    roomType,
     type: 'floor', // placeholder
   } satisfies Cell;
 

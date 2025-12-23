@@ -29,6 +29,7 @@ export const newGame = (): GameState => {
     entrance: { x: ENTRANCE_X, y: ENTRANCE_Y },
 
     nextRoomId: 1,
+    selectedRoomType: 'hallway',
 
     staffEnabled: false,
   };
