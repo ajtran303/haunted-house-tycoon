@@ -19,6 +19,14 @@ export const RoomSelector = () => {
           Park Entry
         </button>
         <button
+          className={btn(selected === 'parkExit')}
+          onClick={() => dispatch({ type: 'selectRoomType', roomType: 'parkExit' })}
+        >
+          Park Exit
+        </button>
+      </div>
+      <div className="flex gap-2">
+        <button
           className={btn(selected === 'entry')}
           onClick={() => dispatch({ type: 'selectRoomType', roomType: 'entry' })}
         >

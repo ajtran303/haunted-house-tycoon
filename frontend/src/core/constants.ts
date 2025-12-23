@@ -21,6 +21,7 @@ export const ROOM_COST: Record<RoomType, number> = {
   hallway: 100,
   scare: 200,
   parkEntry: 0,
+  parkExit: 0,
 };
 
 export const TICKS_PER_VISITOR_SPAWN = 5;

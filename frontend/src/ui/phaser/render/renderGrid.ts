@@ -15,6 +15,7 @@ const COLOR_ENTRY = 0x2ecc71;
 const COLOR_HALLWAY = 0x95a5a6;
 const COLOR_SCARE = 0x9b59b6;
 const COLOR_PARK_ENTRY = 0x0000ff;
+const COLOR_PARK_EXIT = 0xe74c3c;
 
 const fillForCell = (cell: Cell) => {
   if (!cell.occupied) return COLOR_EMPTY;
@@ -28,6 +29,8 @@ const fillForCell = (cell: Cell) => {
       return COLOR_SCARE;
     case 'parkEntry':
       return COLOR_PARK_ENTRY;
+    case 'parkExit':
+      return COLOR_PARK_EXIT;
     default:
       // fallback if older saves/tests don’t set roomType yet
       return 0x666666;

@@ -1,4 +1,3 @@
-import { ROOM_COST } from './constants';
 import type { Cell, Grid, RoomType } from './types';
 
 export type PlaceRoomOk = {
@@ -13,7 +12,9 @@ export type PlaceRoomFail = {
     | 'cell_occupied'
     | 'insufficient_funds'
     | 'invalid_entrance_placement'
-    | 'entrance_already_exists';
+    | 'invalid_exit_placement'
+    | 'entrance_already_exists'
+    | 'exit_already_exists';
 };
 
 export type PlaceRoomResult = PlaceRoomOk | PlaceRoomFail;
@@ -40,61 +41,58 @@ const cloneGrid = (grid: Grid): Grid => grid.map((row) => row.map((c) => ({ ...c
 const isEdge = (x: number, y: number, w: number, h: number) =>
   x === 0 || y === 0 || x === w - 1 || y === h - 1;
 
-const hasParkEntry = (grid: Grid): boolean =>
-  grid.some((row) => row.some((c) => c.occupied && c.roomType === 'parkEntry'));
+const hasRoomType = (grid: Grid, roomType: RoomType): boolean =>
+  grid.some((row) => row.some((c) => c.occupied && c.roomType === roomType));
 
-const clearExistingParkEntry = (g: Grid): Grid => {
-  const next = cloneGrid(g);
-  for (let yy = 0; yy < next.length; yy++) {
-    for (let xx = 0; xx < next[0].length; xx++) {
-      const c = next[yy][xx];
-      if (c.occupied && c.roomType === 'parkEntry') {
-        next[yy][xx] = { ...c, occupied: false, roomId: null, roomType: null };
-      }
-    }
-  }
-  return next;
+type SpecialRule = {
+  uniqueFail: PlaceRoomFail['reason'];
+  invalidEdgeFail: PlaceRoomFail['reason'];
+};
+
+const SPECIAL_RULES: Partial<Record<RoomType, SpecialRule>> = {
+  parkEntry: {
+    uniqueFail: 'entrance_already_exists',
+    invalidEdgeFail: 'invalid_entrance_placement',
+  },
+  parkExit: {
+    uniqueFail: 'exit_already_exists',
+    invalidEdgeFail: 'invalid_exit_placement',
+  },
 };
 
 export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
-  const { grid, x, y, roomType, money, nextRoomId } = args;
+  const { grid, x, y, roomType, money, costByType, nextRoomId } = args;
 
-  // bounds
-  if (y < 0 || y >= grid.length) {
-    return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
-  }
-  if (x < 0 || x >= grid[0].length) {
-    return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
-  }
-
-  const w = grid[0].length;
   const h = grid.length;
+  const w = grid[0]?.length ?? 0;
 
-  if (roomType === 'parkEntry') {
-    if (hasParkEntry(grid)) {
-      return { grid, money, nextRoomId, result: { ok: false, reason: 'entrance_already_exists' } };
+  if (y < 0 || y >= h || x < 0 || x >= w) {
+    return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
+  }
+
+  const rule = SPECIAL_RULES[roomType];
+  if (rule) {
+    if (hasRoomType(grid, roomType)) {
+      return { grid, money, nextRoomId, result: { ok: false, reason: rule.uniqueFail } };
     }
     if (!isEdge(x, y, w, h)) {
-      return {
-        grid,
-        money,
-        nextRoomId,
-        result: { ok: false, reason: 'invalid_entrance_placement' },
-      };
+      return { grid, money, nextRoomId, result: { ok: false, reason: rule.invalidEdgeFail } };
     }
   }
-  const cost = ROOM_COST[roomType];
+
+  const cost = costByType[roomType] ?? 0;
   if (money < cost) {
     return { grid, money, nextRoomId, result: { ok: false, reason: 'insufficient_funds' } };
   }
 
-  const baseGrid = roomType === 'parkEntry' ? clearExistingParkEntry(grid) : grid;
+  const baseGrid = grid;
+
   const cell = baseGrid[y][x];
   if (cell.occupied) {
     return { grid, money, nextRoomId, result: { ok: false, reason: 'cell_occupied' } };
   }
 
-  const newGrid = cloneGrid(grid);
+  const newGrid = cloneGrid(baseGrid);
   const id = `${roomType}-${nextRoomId}`;
 
   newGrid[y][x] = {
@@ -102,7 +100,7 @@ export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
     occupied: true,
     roomId: id,
     roomType,
-    type: 'floor', // placeholder
+    type: 'floor',
   } satisfies Cell;
 
   return {
