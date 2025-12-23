@@ -6,7 +6,7 @@ describe('Spending and Admission', () => {
     useGameStore.getState().newGame();
   });
 
-  it('tick 1 spawns + charges admission, but does not spend until next tick', () => {
+  it('tickOnce does not charge admission when it is NOT a spawn tick', () => {
     useGameStore.getState().newGame();
     useGameStore.getState().startRun();
 
