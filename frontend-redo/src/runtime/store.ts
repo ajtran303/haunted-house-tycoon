@@ -8,7 +8,12 @@ import type { GameState, Lifecycle, Visitor } from '../core/types';
 type Actions = {
   newGame: () => void;
   startRun: () => void;
+
   pause: () => void;
+
+  setSpeed1x: () => void;
+  setSpeed4x: () => void;
+
   tickOnce: () => void;
 
   startRunWithInitialVisitor: () => void;
@@ -23,6 +28,10 @@ export const useGameStore = create<GameState & Actions>((set, get) => ({
   startRun: () => set({ lifecycle: 'running' as Lifecycle }),
 
   pause: () => set({ lifecycle: 'paused' as Lifecycle }),
+
+  setSpeed1x: () => set({ speed: 1 }),
+
+  setSpeed4x: () => set({ speed: 4 }),
 
   tickOnce: () => {
     const state = get();

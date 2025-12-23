@@ -21,6 +21,10 @@ export const Hud = () => {
 
   const pause = useGameStore((s) => s.pause);
 
+  const setSpeed1x = useGameStore((s) => s.setSpeed1x);
+  const setSpeed4x = useGameStore((s) => s.setSpeed4x);
+  const speed = useGameStore((s) => s.speed);
+
   const buttonStyle =
     'mt-2 border px-2 py-1 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md';
 
@@ -50,6 +54,15 @@ export const Hud = () => {
 
       <button className={buttonStyle} onClick={pause}>
         Pause
+      </button>
+      <br />
+      <br />
+      <div>Speed: {speed}x</div>
+      <button className={buttonStyle} onClick={setSpeed1x}>
+        1x
+      </button>
+      <button className={buttonStyle} onClick={setSpeed4x}>
+        4x
       </button>
     </div>
   );
