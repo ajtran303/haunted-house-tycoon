@@ -19,18 +19,20 @@ type Actions = {
   pause: () => void;
   startRunWithInitialVisitor: () => void;
 
-  // time
-  tickOnce: () => void;
-
   // speed
   setSpeed1x: () => void;
   setSpeed4x: () => void;
 
+  // time
+  tickOnce: () => void;
+
+  // visitors
+  spawnVisitor: () => void;
+
   // placement
-  spawnFakeVisitor: () => void;
-  spawnVisitorAtEntrance: () => void;
   placeRoomAt: (x: number, y: number) => void;
 
+  // input
   dispatchInput: (input: Input) => void;
 };
 
@@ -44,69 +46,55 @@ export const useGameStore = create(
 
     pause: () => set({ lifecycle: 'paused' as Lifecycle }),
 
-    setSpeed1x: () => set({ speed: 1 }),
+    // Start/run + ensure exactly one initial visitor (and only once)
+    startRunWithInitialVisitor: () => {
+      const s = get();
 
+      if (s.lifecycle === 'running') return;
+
+      set({ lifecycle: 'running' as Lifecycle });
+
+      // Spawn exactly one initial visitor if none exist yet.
+      // Admission is charged on spawn (once per visitor).
+      if (s.visitors.length === 0) {
+        get().spawnVisitor();
+      }
+    },
+
+    setSpeed1x: () => set({ speed: 1 }),
     setSpeed4x: () => set({ speed: 4 }),
 
+    // time tick (single source of truth)
     tickOnce: () => {
       const s = get();
       if (s.lifecycle !== 'running') return;
 
+      // 1) advance time first (so "tick 1" logic runs when tick becomes 1)
       const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
+      const nextTick = nextTime.tick;
 
-      const shouldSpawn = shouldSpawnFakeVisitor(nextTime.tick);
+      const visitorsBefore = s.visitors.length;
 
-      const visitors = shouldSpawn
-        ? [...s.visitors, { id: s.nextVisitorId, position: s.entrance }]
-        : s.visitors;
+      // 2) spawn for THIS tick (and charge admission)
+      if (shouldSpawnFakeVisitor(nextTick)) {
+        get().spawnVisitor(); // also charge admission
+      }
 
-      const nextVisitorId = shouldSpawn ? s.nextVisitorId + 1 : s.nextVisitorId;
-
-      const moneyDelta = visitors.length * MONEY_PER_VISITOR_PER_TICK;
+      // 3) spending: only visitors that existed BEFORE this tick
+      const moneyAfterSpend = get().money + visitorsBefore * 1;
 
       set({
         ...nextTime,
-        visitors,
-        nextVisitorId,
-        money: s.money + moneyDelta,
+        money: moneyAfterSpend,
       });
     },
 
-    startRunWithInitialVisitor: () => {
-      const s = get();
-
-      if (s.visitors.length === 0 && s.lifecycle !== 'running') {
-        set({ lifecycle: 'running' as Lifecycle });
-        get().spawnVisitorAtEntrance();
-        return;
-      }
-
-      set({ lifecycle: 'running' as Lifecycle });
-    },
-
-    spawnFakeVisitor: () => {
+    spawnVisitor: () => {
       const s = get();
       if (s.lifecycle !== 'running') return;
 
       const id = s.nextVisitorId;
-
-      const entrance = s.entrance;
-      const visitor: Visitor = { id: id, position: entrance };
-
-      set({
-        visitors: [...s.visitors, visitor],
-        nextVisitorId: s.nextVisitorId + 1,
-      });
-    },
-
-    spawnVisitorAtEntrance: () => {
-      const s = get();
-      if (s.lifecycle !== 'running') return;
-
-      const id = s.nextVisitorId;
-
-      const entrance = s.entrance;
-      const visitor: Visitor = { id: id, position: entrance };
+      const visitor: Visitor = { id, position: s.entrance };
 
       set({
         visitors: [...s.visitors, visitor],
@@ -115,8 +103,10 @@ export const useGameStore = create(
       });
     },
 
-    placeRoomAt: (x, y) => {
+    placeRoomAt: (x: number, y: number) => {
       const s = get();
+      if (s.lifecycle !== 'running') return;
+
       const applied = placeRoom({
         grid: s.grid,
         x,
@@ -136,7 +126,8 @@ export const useGameStore = create(
       });
     },
 
-    dispatchInput: (input) => {
+    // input reducer
+    dispatchInput: (input: Input) => {
       const s = get();
 
       if (input.type === 'selectRoomType') {

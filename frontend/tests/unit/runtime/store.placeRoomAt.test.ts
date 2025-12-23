@@ -4,6 +4,7 @@ import { useGameStore } from '../../../src/runtime/store';
 describe('store.placeRoomAt', () => {
   beforeEach(() => {
     useGameStore.getState().newGame();
+    useGameStore.getState().startRun();
   });
 
   it('places a room on an empty cell, deducts money, increments nextRoomId', () => {

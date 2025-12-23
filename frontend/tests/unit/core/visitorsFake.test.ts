@@ -1,4 +1,6 @@
+import { ADMISSION_FEE } from '../../../src/core/constants';
 import { shouldSpawnFakeVisitor } from '../../../src/core/visitorsFake';
+import { useGameStore } from '../../../src/runtime/store';
 
 describe('shouldSpawnFakeVisitor', () => {
   it('does not spawn at tick 0', () => {
@@ -10,8 +12,11 @@ describe('shouldSpawnFakeVisitor', () => {
     expect(shouldSpawnFakeVisitor(10)).toBe(true);
   });
 
+  it('spawns on tick 1', () => {
+    expect(shouldSpawnFakeVisitor(1)).toBe(true);
+  });
+
   it('does not spawn on non-multiples', () => {
-    expect(shouldSpawnFakeVisitor(1)).toBe(false);
     expect(shouldSpawnFakeVisitor(6)).toBe(false);
   });
 });
