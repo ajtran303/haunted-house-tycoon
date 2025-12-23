@@ -6,7 +6,7 @@ import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
-import { snakeStepWithRetrace } from '../core/visitors/snakeRetrace';
+import { moveVisitorsDetour } from '../core/visitors/moveVisitorsDetour';
 import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
 
 type Input =
@@ -97,17 +97,7 @@ export const useGameStore = create(
         const gridW = s.grid[0]?.length ?? 0;
 
         const moved =
-          gridW > 0 && gridH > 0
-            ? visitors.map((v) => {
-                const stepped = snakeStepWithRetrace({
-                  w: gridW,
-                  h: gridH,
-                  pos: v.position,
-                  dir: v.scanDir,
-                });
-                return { ...v, position: stepped.pos, scanDir: stepped.dir };
-              })
-            : visitors;
+          gridW > 0 && gridH > 0 ? moveVisitorsDetour(visitors, gridW, gridH) : visitors;
 
         return {
           ...s,

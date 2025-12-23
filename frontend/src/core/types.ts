@@ -14,10 +14,12 @@ export type Grid = Cell[][];
 
 export type Vector = { x: number; y: number };
 
+export type ScanDir = 1 | -1;
+
 export type Visitor = {
   id: number;
   position: Vector;
-  scanDir: 1 | -1;
+  scanDir: ScanDir;
 };
 
 export type GameSpeed = 1 | 4;
