@@ -18,6 +18,7 @@ describe('createGrid', () => {
           type: 'floor',
           occupied: false,
           roomId: null,
+          roomType: null,
         });
       }
     }

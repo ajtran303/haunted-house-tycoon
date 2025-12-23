@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
+import { ADMISSION_FEE, MONEY_PER_VISITOR_PER_TICK, ROOM_COST } from '../core/constants';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
+import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
 
 type Input =
   | { type: 'selectRoomType'; roomType: RoomType }
@@ -18,17 +19,20 @@ type Actions = {
   pause: () => void;
   startRunWithInitialVisitor: () => void;
 
-  // time
-  tickOnce: () => void;
-
   // speed
   setSpeed1x: () => void;
   setSpeed4x: () => void;
 
+  // time
+  tickOnce: () => void;
+
+  // visitors
+  spawnVisitor: () => void;
+
   // placement
-  spawnVisitorAtEntrance: () => void;
   placeRoomAt: (x: number, y: number) => void;
 
+  // input
   dispatchInput: (input: Input) => void;
 };
 
@@ -42,41 +46,55 @@ export const useGameStore = create(
 
     pause: () => set({ lifecycle: 'paused' as Lifecycle }),
 
-    setSpeed1x: () => set({ speed: 1 }),
-
-    setSpeed4x: () => set({ speed: 4 }),
-
-    tickOnce: () => {
-      const state = get();
-      if (state.lifecycle !== 'running') return;
-
-      const nextTime = applyTimeTick({ tick: state.tick, day: state.day });
-
-      set({
-        ...nextTime,
-      });
-    },
-
+    // Start/run + ensure exactly one initial visitor (and only once)
     startRunWithInitialVisitor: () => {
       const s = get();
 
-      if (s.visitors.length === 0 && s.lifecycle !== 'running') {
-        set({ lifecycle: 'running' as Lifecycle });
-        get().spawnVisitorAtEntrance();
-        return;
-      }
+      if (s.lifecycle === 'running') return;
 
       set({ lifecycle: 'running' as Lifecycle });
+
+      // Spawn exactly one initial visitor if none exist yet.
+      // Admission is charged on spawn (once per visitor).
+      if (s.visitors.length === 0) {
+        get().spawnVisitor();
+      }
     },
 
-    spawnVisitorAtEntrance: () => {
+    setSpeed1x: () => set({ speed: 1 }),
+    setSpeed4x: () => set({ speed: 4 }),
+
+    // time tick (single source of truth)
+    tickOnce: () => {
+      const s = get();
+      if (s.lifecycle !== 'running') return;
+
+      // 1) advance time first (so "tick 1" logic runs when tick becomes 1)
+      const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
+      const nextTick = nextTime.tick;
+
+      const visitorsBefore = s.visitors.length;
+
+      // 2) spawn for THIS tick (and charge admission)
+      if (shouldSpawnFakeVisitor(nextTick)) {
+        get().spawnVisitor(); // also charge admission
+      }
+
+      // 3) spending: only visitors that existed BEFORE this tick
+      const moneyAfterSpend = get().money + visitorsBefore * 1;
+
+      set({
+        ...nextTime,
+        money: moneyAfterSpend,
+      });
+    },
+
+    spawnVisitor: () => {
       const s = get();
       if (s.lifecycle !== 'running') return;
 
       const id = s.nextVisitorId;
-
-      const entrance = s.entrance;
-      const visitor: Visitor = { id: id, position: entrance };
+      const visitor: Visitor = { id, position: s.entrance };
 
       set({
         visitors: [...s.visitors, visitor],
@@ -85,8 +103,10 @@ export const useGameStore = create(
       });
     },
 
-    placeRoomAt: (x, y) => {
+    placeRoomAt: (x: number, y: number) => {
       const s = get();
+      if (s.lifecycle !== 'running') return;
+
       const applied = placeRoom({
         grid: s.grid,
         x,
@@ -106,7 +126,8 @@ export const useGameStore = create(
       });
     },
 
-    dispatchInput: (input) => {
+    // input reducer
+    dispatchInput: (input: Input) => {
       const s = get();
 
       if (input.type === 'selectRoomType') {

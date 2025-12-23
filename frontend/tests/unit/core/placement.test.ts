@@ -3,7 +3,12 @@ import type { Grid } from '../../../src/core/types';
 
 const makeGrid = (w: number, h: number): Grid =>
   Array.from({ length: h }, () =>
-    Array.from({ length: w }, () => ({ type: 'floor', occupied: false, roomId: null })),
+    Array.from({ length: w }, () => ({
+      type: 'floor',
+      occupied: false,
+      roomId: null,
+      roomType: null,
+    })),
   );
 
 describe('placeRoom', () => {

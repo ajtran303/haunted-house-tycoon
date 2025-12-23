@@ -38,6 +38,6 @@ describe('time ticks in store', () => {
 
     expect(useGameStore.getState().tick).toBe(beforeTick + 1);
     expect(useGameStore.getState().day).toBe(beforeDay);
-    expect(useGameStore.getState().money).toBe(afterMoney);
+    expect(useGameStore.getState().money).toBe(afterMoney + 10); // gain money from first admission
   });
 });
