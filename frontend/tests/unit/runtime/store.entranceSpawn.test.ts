@@ -184,7 +184,6 @@ describe('Entrance placement + spawn gating', () => {
       const afterSpend = selectCore();
 
       // At minimum, money increased by spending for visitors that existed BEFORE tick 2 (1 visitor)
-      // (If you also spawn on tick 2 for some reason, adjust expected.)
       expect(afterSpend.money).toBe(afterSpawn.money + 1 * MONEY_PER_VISITOR_PER_TICK);
     });
 
@@ -205,8 +204,6 @@ describe('Entrance placement + spawn gating', () => {
       const afterMove = selectCore();
       const pos1 = afterMove.visitors[0].position;
 
-      // If your move can sometimes be "stay" due to collision or edge logic,
-      // change this to match your expected snake step from (0,0).
       expect(pos1).not.toEqual(pos0);
     });
   });

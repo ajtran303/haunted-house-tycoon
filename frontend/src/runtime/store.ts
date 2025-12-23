@@ -29,6 +29,8 @@ type Actions = {
 
   // visitors
   spawnVisitor: () => void;
+  despawnVisitor: (id: number) => void;
+  despawnVisitorsAtExit: () => void;
 
   // placement
   placeRoomAt: (x: number, y: number) => void;
@@ -99,10 +101,17 @@ export const useGameStore = create(
         const moved =
           gridW > 0 && gridH > 0 ? moveVisitors(visitors, gridW, gridH, nextTick) : visitors;
 
+        // 5) despawn visitors that reach the exit
+        const exit = s.exit;
+        const afterDespawn =
+          exit == null
+            ? moved
+            : moved.filter((v) => !(v.position.x === exit.x && v.position.y === exit.y));
+
         return {
           ...s,
           ...nextTime,
-          visitors: moved,
+          visitors: afterDespawn,
           nextVisitorId,
           money,
         };
@@ -120,6 +129,28 @@ export const useGameStore = create(
         visitors: [...s.visitors, visitor],
         nextVisitorId: s.nextVisitorId + 1,
         money: s.money + ADMISSION_FEE,
+      });
+    },
+
+    despawnVisitor: (id) => {
+      set((s) => ({
+        ...s,
+        visitors: s.visitors.filter((v) => v.id !== id),
+      }));
+    },
+
+    despawnVisitorsAtExit: () => {
+      set((s) => {
+        if (!s.exit) return s;
+
+        const ex = s.exit;
+        const nextVisitors = s.visitors.filter(
+          (v) => !(v.position.x === ex.x && v.position.y === ex.y),
+        );
+
+        if (nextVisitors.length === s.visitors.length) return s;
+
+        return { ...s, visitors: nextVisitors };
       });
     },
 
@@ -146,6 +177,7 @@ export const useGameStore = create(
         money: applied.money,
         nextRoomId: applied.nextRoomId,
         ...(roomType === 'parkEntry' ? { entrance: { x, y } } : null),
+        ...(roomType === 'parkExit' ? { exit: { x, y } } : null),
       });
     },
 

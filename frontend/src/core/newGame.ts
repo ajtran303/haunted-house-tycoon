@@ -19,9 +19,10 @@ export const newGame = (): GameState => {
     nextVisitorId: 1,
 
     entrance: null,
+    exit: null,
 
     nextRoomId: 1,
-    selectedRoomType: 'hallway',
+    selectedRoomType: 'parkEntry',
 
     staffEnabled: false,
   };

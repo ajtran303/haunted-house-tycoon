@@ -37,6 +37,7 @@ export type GameState = {
   nextVisitorId: number;
 
   entrance: Vector | null;
+  exit: Vector | null;
 
   nextRoomId: number;
   selectedRoomType: RoomType;
@@ -45,4 +46,4 @@ export type GameState = {
   staffEnabled: false;
 };
 
-export type RoomType = 'entry' | 'hallway' | 'scare' | 'parkEntry';
+export type RoomType = 'entry' | 'hallway' | 'scare' | 'parkEntry' | 'parkExit';
