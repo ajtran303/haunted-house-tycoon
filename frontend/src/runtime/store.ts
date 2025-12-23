@@ -6,6 +6,7 @@ import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
+import { snakeStepWithRetrace } from '../core/visitors/snakeRetrace';
 import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
 
 type Input =
@@ -66,26 +67,55 @@ export const useGameStore = create(
 
     // time tick (single source of truth)
     tickOnce: () => {
-      const s = get();
-      if (s.lifecycle !== 'running') return;
+      set((s) => {
+        if (s.lifecycle !== 'running') return s;
 
-      // 1) advance time first (so "tick 1" logic runs when tick becomes 1)
-      const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
-      const nextTick = nextTime.tick;
+        // 1) advance time first
+        const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
+        const nextTick = nextTime.tick;
 
-      const visitorsBefore = s.visitors.length;
+        // capture how many visitors existed BEFORE this tick (for spending rule)
+        const visitorsBefore = s.visitors.length;
 
-      // 2) spawn for THIS tick (and charge admission)
-      if (shouldSpawnFakeVisitor(nextTick)) {
-        get().spawnVisitor(); // also charge admission
-      }
+        // 2) optionally spawn visitor for THIS tick (and charge admission)
+        let visitors = s.visitors;
+        let nextVisitorId = s.nextVisitorId;
+        let money = s.money;
 
-      // 3) spending: only visitors that existed BEFORE this tick
-      const moneyAfterSpend = get().money + visitorsBefore * MONEY_PER_VISITOR_PER_TICK;
+        if (shouldSpawnFakeVisitor(nextTick)) {
+          const v: Visitor = { id: nextVisitorId, position: s.entrance, scanDir: 1 };
+          visitors = [...visitors, v];
+          nextVisitorId += 1;
+          money += ADMISSION_FEE;
+        }
 
-      set({
-        ...nextTime,
-        money: moneyAfterSpend,
+        // 3) spending: only visitors that existed BEFORE this tick
+        money += visitorsBefore * MONEY_PER_VISITOR_PER_TICK;
+
+        // 4) movement (move everyone currently in `visitors`, including newly spawned)
+        const gridH = s.grid.length;
+        const gridW = s.grid[0]?.length ?? 0;
+
+        const moved =
+          gridW > 0 && gridH > 0
+            ? visitors.map((v) => {
+                const stepped = snakeStepWithRetrace({
+                  w: gridW,
+                  h: gridH,
+                  pos: v.position,
+                  dir: v.scanDir,
+                });
+                return { ...v, position: stepped.pos, scanDir: stepped.dir };
+              })
+            : visitors;
+
+        return {
+          ...s,
+          ...nextTime,
+          visitors: moved,
+          nextVisitorId,
+          money,
+        };
       });
     },
 
@@ -94,7 +124,7 @@ export const useGameStore = create(
       if (s.lifecycle !== 'running') return;
 
       const id = s.nextVisitorId;
-      const visitor: Visitor = { id, position: s.entrance };
+      const visitor: Visitor = { id, position: s.entrance, scanDir: 1 };
 
       set({
         visitors: [...s.visitors, visitor],

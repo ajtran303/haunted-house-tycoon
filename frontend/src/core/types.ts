@@ -17,6 +17,7 @@ export type Vector = { x: number; y: number };
 export type Visitor = {
   id: number;
   position: Vector;
+  scanDir: 1 | -1;
 };
 
 export type GameSpeed = 1 | 4;
