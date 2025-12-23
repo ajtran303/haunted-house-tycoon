@@ -13,3 +13,9 @@ export const ADMISSION_FEE = 10;
 
 export const ENTRANCE_X = 0;
 export const ENTRANCE_Y = 0;
+
+export const ROOM_COSTS = {
+  entry: 50,
+  hallway: 100,
+  scare: 200,
+} as const;

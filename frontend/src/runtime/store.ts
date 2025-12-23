@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 
-import { ADMISSION_FEE } from '../core/constants';
+import { ADMISSION_FEE, ROOM_COSTS } from '../core/constants';
 import { newGame } from '../core/newGame';
+import { placeRoom, RoomType } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, Visitor } from '../core/types';
 
@@ -18,6 +19,8 @@ type Actions = {
 
   startRunWithInitialVisitor: () => void;
   spawnVisitorAtEntrance: () => void;
+
+  placeRoomAt: (x: number, y: number, roomType: RoomType) => void;
 };
 
 export const useGameStore = create<GameState & Actions>((set, get) => ({
@@ -69,6 +72,27 @@ export const useGameStore = create<GameState & Actions>((set, get) => ({
       visitors: [...s.visitors, visitor],
       nextVisitorId: s.nextVisitorId + 1,
       money: s.money + ADMISSION_FEE,
+    });
+  },
+
+  placeRoomAt: (x, y, roomType) => {
+    const s = get();
+    const applied = placeRoom({
+      grid: s.grid,
+      x,
+      y,
+      roomType,
+      money: s.money,
+      costByType: ROOM_COSTS,
+      nextRoomId: s.nextRoomId,
+    });
+
+    if (!applied.result.ok) return;
+
+    set({
+      grid: applied.grid,
+      money: applied.money,
+      nextRoomId: applied.nextRoomId,
     });
   },
 }));

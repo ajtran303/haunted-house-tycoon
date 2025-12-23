@@ -30,10 +30,13 @@ export type GameState = {
   money: number;
 
   grid: Grid;
+
   visitors: Visitor[];
   nextVisitorId: number;
 
   entrance: Vector;
+
+  nextRoomId: number;
 
   // for MVP
   staffEnabled: false;
