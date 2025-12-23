@@ -18,6 +18,7 @@ export const ENTRANCE_Y = 0;
 
 export const ROOM_COST: Record<RoomType, number> = {
   entry: 50,
+  exit: 50,
   hallway: 100,
   scare: 200,
   parkEntry: 0,

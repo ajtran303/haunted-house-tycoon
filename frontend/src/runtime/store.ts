@@ -85,7 +85,12 @@ export const useGameStore = create(
         let money = s.money;
 
         if (s.entrance && shouldSpawnFakeVisitor(nextTick)) {
-          const v: Visitor = { id: nextVisitorId, position: s.entrance, prevPos: null };
+          const v: Visitor = {
+            id: nextVisitorId,
+            position: s.entrance,
+            prevPos: null,
+            inAttraction: false,
+          };
           visitors = [...visitors, v];
           nextVisitorId += 1;
           money += ADMISSION_FEE;
@@ -99,7 +104,9 @@ export const useGameStore = create(
         const gridW = s.grid[0]?.length ?? 0;
 
         const moved =
-          gridW > 0 && gridH > 0 ? moveVisitors(visitors, gridW, gridH, nextTick) : visitors;
+          gridW > 0 && gridH > 0
+            ? moveVisitors(visitors, gridW, gridH, s.grid, nextTick)
+            : visitors;
 
         // 5) despawn visitors that reach the exit
         const exit = s.exit;
@@ -123,7 +130,7 @@ export const useGameStore = create(
       if (s.lifecycle !== 'running' || !s.entrance) return;
 
       const id = s.nextVisitorId;
-      const visitor: Visitor = { id, position: s.entrance, prevPos: null };
+      const visitor: Visitor = { id, position: s.entrance, prevPos: null, inAttraction: false };
 
       set({
         visitors: [...s.visitors, visitor],

@@ -5,6 +5,7 @@ const V = (id: number, x: number, y: number, prevPos: Vector | null = null): Vis
   id,
   position: { x, y },
   prevPos,
+  inAttraction: false,
 });
 
 describe('validateExitPlacement', () => {

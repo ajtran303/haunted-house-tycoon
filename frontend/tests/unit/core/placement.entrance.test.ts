@@ -4,6 +4,7 @@ import type { RoomType } from '../../../src/core/types';
 
 const costs = {
   entry: 50,
+  exit: 50,
   hallway: 100,
   scare: 200,
   parkEntry: 0,

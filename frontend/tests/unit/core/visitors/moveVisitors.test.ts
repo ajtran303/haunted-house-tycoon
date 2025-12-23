@@ -1,4 +1,5 @@
-import type { Visitor } from '../../../../src/core/types';
+import { createGrid } from '../../../../src/core/grid';
+import type { Grid, Visitor } from '../../../../src/core/types';
 
 // IMPORTANT: mock the stepper so we can force collisions and make expectations exact.
 jest.mock('../../../../src/core/visitors/randomWalkStep', () => ({
@@ -14,6 +15,7 @@ const V = (id: number, x: number, y: number): Visitor => ({
   id,
   position: { x, y },
   prevPos: null,
+  inAttraction: false,
 });
 
 const stepMock = randomWalkStep as unknown as jest.Mock<
@@ -26,6 +28,7 @@ const stepMock = randomWalkStep as unknown as jest.Mock<
       visitorId: number;
       tick: number;
       isBlocked: (p: Vec) => boolean;
+      isWalkable: (p: Vec) => boolean;
     },
   ]
 >;
@@ -39,7 +42,8 @@ describe('moveVisitors', () => {
     const visitors = [V(2, 0, 0), V(1, 1, 0)];
     stepMock.mockImplementation(({ pos }) => pos); // everyone stays
 
-    moveVisitors(visitors, 5, 5, 7);
+    const grid = createGrid(5, 5);
+    moveVisitors(visitors, 5, 5, grid, 7);
 
     expect(stepMock).toHaveBeenCalledTimes(2);
 
@@ -56,7 +60,8 @@ describe('moveVisitors', () => {
     // move everyone +1 on x
     stepMock.mockImplementation(({ pos }) => ({ x: pos.x + 1, y: pos.y }));
 
-    const next = moveVisitors(visitors, 10, 10, 1);
+    const grid = createGrid(10, 10);
+    const next = moveVisitors(visitors, 10, 10, grid, 1);
 
     expect(next.map((v) => v.id)).toEqual([10, 3, 7]); // same order
     expect(next.find((v) => v.id === 10)!.position).toEqual({ x: 1, y: 0 });
@@ -76,7 +81,8 @@ describe('moveVisitors', () => {
       return visitorId === 2 ? { x: 2, y: 0 } : desired;
     });
 
-    const next = moveVisitors(visitors, 5, 5, 1);
+    const grid = createGrid(5, 5);
+    const next = moveVisitors(visitors, 5, 5, grid, 1);
 
     expect(next.find((v) => v.id === 1)!.position).toEqual({ x: 1, y: 0 });
     expect(next.find((v) => v.id === 2)!.position).toEqual({ x: 2, y: 0 });
@@ -97,7 +103,8 @@ describe('moveVisitors', () => {
       return visitorId === 2 ? { x: 0, y: 0 } : { x: 2, y: 0 };
     });
 
-    const next = moveVisitors(visitors, 5, 5, 1);
+    const grid = createGrid(5, 5);
+    const next = moveVisitors(visitors, 5, 5, grid, 1);
 
     // id=1 should win the tile, regardless of input order
     expect(next.find((v) => v.id === 1)!.position).toEqual({ x: 1, y: 0 });
@@ -113,7 +120,8 @@ describe('moveVisitors', () => {
       return pos;
     });
 
-    const next = moveVisitors(visitors, 5, 5, 1);
+    const grid = createGrid(5, 5);
+    const next = moveVisitors(visitors, 5, 5, grid, 1);
     expect(next[0].position).toEqual({ x: 0, y: 0 });
   });
 
@@ -127,8 +135,9 @@ describe('moveVisitors', () => {
       return { x: pos.x + dx, y: pos.y };
     });
 
-    const a = moveVisitors(visitors, 10, 10, 7);
-    const b = moveVisitors(visitors, 10, 10, 7);
+    const grid = createGrid(10, 10);
+    const a = moveVisitors(visitors, 10, 10, grid, 7);
+    const b = moveVisitors(visitors, 10, 10, grid, 7);
 
     expect(a).toEqual(b);
   });
@@ -141,8 +150,9 @@ describe('moveVisitors', () => {
       return { x: pos.x + dx, y: pos.y };
     });
 
-    const t7 = moveVisitors(visitors, 10, 10, 7);
-    const t8 = moveVisitors(visitors, 10, 10, 8);
+    const grid = createGrid(10, 10);
+    const t7 = moveVisitors(visitors, 10, 10, grid, 7);
+    const t8 = moveVisitors(visitors, 10, 10, grid, 8);
 
     expect(t7).not.toEqual(t8);
   });

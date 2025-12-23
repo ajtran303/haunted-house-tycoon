@@ -18,6 +18,7 @@ export type Visitor = {
   id: number;
   position: Vector;
   prevPos: Vector | null;
+  inAttraction: boolean;
 };
 
 export type GameSpeed = 1 | 4;
@@ -46,4 +47,4 @@ export type GameState = {
   staffEnabled: false;
 };
 
-export type RoomType = 'entry' | 'hallway' | 'scare' | 'parkEntry' | 'parkExit';
+export type RoomType = 'entry' | 'exit' | 'hallway' | 'scare' | 'parkEntry' | 'parkExit';

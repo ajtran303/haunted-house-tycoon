@@ -12,7 +12,14 @@ const makeGrid = (w: number, h: number): Grid =>
   );
 
 describe('placeRoom', () => {
-  const costs = { entry: 50, hallway: 100, scare: 200, parkEntry: 0, parkExit: 0 } as const;
+  const costs = {
+    entry: 50,
+    exit: 50,
+    hallway: 100,
+    scare: 200,
+    parkEntry: 0,
+    parkExit: 0,
+  } as const;
 
   it('places a room, deducts money, returns deterministic roomId', () => {
     const grid = makeGrid(3, 3);

@@ -70,7 +70,7 @@ describe('Exit placement + exit removal', () => {
     useGameStore.setState({
       lifecycle: 'running',
       grid: [[{ type: 'empty', occupied: false, roomId: null, roomType: null }]],
-      visitors: [{ id: 1, position: { x: 0, y: 0 }, prevPos: null }],
+      visitors: [{ id: 1, position: { x: 0, y: 0 }, prevPos: null, inAttraction: false }],
       nextVisitorId: 2,
       exit: { x: 0, y: 0 },
     } as any);
