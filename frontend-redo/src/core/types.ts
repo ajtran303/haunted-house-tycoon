@@ -18,8 +18,11 @@ export type Visitor = {
   position: Vector;
 };
 
+export type GameSpeed = 1 | 4;
+
 export type GameState = {
   lifecycle: Lifecycle;
+  speed: GameSpeed;
 
   day: number;
   tick: number;

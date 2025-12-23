@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { getTimeOfDay } from '../core/timeOfDay';
 import { useGameStore } from '../runtime/store';
 
 export const Hud = () => {
@@ -8,6 +9,8 @@ export const Hud = () => {
   const tick = useGameStore((s) => s.tick);
   const money = useGameStore((s) => s.money);
   const visitorCount = useGameStore((s) => s.visitors.length);
+  const timeOfDay = getTimeOfDay(tick);
+
   const newGame = useGameStore((s) => s.newGame);
 
   const [showBanner, setShowBanner] = useState(false);
@@ -20,6 +23,10 @@ export const Hud = () => {
   const startRun = useGameStore((s) => s.startRunWithInitialVisitor);
 
   const pause = useGameStore((s) => s.pause);
+
+  const setSpeed1x = useGameStore((s) => s.setSpeed1x);
+  const setSpeed4x = useGameStore((s) => s.setSpeed4x);
+  const speed = useGameStore((s) => s.speed);
 
   const buttonStyle =
     'mt-2 border px-2 py-1 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md';
@@ -36,6 +43,7 @@ export const Hud = () => {
 
       <div>Lifecycle: {lifecycle}</div>
       <div>Day: {day}</div>
+      <div>Time: {timeOfDay}</div>
       <div>Tick: {tick}</div>
       <div>Money: ${money}</div>
       <div>Visitors: {visitorCount}</div>
@@ -50,6 +58,15 @@ export const Hud = () => {
 
       <button className={buttonStyle} onClick={pause}>
         Pause
+      </button>
+      <br />
+      <br />
+      <div>Speed: {speed}x</div>
+      <button className={buttonStyle} onClick={setSpeed1x}>
+        1x
+      </button>
+      <button className={buttonStyle} onClick={setSpeed4x}>
+        4x
       </button>
     </div>
   );

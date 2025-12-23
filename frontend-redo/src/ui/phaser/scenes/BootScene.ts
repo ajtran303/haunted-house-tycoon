@@ -1,6 +1,7 @@
 import { useGameStore } from '../../../runtime/store';
 
 const MS_PER_TICK = 1000;
+const MAX_STEPS_PER_FRAME = 10;
 
 export class BootScene {
   // Phaser accepts a "key" string for scene identification.
@@ -24,11 +25,32 @@ export class BootScene {
 
   // Phase runs this every frame
   update(_time: number, delta: number) {
-    this.accumulatedMs += delta;
+    if (!Number.isFinite(delta) || delta < 0) {
+      throw new Error(`Invalid delta ${delta}`);
+    }
 
+    const state = useGameStore.getState();
+
+    if (state.lifecycle !== 'running') return;
+
+    const speed = state.speed;
+
+    if (!Number.isFinite(speed) || speed <= 0) {
+      throw new Error(`Invalid speed ${speed}`);
+    }
+
+    this.accumulatedMs += delta * speed;
+
+    let steps = 0;
     while (this.accumulatedMs >= MS_PER_TICK) {
       useGameStore.getState().tickOnce();
       this.accumulatedMs -= MS_PER_TICK;
+
+      steps++;
+      if (steps > MAX_STEPS_PER_FRAME) {
+        // guard from spiraling out of control
+        throw new Error('Exceeded max tick steps per frame');
+      }
     }
   }
 }

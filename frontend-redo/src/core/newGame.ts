@@ -35,6 +35,8 @@ export const newGame = (): GameState => {
   return {
     lifecycle: 'paused',
 
+    speed: 1,
+
     day: START_DAY,
     tick: START_TICK,
 
