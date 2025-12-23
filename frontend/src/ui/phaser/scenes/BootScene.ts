@@ -47,15 +47,12 @@ export class BootScene {
 
     const initial = useGameStore.getState();
 
-    // grid
     this.buildRenderer(initial.grid);
     this.gridRenderer?.setEnabled(initial.lifecycle === 'running');
 
-    // visitors
     this.visitorsRenderer = createVisitorsRenderer(self);
     this.visitorsRenderer.draw(initial.visitors);
 
-    // grid subscription (your existing scheduling)
     this.unsubscribeGrid = useGameStore.subscribe(
       (s) => s.grid,
       (grid, prevGrid) => {
@@ -64,13 +61,11 @@ export class BootScene {
       },
     );
 
-    // lifecycle subscription (your existing scheduling)
     this.unsubscribeLifecycle = useGameStore.subscribe(
       (s) => s.lifecycle,
       (lifecycle) => this.queueLifecycleWork(lifecycle === 'running'),
     );
 
-    // visitors subscription (schedule onto postupdate)
     this.unsubscribeVisitors = useGameStore.subscribe(
       (s) => s.visitors,
       (visitors) => this.queueVisitorsWork(visitors),

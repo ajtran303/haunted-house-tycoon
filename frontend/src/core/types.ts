@@ -14,12 +14,10 @@ export type Grid = Cell[][];
 
 export type Vector = { x: number; y: number };
 
-export type ScanDir = 1 | -1;
-
 export type Visitor = {
   id: number;
   position: Vector;
-  scanDir: ScanDir;
+  prevPos: Vector | null;
 };
 
 export type GameSpeed = 1 | 4;
@@ -38,7 +36,7 @@ export type GameState = {
   visitors: Visitor[];
   nextVisitorId: number;
 
-  entrance: Vector;
+  entrance: Vector | null;
 
   nextRoomId: number;
   selectedRoomType: RoomType;
@@ -47,4 +45,4 @@ export type GameState = {
   staffEnabled: false;
 };
 
-export type RoomType = 'entry' | 'hallway' | 'scare';
+export type RoomType = 'entry' | 'hallway' | 'scare' | 'parkEntry';

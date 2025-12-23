@@ -1,12 +1,4 @@
-import {
-  ENTRANCE_X,
-  ENTRANCE_Y,
-  GRID_HEIGHT,
-  GRID_WIDTH,
-  START_DAY,
-  START_TICK,
-  STARTING_MONEY,
-} from './constants';
+import { GRID_HEIGHT, GRID_WIDTH, START_DAY, START_TICK, STARTING_MONEY } from './constants';
 import { createGrid } from './grid';
 import type { GameState } from './types';
 
@@ -26,7 +18,7 @@ export const newGame = (): GameState => {
     visitors: [],
     nextVisitorId: 1,
 
-    entrance: { x: ENTRANCE_X, y: ENTRANCE_Y },
+    entrance: null,
 
     nextRoomId: 1,
     selectedRoomType: 'hallway',

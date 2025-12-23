@@ -6,7 +6,7 @@ import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
-import { moveVisitorsDetour } from '../core/visitors/moveVisitorsDetour';
+import { moveVisitors } from '../core/visitors/moveVisitors';
 import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
 
 type Input =
@@ -57,7 +57,7 @@ export const useGameStore = create(
 
       // Spawn exactly one initial visitor if none exist yet.
       // Admission is charged on spawn (once per visitor).
-      if (s.visitors.length === 0) {
+      if (s.visitors.length === 0 && s.entrance) {
         get().spawnVisitor();
       }
     },
@@ -82,8 +82,8 @@ export const useGameStore = create(
         let nextVisitorId = s.nextVisitorId;
         let money = s.money;
 
-        if (shouldSpawnFakeVisitor(nextTick)) {
-          const v: Visitor = { id: nextVisitorId, position: s.entrance, scanDir: 1 };
+        if (s.entrance && shouldSpawnFakeVisitor(nextTick)) {
+          const v: Visitor = { id: nextVisitorId, position: s.entrance, prevPos: null };
           visitors = [...visitors, v];
           nextVisitorId += 1;
           money += ADMISSION_FEE;
@@ -97,7 +97,7 @@ export const useGameStore = create(
         const gridW = s.grid[0]?.length ?? 0;
 
         const moved =
-          gridW > 0 && gridH > 0 ? moveVisitorsDetour(visitors, gridW, gridH) : visitors;
+          gridW > 0 && gridH > 0 ? moveVisitors(visitors, gridW, gridH, nextTick) : visitors;
 
         return {
           ...s,
@@ -111,10 +111,10 @@ export const useGameStore = create(
 
     spawnVisitor: () => {
       const s = get();
-      if (s.lifecycle !== 'running') return;
+      if (s.lifecycle !== 'running' || !s.entrance) return;
 
       const id = s.nextVisitorId;
-      const visitor: Visitor = { id, position: s.entrance, scanDir: 1 };
+      const visitor: Visitor = { id, position: s.entrance, prevPos: null };
 
       set({
         visitors: [...s.visitors, visitor],
@@ -126,6 +126,8 @@ export const useGameStore = create(
     placeRoomAt: (x: number, y: number) => {
       const s = get();
       if (s.lifecycle !== 'running') return;
+
+      const roomType = s.selectedRoomType;
 
       const applied = placeRoom({
         grid: s.grid,
@@ -143,6 +145,7 @@ export const useGameStore = create(
         grid: applied.grid,
         money: applied.money,
         nextRoomId: applied.nextRoomId,
+        ...(roomType === 'parkEntry' ? { entrance: { x, y } } : null),
       });
     },
 
