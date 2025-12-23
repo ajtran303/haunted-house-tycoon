@@ -31,8 +31,10 @@ export const Hud = () => {
   const buttonStyle =
     'mt-2 border px-2 py-1 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md';
 
+  const hudStyle = 'fixed top-0 right-0 h-full w-64 border-l bg-white p-3 text-sm';
+
   return (
-    <div className="fixed top-2 left-2 border bg-white p-2 text-sm">
+    <div className={hudStyle}>
       {showBanner && (
         <div role="status" className="mb-2 border border-black px-2 py-1">
           New Game Started
