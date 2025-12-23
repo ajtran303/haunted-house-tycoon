@@ -1,32 +1,94 @@
-import { useGameStore } from '../../../runtime/store';
+import type { Cell, Grid } from '../../../core/types';
 
-const CELL_SIZE = 32;
-const CELL_GAP = 2;
+const CELL_SIZE = 24;
 const ORIGIN_X = 20;
 const ORIGIN_Y = 60;
 
-export const renderGrid = (scene: unknown) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const s = scene as any;
+type GridRenderer = {
+  draw: (grid: Grid) => void;
+  destroy: () => void;
+  setEnabled: (enabled: boolean) => void;
+};
 
-  const { grid } = useGameStore.getState();
+const COLOR_EMPTY = 0x222222;
+const COLOR_ENTRY = 0x2ecc71;
+const COLOR_HALLWAY = 0x95a5a6;
+const COLOR_SCARE = 0x9b59b6;
 
-  for (let y = 0; y < grid.length; y++) {
-    const row = grid[y];
+const fillForCell = (cell: Cell) => {
+  if (!cell.occupied) return COLOR_EMPTY;
 
-    for (let x = 0; x < row.length; x++) {
-      const cell = row[x];
-
-      const px = ORIGIN_X + x * (CELL_SIZE + CELL_GAP);
-      const py = ORIGIN_Y + y * (CELL_SIZE + CELL_GAP);
-
-      // Default floor color. (Change later based on cell.type / occupied)
-      const fill = cell.occupied ? 0x777777 : 0x333333;
-
-      s.add
-        .rectangle(px, py, CELL_SIZE, CELL_SIZE, fill)
-        .setOrigin(0, 0)
-        .setStrokeStyle(1, 0xaaaaaa);
-    }
+  switch (cell.roomType) {
+    case 'entry':
+      return COLOR_ENTRY;
+    case 'hallway':
+      return COLOR_HALLWAY;
+    case 'scare':
+      return COLOR_SCARE;
+    default:
+      // fallback if older saves/tests don’t set roomType yet
+      return 0x666666;
   }
+};
+
+export const createGridRenderer = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  scene: any,
+  grid: Grid,
+  onCellClick: (x: number, y: number) => void,
+): GridRenderer => {
+  const height = grid.length;
+  const width = grid[0]?.length ?? 0;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rects: any[][] = [];
+
+  for (let y = 0; y < height; y++) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const row: any[] = [];
+    for (let x = 0; x < width; x++) {
+      const r = scene.add.rectangle(
+        ORIGIN_X + x * CELL_SIZE,
+        ORIGIN_Y + y * CELL_SIZE,
+        CELL_SIZE - 1,
+        CELL_SIZE - 1,
+        0x222222,
+      );
+      r.setOrigin(0, 0);
+
+      // ✅ make each cell clickable
+      r.setInteractive({ useHandCursor: true });
+      r.on('pointerdown', () => onCellClick(x, y));
+
+      row.push(r);
+    }
+    rects.push(row);
+  }
+
+  const draw = (next: Grid) => {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const cell = next[y][x];
+        rects[y][x].setFillStyle(fillForCell(cell));
+      }
+    }
+  };
+
+  const setEnabled = (enabled: boolean) => {
+    // ✅ disable clicks when paused (and also disable hand cursor)
+    for (const row of rects) {
+      for (const r of row) {
+        r.disableInteractive();
+        if (enabled) r.setInteractive({ useHandCursor: true });
+      }
+    }
+  };
+
+  draw(grid);
+
+  const destroy = () => {
+    for (const row of rects) for (const r of row) r.destroy();
+  };
+
+  return { draw, destroy, setEnabled };
 };

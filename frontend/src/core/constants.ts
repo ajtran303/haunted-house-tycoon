@@ -1,3 +1,5 @@
+import { RoomType } from './types';
+
 export const GRID_WIDTH = 12;
 export const GRID_HEIGHT = 8;
 
@@ -13,3 +15,9 @@ export const ADMISSION_FEE = 10;
 
 export const ENTRANCE_X = 0;
 export const ENTRANCE_Y = 0;
+
+export const ROOM_COST: Record<RoomType, number> = {
+  entry: 50,
+  hallway: 100,
+  scare: 200,
+};
