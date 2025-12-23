@@ -27,6 +27,9 @@ describe('time ticks in store', () => {
   it('increments tick when running', () => {
     useGameStore.getState().startRun();
 
+    useGameStore.getState().dispatchInput({ type: 'selectRoomType', roomType: 'parkEntry' });
+    useGameStore.getState().dispatchInput({ type: 'clickCell', x: 0, y: 0 });
+
     const beforeTick = useGameStore.getState().tick;
     const beforeDay = useGameStore.getState().day;
     const beforeVisitors = useGameStore.getState().visitors.length;

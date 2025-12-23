@@ -1,3 +1,4 @@
+import { ROOM_COST } from './constants';
 import type { Cell, Grid, RoomType } from './types';
 
 export type PlaceRoomOk = {
@@ -7,7 +8,12 @@ export type PlaceRoomOk = {
 
 export type PlaceRoomFail = {
   ok: false;
-  reason: 'out_of_bounds' | 'cell_occupied' | 'insufficient_funds';
+  reason:
+    | 'out_of_bounds'
+    | 'cell_occupied'
+    | 'insufficient_funds'
+    | 'invalid_entrance_placement'
+    | 'entrance_already_exists';
 };
 
 export type PlaceRoomResult = PlaceRoomOk | PlaceRoomFail;
@@ -29,11 +35,29 @@ export type PlaceRoomApply = {
   result: PlaceRoomResult;
 };
 
-// Immutable helpers (no mutation)
 const cloneGrid = (grid: Grid): Grid => grid.map((row) => row.map((c) => ({ ...c })));
 
+const isEdge = (x: number, y: number, w: number, h: number) =>
+  x === 0 || y === 0 || x === w - 1 || y === h - 1;
+
+const hasParkEntry = (grid: Grid): boolean =>
+  grid.some((row) => row.some((c) => c.occupied && c.roomType === 'parkEntry'));
+
+const clearExistingParkEntry = (g: Grid): Grid => {
+  const next = cloneGrid(g);
+  for (let yy = 0; yy < next.length; yy++) {
+    for (let xx = 0; xx < next[0].length; xx++) {
+      const c = next[yy][xx];
+      if (c.occupied && c.roomType === 'parkEntry') {
+        next[yy][xx] = { ...c, occupied: false, roomId: null, roomType: null };
+      }
+    }
+  }
+  return next;
+};
+
 export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
-  const { grid, x, y, roomType, money, costByType, nextRoomId } = args;
+  const { grid, x, y, roomType, money, nextRoomId } = args;
 
   // bounds
   if (y < 0 || y >= grid.length) {
@@ -43,12 +67,29 @@ export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
     return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
   }
 
-  const cost = costByType[roomType];
+  const w = grid[0].length;
+  const h = grid.length;
+
+  if (roomType === 'parkEntry') {
+    if (hasParkEntry(grid)) {
+      return { grid, money, nextRoomId, result: { ok: false, reason: 'entrance_already_exists' } };
+    }
+    if (!isEdge(x, y, w, h)) {
+      return {
+        grid,
+        money,
+        nextRoomId,
+        result: { ok: false, reason: 'invalid_entrance_placement' },
+      };
+    }
+  }
+  const cost = ROOM_COST[roomType];
   if (money < cost) {
     return { grid, money, nextRoomId, result: { ok: false, reason: 'insufficient_funds' } };
   }
 
-  const cell = grid[y][x];
+  const baseGrid = roomType === 'parkEntry' ? clearExistingParkEntry(grid) : grid;
+  const cell = baseGrid[y][x];
   if (cell.occupied) {
     return { grid, money, nextRoomId, result: { ok: false, reason: 'cell_occupied' } };
   }
