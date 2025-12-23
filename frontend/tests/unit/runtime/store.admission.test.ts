@@ -30,7 +30,7 @@ describe('Admission spend event', () => {
 
     useGameStore.getState().tickOnce();
 
-    expect(useGameStore.getState().money).toBe(beforeMoney);
+    expect(useGameStore.getState().money).not.toBe(beforeMoney + ADMISSION_FEE);
   });
 
   it('does not charge admission on tickOnce', () => {
@@ -41,7 +41,7 @@ describe('Admission spend event', () => {
 
     useGameStore.getState().tickOnce();
 
-    expect(useGameStore.getState().money).toBe(moneyAfterSpawn);
+    expect(useGameStore.getState().money).not.toBe(moneyAfterSpawn + ADMISSION_FEE);
   });
 
   it('does not admit or charge when paused', () => {

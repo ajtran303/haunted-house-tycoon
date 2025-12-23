@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
+import { ADMISSION_FEE, MONEY_PER_VISITOR_PER_TICK, ROOM_COST } from '../core/constants';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
+import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
 
 type Input =
   | { type: 'selectRoomType'; roomType: RoomType }
@@ -26,6 +27,7 @@ type Actions = {
   setSpeed4x: () => void;
 
   // placement
+  spawnFakeVisitor: () => void;
   spawnVisitorAtEntrance: () => void;
   placeRoomAt: (x: number, y: number) => void;
 
@@ -47,13 +49,26 @@ export const useGameStore = create(
     setSpeed4x: () => set({ speed: 4 }),
 
     tickOnce: () => {
-      const state = get();
-      if (state.lifecycle !== 'running') return;
+      const s = get();
+      if (s.lifecycle !== 'running') return;
 
-      const nextTime = applyTimeTick({ tick: state.tick, day: state.day });
+      const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
+
+      const shouldSpawn = shouldSpawnFakeVisitor(nextTime.tick);
+
+      const visitors = shouldSpawn
+        ? [...s.visitors, { id: s.nextVisitorId, position: s.entrance }]
+        : s.visitors;
+
+      const nextVisitorId = shouldSpawn ? s.nextVisitorId + 1 : s.nextVisitorId;
+
+      const moneyDelta = visitors.length * MONEY_PER_VISITOR_PER_TICK;
 
       set({
         ...nextTime,
+        visitors,
+        nextVisitorId,
+        money: s.money + moneyDelta,
       });
     },
 
@@ -67,6 +82,21 @@ export const useGameStore = create(
       }
 
       set({ lifecycle: 'running' as Lifecycle });
+    },
+
+    spawnFakeVisitor: () => {
+      const s = get();
+      if (s.lifecycle !== 'running') return;
+
+      const id = s.nextVisitorId;
+
+      const entrance = s.entrance;
+      const visitor: Visitor = { id: id, position: entrance };
+
+      set({
+        visitors: [...s.visitors, visitor],
+        nextVisitorId: s.nextVisitorId + 1,
+      });
     },
 
     spawnVisitorAtEntrance: () => {
