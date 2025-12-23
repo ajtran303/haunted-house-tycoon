@@ -1,6 +1,4 @@
-import { ADMISSION_FEE } from '../../../src/core/constants';
 import { shouldSpawnFakeVisitor } from '../../../src/core/visitorsFake';
-import { useGameStore } from '../../../src/runtime/store';
 
 describe('shouldSpawnFakeVisitor', () => {
   it('does not spawn at tick 0', () => {

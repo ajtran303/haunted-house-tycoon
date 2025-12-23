@@ -23,4 +23,4 @@ export const ROOM_COST: Record<RoomType, number> = {
 };
 
 export const TICKS_PER_VISITOR_SPAWN = 5;
-export const MONEY_PER_VISITOR_PER_TICK = 1; // for testing
+export const MONEY_PER_VISITOR_PER_TICK = 5; // for testing

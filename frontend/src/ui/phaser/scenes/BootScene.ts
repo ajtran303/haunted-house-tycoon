@@ -1,5 +1,6 @@
 import { useGameStore } from '../../../runtime/store';
 import { createGridRenderer } from '../render/renderGrid';
+import { createVisitorsRenderer } from '../render/visitorsRenderer';
 
 const MS_PER_TICK = 1000;
 const MAX_STEPS_PER_FRAME = 10;
@@ -8,8 +9,10 @@ export class BootScene {
   static key = 'boot';
 
   private accumulatedMs = 0;
+
   private unsubscribeGrid?: () => void;
   private unsubscribeLifecycle?: () => void;
+  private unsubscribeVisitors?: () => void;
 
   private gridRenderer?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,35 +21,147 @@ export class BootScene {
     setEnabled: (enabled: boolean) => void;
   };
 
+  private visitorsRenderer?: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    draw: (visitors: any) => void;
+    destroy: () => void;
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private sceneRef: any;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private pendingGrid?: any;
+  private pendingRebuild = false;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private pendingVisitors?: any;
+  private pendingVisitorsFlush = false;
+
   create() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const self = this as any;
+    this.sceneRef = self;
 
     self.add.text(20, 20, 'Phaser OK', { fontSize: '20px', color: '#ffffff' });
 
     const initial = useGameStore.getState();
 
-    this.gridRenderer = createGridRenderer(self, initial.grid, (x, y) => {
-      useGameStore.getState().dispatchInput({ type: 'clickCell', x, y });
-    });
+    // grid
+    this.buildRenderer(initial.grid);
+    this.gridRenderer?.setEnabled(initial.lifecycle === 'running');
 
-    this.gridRenderer.setEnabled(initial.lifecycle === 'running');
+    // visitors
+    this.visitorsRenderer = createVisitorsRenderer(self);
+    this.visitorsRenderer.draw(initial.visitors);
 
+    // grid subscription (your existing scheduling)
     this.unsubscribeGrid = useGameStore.subscribe(
       (s) => s.grid,
-      (grid) => this.gridRenderer?.draw(grid),
+      (grid, prevGrid) => {
+        const needsRebuild = grid !== prevGrid;
+        this.queueGridWork(grid, needsRebuild);
+      },
     );
 
+    // lifecycle subscription (your existing scheduling)
     this.unsubscribeLifecycle = useGameStore.subscribe(
       (s) => s.lifecycle,
-      (lifecycle) => this.gridRenderer?.setEnabled(lifecycle === 'running'),
+      (lifecycle) => this.queueLifecycleWork(lifecycle === 'running'),
     );
+
+    // visitors subscription (schedule onto postupdate)
+    this.unsubscribeVisitors = useGameStore.subscribe(
+      (s) => s.visitors,
+      (visitors) => this.queueVisitorsWork(visitors),
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private buildRenderer(grid: any) {
+    const self = this.sceneRef;
+
+    this.gridRenderer?.destroy();
+    this.gridRenderer = createGridRenderer(self, grid, (x, y) => {
+      useGameStore.getState().dispatchInput({ type: 'clickCell', x, y });
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private queueGridWork(grid: any, rebuild: boolean) {
+    this.pendingGrid = grid;
+    this.pendingRebuild = this.pendingRebuild || rebuild;
+
+    const self = this.sceneRef;
+    if (!self) return;
+
+    if (self.__gridFlushScheduled) return;
+    self.__gridFlushScheduled = true;
+
+    self.events.once('postupdate', () => {
+      self.__gridFlushScheduled = false;
+
+      const g = this.pendingGrid;
+      const doRebuild = this.pendingRebuild;
+
+      this.pendingGrid = undefined;
+      this.pendingRebuild = false;
+
+      if (!g) return;
+
+      if (doRebuild) {
+        this.buildRenderer(g);
+        this.gridRenderer?.setEnabled(useGameStore.getState().lifecycle === 'running');
+      } else {
+        this.gridRenderer?.draw(g);
+      }
+    });
+  }
+
+  private queueLifecycleWork(enabled: boolean) {
+    const self = this.sceneRef;
+    if (!self) return;
+
+    if (self.__lifecycleFlushScheduled) {
+      self.__pendingEnabled = enabled;
+      return;
+    }
+
+    self.__lifecycleFlushScheduled = true;
+    self.__pendingEnabled = enabled;
+
+    self.events.once('postupdate', () => {
+      self.__lifecycleFlushScheduled = false;
+      this.gridRenderer?.setEnabled(!!self.__pendingEnabled);
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private queueVisitorsWork(visitors: any) {
+    this.pendingVisitors = visitors;
+
+    const self = this.sceneRef;
+    if (!self) return;
+
+    if (this.pendingVisitorsFlush) return;
+    this.pendingVisitorsFlush = true;
+
+    self.events.once('postupdate', () => {
+      this.pendingVisitorsFlush = false;
+      if (!this.pendingVisitors) return;
+
+      this.visitorsRenderer?.draw(this.pendingVisitors);
+      this.pendingVisitors = undefined;
+    });
   }
 
   shutdown() {
     this.unsubscribeGrid?.();
     this.unsubscribeLifecycle?.();
+    this.unsubscribeVisitors?.();
+
     this.gridRenderer?.destroy();
+    this.visitorsRenderer?.destroy();
   }
 
   update(_time: number, delta: number) {
