@@ -1,6 +1,6 @@
 export type Lifecycle = 'stopped' | 'paused' | 'running' | 'failed';
 
-// minimal for now; extend later
+// add more later, i.e hallway, room, scare, entrance, exit, etc.
 export type CellType = 'empty' | 'floor';
 
 export type Cell = {
