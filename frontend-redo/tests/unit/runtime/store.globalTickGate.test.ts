@@ -1,5 +1,5 @@
-import { selectSnapshot } from '../../src/runtime/snapshot';
-import { useGameStore } from '../../src/runtime/store';
+import { selectSnapshot } from '../../../src/runtime/snapshot';
+import { useGameStore } from '../../../src/runtime/store';
 
 const snapshot = () => selectSnapshot(useGameStore.getState());
 

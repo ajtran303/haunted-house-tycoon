@@ -1,9 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
-import { useGameStore } from '../../src/runtime/store';
-import { Hud } from '../../src/ui/Hud';
+import { useGameStore } from '../../../src/runtime/store';
+import { Hud } from '../../../src/ui/Hud';
 
-jest.mock('../../src/runtime/store', () => ({
+jest.mock('../../../src/runtime/store', () => ({
   useGameStore: jest.fn(),
 }));
 

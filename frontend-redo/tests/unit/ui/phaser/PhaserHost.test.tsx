@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 
-import * as createGameModule from '../../src/ui/phaser/createGame';
-import { PhaserHost } from '../../src/ui/phaser/PhaserHost';
+import * as createGameModule from '../../../../src/ui/phaser/createGame';
+import { PhaserHost } from '../../../../src/ui/phaser/PhaserHost';
 
 describe('PhaserHost', () => {
   it('creates and destroys the Phaser game exactly once', async () => {

@@ -1,4 +1,4 @@
-import { newGame } from '../../src/core/newGame';
+import { newGame } from '../../../src/core/newGame';
 
 describe('newGame', () => {
   it('is deterministic', () => {
