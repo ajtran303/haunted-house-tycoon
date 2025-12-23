@@ -1,46 +1,72 @@
 import js from '@eslint/js';
 import globals from 'globals';
-import importPlugin from 'eslint-plugin-import';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
-import { defineConfig, globalIgnores } from 'eslint/config';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import prettier from 'eslint-plugin-prettier';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
-export default defineConfig([
-  // 🔹 Ignore build output
-  globalIgnores(['dist', '.vite']),
+// MVP: formatting and import order are warnings, not errors
+export default [
+  { ignores: ['dist', 'node_modules'] },
+
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  // Turn off ESLint rules that conflict with Prettier
+  eslintConfigPrettier,
 
   {
     files: ['**/*.{ts,tsx}'],
-
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
-
-    plugins: {
-      import: importPlugin,
-      'simple-import-sort': simpleImportSort,
-    },
-
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+      },
     },
-
+    plugins: {
+      react,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+      'simple-import-sort': simpleImportSort,
+      prettier,
+    },
+    settings: {
+      react: { version: 'detect' },
+    },
     rules: {
-      'quotes': ['error', 'single', { 'avoidEscape': true }],
-      "semi": ["error", "always"],
+      // React safety
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 
-      'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error',
+      // TS hygiene (minimal)
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 
-      'import/first': 'error',
-      'import/newline-after-import': 'error',
-      'import/no-duplicates': 'error',
+      // ✅ Import sorting (simple defaults)
+      'simple-import-sort/imports': 'warn',
+      'simple-import-sort/exports': 'warn',
+
+      // ✅ Prettier formatting via ESLint
+      'prettier/prettier': 'warn',
     },
   },
-]);
+  {
+    files: ['tests/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        test: 'readonly',
+        expect: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+      },
+    },
+  },
+];

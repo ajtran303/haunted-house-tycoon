@@ -1,73 +1,53 @@
-# React + TypeScript + Vite
+# Haunted House Tycoon
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Haunted House Tycoon is a management simulation focused on building and operating a haunted attraction through player-driven decisions.
 
-Currently, two official plugins are available:
+The project emphasizes predictable systems, clear cause-and-effect, and simulation behavior that can be reasoned about, rather than hidden rules or opaque outcomes.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Overview
 
-## React Compiler
+In Haunted House Tycoon, players design and manage a haunted house by placing rooms, guiding visitor flow, and balancing fear, happiness, and income.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The simulation is designed so that outcomes emerge from explicit rules and player actions, not from scripted events or hidden adjustments. When failure occurs, it should be understandable based on the visible state of the system.
 
-## Expanding the ESLint configuration
+## Design Principles
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Deterministic simulation
+- Explicit time progression
+- Clear cause → effect relationships
+- No hidden or background state changes
+- Systems favor clarity over realism
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+All core mechanics are intended to be inspectable and testable.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Technology
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Vite + React + TypeScript
+- Phaser for rendering
+- Zustand for state management
+- ESLint + Prettier
+- Jest for testing
+
+The codebase is organized to keep simulation logic separate from rendering and UI concerns.
+
+## Project Structure
+
+```
+src/
+├── core/       # simulation logic
+├── runtime/    # lifecycle and orchestration
+├── ui/         # rendering and UI
+├── App.tsx
+└── main.tsx
+
+tests/
+├── unit/
+├── integration/
+└── helpers/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Philosophy
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Haunted House Tycoon is built around the idea that simulation games are more engaging when players can understand what happened and why.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+The goal is to create a system where success and failure feel earned, predictable, and debuggable through the game’s own mechanics.
