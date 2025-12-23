@@ -1,4 +1,4 @@
-import { ADMISSION_FEE } from '../../../src/core/constants';
+import { ADMISSION_FEE, MONEY_PER_VISITOR_PER_TICK } from '../../../src/core/constants';
 import { useGameStore } from '../../../src/runtime/store';
 
 describe('Spending and Admission', () => {
@@ -27,7 +27,9 @@ describe('Spending and Admission', () => {
     useGameStore.getState().tickOnce();
 
     // but visitor will spend 1 dollar on first tick (leaky tests?)
-    expect(useGameStore.getState().money).toBe(moneyAfterSpawn + ADMISSION_FEE + 1);
+    expect(useGameStore.getState().money).toBe(
+      moneyAfterSpawn + ADMISSION_FEE + MONEY_PER_VISITOR_PER_TICK,
+    );
   });
 
   it('spawn ticks always charge admission (e.g. tick 5)', () => {
@@ -49,7 +51,7 @@ describe('Spending and Admission', () => {
 
     expect(useGameStore.getState().visitors.length).toBe(beforeTick5Visitors + 1);
     expect(useGameStore.getState().money).toBe(
-      beforeTick5Money + ADMISSION_FEE + beforeTick5Visitors * 1,
+      beforeTick5Money + ADMISSION_FEE + beforeTick5Visitors * MONEY_PER_VISITOR_PER_TICK,
     );
   });
 

@@ -81,7 +81,7 @@ export const useGameStore = create(
       }
 
       // 3) spending: only visitors that existed BEFORE this tick
-      const moneyAfterSpend = get().money + visitorsBefore * 1;
+      const moneyAfterSpend = get().money + visitorsBefore * MONEY_PER_VISITOR_PER_TICK;
 
       set({
         ...nextTime,
