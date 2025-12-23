@@ -1,3 +1,4 @@
+// src/ui/phaser/scenes/BootScene.ts
 import { useGameStore } from '../../../runtime/store';
 import { createGridRenderer } from '../render/renderGrid';
 
@@ -8,6 +9,7 @@ export class BootScene {
   static key = 'boot';
 
   private accumulatedMs = 0;
+
   private unsubscribeGrid?: () => void;
   private unsubscribeLifecycle?: () => void;
 
@@ -18,29 +20,105 @@ export class BootScene {
     setEnabled: (enabled: boolean) => void;
   };
 
+  // keep a reference to the scene so subscriptions can schedule safely
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private sceneRef: any;
+
+  // prevent spamming scheduled work
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private pendingGrid?: any;
+  private pendingRebuild = false;
+
   create() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const self = this as any;
+    this.sceneRef = self;
 
     self.add.text(20, 20, 'Phaser OK', { fontSize: '20px', color: '#ffffff' });
 
     const initial = useGameStore.getState();
+    this.buildRenderer(initial.grid);
 
-    this.gridRenderer = createGridRenderer(self, initial.grid, (x, y) => {
-      useGameStore.getState().dispatchInput({ type: 'clickCell', x, y });
-    });
+    this.gridRenderer?.setEnabled(initial.lifecycle === 'running');
 
-    this.gridRenderer.setEnabled(initial.lifecycle === 'running');
-
+    // IMPORTANT: schedule visual work onto Phaser's next frame
     this.unsubscribeGrid = useGameStore.subscribe(
       (s) => s.grid,
-      (grid) => this.gridRenderer?.draw(grid),
+      (grid, prevGrid) => {
+        // if identity changed, we must rebuild rects (fresh grid)
+        const needsRebuild = grid !== prevGrid;
+        this.queueGridWork(grid, needsRebuild);
+      },
     );
 
     this.unsubscribeLifecycle = useGameStore.subscribe(
       (s) => s.lifecycle,
-      (lifecycle) => this.gridRenderer?.setEnabled(lifecycle === 'running'),
+      (lifecycle) => {
+        // lifecycle changes can happen in React handlers too; schedule safely
+        this.queueLifecycleWork(lifecycle === 'running');
+      },
     );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private buildRenderer(grid: any) {
+    const self = this.sceneRef;
+
+    this.gridRenderer?.destroy();
+    this.gridRenderer = createGridRenderer(self, grid, (x, y) => {
+      useGameStore.getState().dispatchInput({ type: 'clickCell', x, y });
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private queueGridWork(grid: any, rebuild: boolean) {
+    this.pendingGrid = grid;
+    this.pendingRebuild = this.pendingRebuild || rebuild;
+
+    const self = this.sceneRef;
+    if (!self) return;
+
+    // Run once on the next Phaser frame
+    if (self.__gridFlushScheduled) return;
+    self.__gridFlushScheduled = true;
+
+    self.events.once('postupdate', () => {
+      self.__gridFlushScheduled = false;
+
+      const g = this.pendingGrid;
+      const doRebuild = this.pendingRebuild;
+
+      this.pendingGrid = undefined;
+      this.pendingRebuild = false;
+
+      if (!g) return;
+
+      if (doRebuild) {
+        this.buildRenderer(g);
+        // keep enable state consistent with store
+        this.gridRenderer?.setEnabled(useGameStore.getState().lifecycle === 'running');
+      } else {
+        this.gridRenderer?.draw(g);
+      }
+    });
+  }
+
+  private queueLifecycleWork(enabled: boolean) {
+    const self = this.sceneRef;
+    if (!self) return;
+
+    if (self.__lifecycleFlushScheduled) {
+      self.__pendingEnabled = enabled;
+      return;
+    }
+
+    self.__lifecycleFlushScheduled = true;
+    self.__pendingEnabled = enabled;
+
+    self.events.once('postupdate', () => {
+      self.__lifecycleFlushScheduled = false;
+      this.gridRenderer?.setEnabled(!!self.__pendingEnabled);
+    });
   }
 
   shutdown() {
