@@ -11,11 +11,11 @@ export type Cell = {
 
 export type Grid = Cell[][];
 
+export type Vector = { x: number; y: number };
+
 export type Visitor = {
-  id: string;
-  // minimal for now; extend later
-  x: number;
-  y: number;
+  id: number;
+  position: Vector;
 };
 
 export type GameState = {
@@ -28,6 +28,9 @@ export type GameState = {
 
   grid: Grid;
   visitors: Visitor[];
+  nextVisitorId: number;
+
+  entrance: Vector;
 
   // for MVP
   staffEnabled: false;

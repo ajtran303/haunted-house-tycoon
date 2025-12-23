@@ -1,5 +1,4 @@
 import { ADMISSION_FEE } from '../../../src/core/constants';
-import { selectSnapshot } from '../../../src/runtime/snapshot';
 import { useGameStore } from '../../../src/runtime/store';
 
 describe('Admission spend event', () => {
@@ -8,13 +7,19 @@ describe('Admission spend event', () => {
   });
 
   it('charges admission when a visitor enters', () => {
-    const before = selectSnapshot(useGameStore.getState());
+    useGameStore.getState().startRun();
+
+    const beforeMoney = useGameStore.getState().money;
+    const beforeVisitors = useGameStore.getState().visitors.length;
+    const beforeNextId = useGameStore.getState().nextVisitorId;
 
     useGameStore.getState().spawnVisitorAtEntrance();
 
     const after = useGameStore.getState();
-    expect(after.visitors.length).toBe(before.visitors.length + 1);
-    expect(after.money).toBe(before.money + ADMISSION_FEE);
+
+    expect(after.visitors.length).toBe(beforeVisitors + 1);
+    expect(after.money).toBe(beforeMoney + ADMISSION_FEE);
+    expect(after.nextVisitorId).toBe(beforeNextId + 1);
   });
 
   it('tickOnce does not change money', () => {
@@ -29,14 +34,43 @@ describe('Admission spend event', () => {
   });
 
   it('does not charge admission on tickOnce', () => {
-    const s = useGameStore.getState();
+    useGameStore.getState().startRun();
 
-    s.spawnVisitorAtEntrance();
+    useGameStore.getState().spawnVisitorAtEntrance();
     const moneyAfterSpawn = useGameStore.getState().money;
 
-    s.startRun();
-    s.tickOnce();
+    useGameStore.getState().tickOnce();
 
     expect(useGameStore.getState().money).toBe(moneyAfterSpawn);
+  });
+
+  it('does not admit or charge when paused', () => {
+    // newGame() leaves lifecycle = paused
+    const beforeMoney = useGameStore.getState().money;
+    const beforeVisitors = useGameStore.getState().visitors.length;
+    const beforeNextId = useGameStore.getState().nextVisitorId;
+
+    useGameStore.getState().spawnVisitorAtEntrance();
+
+    const after = useGameStore.getState();
+
+    expect(after.money).toBe(beforeMoney);
+    expect(after.visitors.length).toBe(beforeVisitors);
+    expect(after.nextVisitorId).toBe(beforeNextId);
+    expect(after.lifecycle).toBe('paused');
+  });
+
+  it('admits + charges once when running', () => {
+    useGameStore.getState().startRun();
+
+    const beforeMoney = useGameStore.getState().money;
+    const beforeVisitors = useGameStore.getState().visitors.length;
+
+    useGameStore.getState().spawnVisitorAtEntrance();
+
+    const after = useGameStore.getState();
+
+    expect(after.visitors.length).toBe(beforeVisitors + 1);
+    expect(after.money).toBe(beforeMoney + ADMISSION_FEE);
   });
 });
