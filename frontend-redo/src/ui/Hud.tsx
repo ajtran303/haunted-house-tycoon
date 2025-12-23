@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { getTimeOfDay } from '../core/timeOfDay';
 import { useGameStore } from '../runtime/store';
 
 export const Hud = () => {
@@ -8,6 +9,8 @@ export const Hud = () => {
   const tick = useGameStore((s) => s.tick);
   const money = useGameStore((s) => s.money);
   const visitorCount = useGameStore((s) => s.visitors.length);
+  const timeOfDay = getTimeOfDay(tick);
+
   const newGame = useGameStore((s) => s.newGame);
 
   const [showBanner, setShowBanner] = useState(false);
@@ -40,6 +43,7 @@ export const Hud = () => {
 
       <div>Lifecycle: {lifecycle}</div>
       <div>Day: {day}</div>
+      <div>Time: {timeOfDay}</div>
       <div>Tick: {tick}</div>
       <div>Money: ${money}</div>
       <div>Visitors: {visitorCount}</div>
