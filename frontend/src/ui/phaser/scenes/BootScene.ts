@@ -1,6 +1,6 @@
-// src/ui/phaser/scenes/BootScene.ts
 import { useGameStore } from '../../../runtime/store';
 import { createGridRenderer } from '../render/renderGrid';
+import { createVisitorsRenderer } from '../render/visitorsRenderer';
 
 const MS_PER_TICK = 1000;
 const MAX_STEPS_PER_FRAME = 10;
@@ -12,6 +12,7 @@ export class BootScene {
 
   private unsubscribeGrid?: () => void;
   private unsubscribeLifecycle?: () => void;
+  private unsubscribeVisitors?: () => void;
 
   private gridRenderer?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,14 +21,22 @@ export class BootScene {
     setEnabled: (enabled: boolean) => void;
   };
 
-  // keep a reference to the scene so subscriptions can schedule safely
+  private visitorsRenderer?: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    draw: (visitors: any) => void;
+    destroy: () => void;
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private sceneRef: any;
 
-  // prevent spamming scheduled work
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private pendingGrid?: any;
   private pendingRebuild = false;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private pendingVisitors?: any;
+  private pendingVisitorsFlush = false;
 
   create() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,26 +46,34 @@ export class BootScene {
     self.add.text(20, 20, 'Phaser OK', { fontSize: '20px', color: '#ffffff' });
 
     const initial = useGameStore.getState();
-    this.buildRenderer(initial.grid);
 
+    // grid
+    this.buildRenderer(initial.grid);
     this.gridRenderer?.setEnabled(initial.lifecycle === 'running');
 
-    // IMPORTANT: schedule visual work onto Phaser's next frame
+    // visitors
+    this.visitorsRenderer = createVisitorsRenderer(self);
+    this.visitorsRenderer.draw(initial.visitors);
+
+    // grid subscription (your existing scheduling)
     this.unsubscribeGrid = useGameStore.subscribe(
       (s) => s.grid,
       (grid, prevGrid) => {
-        // if identity changed, we must rebuild rects (fresh grid)
         const needsRebuild = grid !== prevGrid;
         this.queueGridWork(grid, needsRebuild);
       },
     );
 
+    // lifecycle subscription (your existing scheduling)
     this.unsubscribeLifecycle = useGameStore.subscribe(
       (s) => s.lifecycle,
-      (lifecycle) => {
-        // lifecycle changes can happen in React handlers too; schedule safely
-        this.queueLifecycleWork(lifecycle === 'running');
-      },
+      (lifecycle) => this.queueLifecycleWork(lifecycle === 'running'),
+    );
+
+    // visitors subscription (schedule onto postupdate)
+    this.unsubscribeVisitors = useGameStore.subscribe(
+      (s) => s.visitors,
+      (visitors) => this.queueVisitorsWork(visitors),
     );
   }
 
@@ -78,7 +95,6 @@ export class BootScene {
     const self = this.sceneRef;
     if (!self) return;
 
-    // Run once on the next Phaser frame
     if (self.__gridFlushScheduled) return;
     self.__gridFlushScheduled = true;
 
@@ -95,7 +111,6 @@ export class BootScene {
 
       if (doRebuild) {
         this.buildRenderer(g);
-        // keep enable state consistent with store
         this.gridRenderer?.setEnabled(useGameStore.getState().lifecycle === 'running');
       } else {
         this.gridRenderer?.draw(g);
@@ -121,10 +136,32 @@ export class BootScene {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private queueVisitorsWork(visitors: any) {
+    this.pendingVisitors = visitors;
+
+    const self = this.sceneRef;
+    if (!self) return;
+
+    if (this.pendingVisitorsFlush) return;
+    this.pendingVisitorsFlush = true;
+
+    self.events.once('postupdate', () => {
+      this.pendingVisitorsFlush = false;
+      if (!this.pendingVisitors) return;
+
+      this.visitorsRenderer?.draw(this.pendingVisitors);
+      this.pendingVisitors = undefined;
+    });
+  }
+
   shutdown() {
     this.unsubscribeGrid?.();
     this.unsubscribeLifecycle?.();
+    this.unsubscribeVisitors?.();
+
     this.gridRenderer?.destroy();
+    this.visitorsRenderer?.destroy();
   }
 
   update(_time: number, delta: number) {

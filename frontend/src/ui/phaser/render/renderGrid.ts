@@ -75,11 +75,10 @@ export const createGridRenderer = (
   };
 
   const setEnabled = (enabled: boolean) => {
-    // ✅ disable clicks when paused (and also disable hand cursor)
+    // disable clicks when paused (and also disable hand cursor)
     for (const row of rects) {
       for (const r of row) {
-        r.disableInteractive();
-        if (enabled) r.setInteractive({ useHandCursor: true });
+        if (r.input) r.input.enabled = enabled;
       }
     }
   };
