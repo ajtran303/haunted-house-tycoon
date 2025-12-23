@@ -1,4 +1,5 @@
 import { useGameStore } from '../../../runtime/store';
+import { renderGrid } from '../render/renderGrid';
 
 const MS_PER_TICK = 1000;
 const MAX_STEPS_PER_FRAME = 10;
@@ -21,6 +22,8 @@ export class BootScene {
       fontSize: '20px',
       color: '#ffffff',
     });
+
+    renderGrid(self);
   }
 
   // Phase runs this every frame

@@ -7,29 +7,8 @@ import {
   START_TICK,
   STARTING_MONEY,
 } from './constants';
-import type { Cell, GameState, Grid } from './types';
-
-const makeCell = (): Cell => ({
-  type: 'floor',
-  occupied: false,
-  roomId: null,
-});
-
-const makeGrid = (): Grid => {
-  const rows: Grid = [];
-
-  for (let r = 0; r < GRID_HEIGHT; r++) {
-    const row: Cell[] = [];
-
-    for (let c = 0; c < GRID_WIDTH; c++) {
-      row.push(makeCell());
-    }
-
-    rows.push(row);
-  }
-
-  return rows;
-};
+import { createGrid } from './grid';
+import type { GameState } from './types';
 
 export const newGame = (): GameState => {
   return {
@@ -42,7 +21,8 @@ export const newGame = (): GameState => {
 
     money: STARTING_MONEY,
 
-    grid: makeGrid(),
+    grid: createGrid(GRID_WIDTH, GRID_HEIGHT),
+
     visitors: [],
     nextVisitorId: 1,
 
