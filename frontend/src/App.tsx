@@ -1,11 +1,11 @@
-import GameCanvas from './components/GameCanvas';
+import { Hud } from './ui/Hud';
+import { PhaserHost } from './ui/phaser/PhaserHost';
 
-function App() {
+export default function App() {
   return (
     <>
-      <GameCanvas />
+      <Hud />
+      <PhaserHost />
     </>
   );
 }
-
-export default App;
