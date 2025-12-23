@@ -1,4 +1,12 @@
-import { GRID_HEIGHT, GRID_WIDTH, START_DAY, START_TICK, STARTING_MONEY } from './constants';
+import {
+  ENTRANCE_X,
+  ENTRANCE_Y,
+  GRID_HEIGHT,
+  GRID_WIDTH,
+  START_DAY,
+  START_TICK,
+  STARTING_MONEY,
+} from './constants';
 import type { Cell, GameState, Grid } from './types';
 
 const makeCell = (): Cell => ({
@@ -34,6 +42,9 @@ export const newGame = (): GameState => {
 
     grid: makeGrid(),
     visitors: [],
+    nextVisitorId: 1,
+
+    entrance: { x: ENTRANCE_X, y: ENTRANCE_Y },
 
     staffEnabled: false,
   };

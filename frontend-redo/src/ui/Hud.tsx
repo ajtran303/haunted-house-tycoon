@@ -17,7 +17,7 @@ export const Hud = () => {
     setShowBanner(true);
   };
 
-  const startRun = useGameStore((s) => s.startRun);
+  const startRun = useGameStore((s) => s.startRunWithInitialVisitor);
 
   const pause = useGameStore((s) => s.pause);
 
@@ -44,12 +44,12 @@ export const Hud = () => {
         New Game
       </button>
 
-      <button className={buttonStyle} onClick={pause}>
-        Pause
-      </button>
-
       <button className={buttonStyle} onClick={startRun}>
         Start/Resume
+      </button>
+
+      <button className={buttonStyle} onClick={pause}>
+        Pause
       </button>
     </div>
   );

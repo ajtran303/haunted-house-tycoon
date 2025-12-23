@@ -1,4 +1,4 @@
-import { useGameStore } from '../../src/runtime/store';
+import { useGameStore } from '../../../src/runtime/store';
 
 describe('lifecycle actions', () => {
   beforeEach(() => {

@@ -1,5 +1,5 @@
-import { TICKS_PER_DAY } from '../../src/core/constants';
-import { applyTimeTick } from '../../src/core/time';
+import { TICKS_PER_DAY } from '../../../src/core/constants';
+import { applyTimeTick } from '../../../src/core/time';
 
 describe('applyTimeTick', () => {
   it('increments tick by 1', () => {
