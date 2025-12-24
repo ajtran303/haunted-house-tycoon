@@ -1,53 +1,136 @@
-# Haunted House Tycoon
+# Haunted House Tycoon (Frontend)
 
-Haunted House Tycoon is a management simulation focused on building and operating a haunted attraction through player-driven decisions.
+A deterministic management simulation game focused on system trustworthiness, explicit lifecycle control, and emergent failure through player decisions.
 
-The project emphasizes predictable systems, clear cause-and-effect, and simulation behavior that can be reasoned about, rather than hidden rules or opaque outcomes.
+This project prioritizes correctness and determinism over early polish or content. All outcomes are driven by transparent simulation rules rather than scripted events or hidden systems.
 
 ## Overview
 
-In Haunted House Tycoon, players design and manage a haunted house by placing rooms, guiding visitor flow, and balancing fear, happiness, and income.
+Haunted House Tycoon is a tycoon-style simulation where the player builds and manages a haunted house while time advances and visitors move through the space.
 
-The simulation is designed so that outcomes emerge from explicit rules and player actions, not from scripted events or hidden adjustments. When failure occurs, it should be understandable based on the visible state of the system.
+The core design goal is to ensure that:
 
-## Design Principles
+- All game outcomes are explainable
+- All state changes are deterministic
+- Failure emerges from systems interacting, not tutorials or safety nets
+
+There is no save/load system, onboarding tutorial, or difficulty scaling layer at this stage. The game can be started, played, and lost in a single uninterrupted session.
+
+## Core Design Principles
 
 - Deterministic simulation
-- Explicit time progression
-- Clear cause → effect relationships
-- No hidden or background state changes
-- Systems favor clarity over realism
+    - Given the same inputs, the game will always produce the same results.
+- Single source of truth
+    - All game state lives in a centralized store.
+- Tick-driven systems
+    - Time advances in discrete simulation ticks.
+- No “explanation-only” systems
+    - Every system must affect time, money, or visitors.
+- Failure is allowed
+    - The player can ignore problems and lose naturally.
 
-All core mechanics are intended to be inspectable and testable.
+## Tech Stack
 
-## Technology
+- React + TypeScript — UI and application structure
+- Vite — development and build tooling
+- Zustand — centralized game state and actions
+- Phaser — grid and visitor rendering
+- Jest — unit testing
+- Node.js — local development environment
 
-- Vite + React + TypeScript
-- Phaser for rendering
-- Zustand for state management
-- ESLint + Prettier
-- Jest for testing
+## Getting Started
+### Prerequisites
 
-The codebase is organized to keep simulation logic separate from rendering and UI concerns.
+- Node.js (18+ recommended)
+- npm
+
+### Install dependencies
+```bash
+npm install
+```
+
+### Run the game in development
+```bash
+npm run dev
+```
+
+### Run tests
+```bash
+npm test
+```
+
+### Run determinism checks
+```bash
+npm run determinism
+```
+
+## How the Game Works (High Level)
+
+- **React** renders the HUD and hosts the Phaser canvas.
+- **Phaser** renders the grid and visitors and runs a frame loop.
+- **Zustand** holds all game state and exposes actions.
+- Simulation ticks advance time and apply rules.
+- UI and rendering react to state changes; they do not own logic.
+- All meaningful state changes occur through explicit actions or during a simulation tick.
 
 ## Project Structure
-
-```
+```txt
 src/
-├── core/       # simulation logic
-├── runtime/    # lifecycle and orchestration
-├── ui/         # rendering and UI
-├── App.tsx
-└── main.tsx
+├── core/           # Pure-ish simulation rules (economy, grid, visitors, time)
+├── runtime/        # Game state, lifecycle, and actions (Zustand store)
+├── ui/
+│   ├── phaser/     # Phaser scenes, renderers, and subscriptions
+│   └── react/      # HUD and React UI components
+├── dev/            # Development and verification scripts
+└── main.tsx        # Application entry point
 
 tests/
-├── unit/
-├── integration/
-└── helpers/
+└── unit/
+    └── runtime/   # Store and lifecycle unit tests
 ```
 
-## Philosophy
+## Key Files to Read First
 
-Haunted House Tycoon is built around the idea that simulation games are more engaging when players can understand what happened and why.
+1. `src/runtime/store.ts`
+    - Defines all game state and actions.
+2. `src/ui/phaser/scenes/BootScene.ts`
+    - Drives the simulation tick loop and rendering subscriptions.
+3. `tests/unit/runtime/`
+    - Shows expected behavior for lifecycle, ticking, speed, and failure.
 
-The goal is to create a system where success and failure feel earned, predictable, and debuggable through the game’s own mechanics.
+## Contributing
+
+1. Identify what state changes (money, time, visitors, grid).
+2. Add or extend core logic in src/core if it’s a rule.
+3. Wire behavior through store actions in runtime/store.ts.
+4. Update rendering or UI as needed.
+5. Add or update unit tests.
+6. Run determinism checks if simulation behavior changed.
+
+As a rule:
+
+- Rendering should never be the source of truth.
+- Simulation logic should be testable without Phaser.
+
+## Current Limitations
+
+- No save/load system
+- No tutorial or onboarding flow
+- No accessibility or input rebinding layer
+- Balance and content are intentionally minimal
+
+These are deliberate omissions during the current development phase.
+
+## Project Status
+
+This project is in active development and is currently focused on:
+
+- Simulation correctness
+- Explicit lifecycle handling
+- Safe restarts
+- Deterministic behavior across speeds
+- Content expansion and polish are deferred until system trustworthiness is proven.
+
+## License
+
+MIT License
