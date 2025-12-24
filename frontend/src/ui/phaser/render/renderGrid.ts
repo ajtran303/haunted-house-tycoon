@@ -12,6 +12,7 @@ type GridRenderer = {
 
 const COLOR_EMPTY = 0x222222;
 const COLOR_ENTRY = 0x2ecc71;
+const COLOR_EXIT = 0xf417e3;
 const COLOR_HALLWAY = 0x95a5a6;
 const COLOR_SCARE = 0x9b59b6;
 const COLOR_PARK_ENTRY = 0x0000ff;
@@ -23,6 +24,8 @@ const fillForCell = (cell: Cell) => {
   switch (cell.roomType) {
     case 'entry':
       return COLOR_ENTRY;
+    case 'exit':
+      return COLOR_EXIT;
     case 'hallway':
       return COLOR_HALLWAY;
     case 'scare':
