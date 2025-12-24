@@ -113,6 +113,40 @@ As a rule:
 - Rendering should never be the source of truth.
 - Simulation logic should be testable without Phaser.
 
+### Feature Dev Tips
+
+If a ticket says “add a new ability/system,” you’ll usually:
+
+1. add state to GameState (in src/core/types)
+2. add an action here
+3. call that action from UI or from inside tickOnce
+4. add tests (can be done first or last)
+
+If you add a new room type with special behavior, it likely needs:
+
+1. placement validation rules in src/core/placement
+2. simulation effects in src/core/visitors/* or tickOnce
+3. rendering behavior in Phaser
+4. and possibly special store fields (like entrance/exit)
+
+### Adding Features (example)
+> “Add a ‘Staff’ system that increases visitor fear but costs upkeep”
+
+1. Add state
+    - Add fields in GameState (in src/core/types), e.g. staffCount, staffWagesPerTick
+2. Add actions
+    - Add hireStaff() / fireStaff() actions in store.ts (guarded by lifecycle as needed)
+3. Hook into the tick
+    - In tickOnce, after upkeep (or before), subtract wages
+    - Or modify emotion decay / emotional exit thresholds using staffCount
+4. Render & UI
+    - Add HUD display + buttons
+    - Keep rules in core/store, not UI
+5. Test
+    - Add unit tests that assert:
+        - wages reduce money per tick
+        - staff affects emotional exits or fear gain deterministically
+
 ## Current Limitations
 
 - No save/load system
