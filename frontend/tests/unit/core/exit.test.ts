@@ -11,6 +11,7 @@ const V = (id: number, x: number, y: number, prevPos: Vector | null = null): Vis
   happiness: VISITOR_START_HAPPINESS,
   intent: 'explore',
   spawnTick: 0,
+  exploreStartTick: 0,
 });
 
 describe('validateExitPlacement', () => {

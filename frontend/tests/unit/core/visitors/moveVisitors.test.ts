@@ -21,6 +21,7 @@ const V = (id: number, x: number, y: number): Visitor => ({
   happiness: VISITOR_START_HAPPINESS,
   intent: 'explore',
   spawnTick: 0,
+  exploreStartTick: 0,
 });
 
 const stepMock = randomWalkStep as unknown as jest.Mock<
@@ -48,7 +49,7 @@ describe('moveVisitors', () => {
     stepMock.mockImplementation(({ pos }) => pos); // everyone stays
 
     const grid = createGrid(5, 5);
-    moveVisitors(visitors, 5, 5, grid, 7);
+    moveVisitors(visitors, 5, 5, grid, 7, null);
 
     expect(stepMock).toHaveBeenCalledTimes(2);
 
@@ -66,7 +67,7 @@ describe('moveVisitors', () => {
     stepMock.mockImplementation(({ pos }) => ({ x: pos.x + 1, y: pos.y }));
 
     const grid = createGrid(10, 10);
-    const next = moveVisitors(visitors, 10, 10, grid, 1);
+    const next = moveVisitors(visitors, 10, 10, grid, 1, null);
 
     expect(next.map((v) => v.id)).toEqual([10, 3, 7]); // same order
     expect(next.find((v) => v.id === 10)!.position).toEqual({ x: 1, y: 0 });
@@ -87,7 +88,7 @@ describe('moveVisitors', () => {
     });
 
     const grid = createGrid(5, 5);
-    const next = moveVisitors(visitors, 5, 5, grid, 1);
+    const next = moveVisitors(visitors, 5, 5, grid, 1, null);
 
     expect(next.find((v) => v.id === 1)!.position).toEqual({ x: 1, y: 0 });
     expect(next.find((v) => v.id === 2)!.position).toEqual({ x: 2, y: 0 });
@@ -109,7 +110,7 @@ describe('moveVisitors', () => {
     });
 
     const grid = createGrid(5, 5);
-    const next = moveVisitors(visitors, 5, 5, grid, 1);
+    const next = moveVisitors(visitors, 5, 5, grid, 1, null);
 
     // id=1 should win the tile, regardless of input order
     expect(next.find((v) => v.id === 1)!.position).toEqual({ x: 1, y: 0 });
@@ -126,7 +127,7 @@ describe('moveVisitors', () => {
     });
 
     const grid = createGrid(5, 5);
-    const next = moveVisitors(visitors, 5, 5, grid, 1);
+    const next = moveVisitors(visitors, 5, 5, grid, 1, null);
     expect(next[0].position).toEqual({ x: 0, y: 0 });
   });
 
@@ -141,8 +142,8 @@ describe('moveVisitors', () => {
     });
 
     const grid = createGrid(10, 10);
-    const a = moveVisitors(visitors, 10, 10, grid, 7);
-    const b = moveVisitors(visitors, 10, 10, grid, 7);
+    const a = moveVisitors(visitors, 10, 10, grid, 7, null);
+    const b = moveVisitors(visitors, 10, 10, grid, 7, null);
 
     expect(a).toEqual(b);
   });
@@ -156,8 +157,8 @@ describe('moveVisitors', () => {
     });
 
     const grid = createGrid(10, 10);
-    const t7 = moveVisitors(visitors, 10, 10, grid, 7);
-    const t8 = moveVisitors(visitors, 10, 10, grid, 8);
+    const t7 = moveVisitors(visitors, 10, 10, grid, 7, null);
+    const t8 = moveVisitors(visitors, 10, 10, grid, 8, null);
 
     expect(t7).not.toEqual(t8);
   });

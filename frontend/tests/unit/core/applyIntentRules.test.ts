@@ -16,7 +16,7 @@ const v = (overrides: Partial<Visitor> = {}): Visitor =>
   }) as Visitor;
 
 describe('applyIntentRules', () => {
-  it('does nothing when no exit exists', () => {
+  it('does nothing when no park exit exists', () => {
     const visitors = [
       v({ id: 1, spawnTick: 0, intent: 'explore' }),
       v({ id: 2, spawnTick: 0, intent: 'exit' }),
@@ -36,7 +36,7 @@ describe('applyIntentRules', () => {
     expect(actual[0].intent).toBe('explore');
   });
 
-  it('switches explore -> exit at threshold when exit exists', () => {
+  it('switches explore -> exit at threshold when park exit exists', () => {
     const visitors = [v({ spawnTick: 10, intent: 'explore' })];
     const tick = 10 + DEFAULT_EXPLORE_TICKS_BEFORE_EXIT;
 
