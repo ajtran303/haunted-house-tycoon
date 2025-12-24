@@ -1,5 +1,5 @@
 import { createGrid } from '../../../../src/core/grid';
-import type { Grid, Visitor } from '../../../../src/core/types';
+import type { Visitor } from '../../../../src/core/types';
 
 // IMPORTANT: mock the stepper so we can force collisions and make expectations exact.
 jest.mock('../../../../src/core/visitors/randomWalkStep', () => ({

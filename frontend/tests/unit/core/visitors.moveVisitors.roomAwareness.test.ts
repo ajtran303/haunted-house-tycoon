@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { createGrid } from '../../../src/core/grid';
 import type { Grid, Visitor } from '../../../src/core/types';
 import { moveVisitors } from '../../../src/core/visitors/moveVisitors';
