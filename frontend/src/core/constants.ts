@@ -57,3 +57,14 @@ export const HAPPY_SPEND_BOOST_START = 60; // happiness above this boosts spend
 export const UNHAPPY_SPEND_STOP = 10; // happiness at/below this stops spend
 export const HAPPINESS_MISERY_THRESHOLD = 5; // happiness below this triggers exit
 export const MAX_HAPPY_BONUS_PER_TICK = 6; // at happiness 100 (or your max)
+
+export const BASE_UPKEEP_PER_TICK = 0;
+
+export const ROOM_UPKEEP_PER_TICK: Partial<Record<RoomType, number>> = {
+  entry: 0,
+  hallway: 1,
+  scare: 2,
+  exit: 0,
+  parkEntry: 0,
+  parkExit: 0,
+};
