@@ -8,6 +8,7 @@ import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
+import { applyIntentRules } from '../core/visitors/applyIntentRules';
 import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness } from '../core/visitors/emotions';
@@ -98,19 +99,24 @@ export const useGameStore = create(
             inAttraction: false,
             fear: VISITOR_START_FEAR,
             happiness: VISITOR_START_HAPPINESS,
+            intent: 'explore',
+            spawnTick: 0,
           };
           visitors = [...visitors, v];
           nextVisitorId += 1;
           money += ADMISSION_FEE;
         }
 
-        // movement (move everyone currently in `visitors`, including newly spawned)
+        // set intent rules
+        const withIntent = applyIntentRules(visitors, nextTick, s.exit);
+
+        // movement (move everyone currently on the grid, including newly spawned)
         const gridH = s.grid.length;
         const gridW = s.grid[0]?.length ?? 0;
 
         const moved =
           gridW > 0 && gridH > 0
-            ? moveVisitors(visitors, gridW, gridH, s.grid, nextTick)
+            ? moveVisitors(withIntent, gridW, gridH, s.grid, nextTick)
             : visitors;
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
@@ -180,6 +186,8 @@ export const useGameStore = create(
         inAttraction: false,
         fear: VISITOR_START_FEAR,
         happiness: VISITOR_START_HAPPINESS,
+        intent: 'explore',
+        spawnTick: 0,
       };
 
       set({

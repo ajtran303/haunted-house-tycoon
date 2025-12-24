@@ -14,6 +14,8 @@ const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   inAttraction: false,
   fear: 0,
   happiness: 50,
+  intent: 'explore',
+  spawnTick: 0,
   ...overrides,
 });
 

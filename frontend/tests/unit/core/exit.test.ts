@@ -9,6 +9,8 @@ const V = (id: number, x: number, y: number, prevPos: Vector | null = null): Vis
   inAttraction: false,
   fear: VISITOR_START_FEAR,
   happiness: VISITOR_START_HAPPINESS,
+  intent: 'explore',
+  spawnTick: 0,
 });
 
 describe('validateExitPlacement', () => {

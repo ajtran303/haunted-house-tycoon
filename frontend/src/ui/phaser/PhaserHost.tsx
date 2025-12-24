@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 import { createGame } from './createGame';
 
 // React component whose sole responsibility is to host Phaser inside React
-export function PhaserHost() {
+export const PhaserHost = () => {
   // Ref to the DOM element that Phaser will mount its <canvas> into
   // This ref persists across renders without causing re-renders
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -71,4 +71,4 @@ export function PhaserHost() {
   // Render a single div that serves as the mounting point for Phaser
   // Phaser will inject its <canvas> element inside this container
   return <div data-testid="phaser-root" ref={containerRef} />;
-}
+};
