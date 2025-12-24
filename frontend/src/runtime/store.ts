@@ -9,7 +9,7 @@ import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
 import { applyRoomEmotionEffectsOnEntry } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
-import { decayHappinessForVisitors } from '../core/visitors/emotions';
+import { decayHappiness } from '../core/visitors/emotions';
 import { moveVisitors } from '../core/visitors/moveVisitors';
 import { totalSpendingPerTick } from '../core/visitors/spending';
 import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
@@ -81,8 +81,8 @@ export const useGameStore = create(
         const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
         const nextTick = nextTime.tick;
 
-        // capture how many visitors existed BEFORE this tick (for spending rule)
-        const visitorsBefore = s.visitors.length;
+        // get for calculating spending and decay later
+        const existingIds = new Set(s.visitors.map((v) => v.id));
 
         // optionally spawn visitor for THIS tick (and charge admission)
         let visitors = s.visitors;
@@ -116,10 +116,7 @@ export const useGameStore = create(
         const withRoomEffects = applyRoomEmotionEffectsOnEntry(moved, s.grid);
 
         // Decay happiness
-        const decayed = [
-          ...decayHappinessForVisitors(withRoomEffects.slice(0, visitorsBefore)),
-          ...withRoomEffects.slice(visitorsBefore),
-        ];
+        const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));
 
         // Emotional exits
         const exitResult = removeVisitorsByEmotionalExit(decayed, nextTick, s.nextExitEventId);
@@ -129,7 +126,8 @@ export const useGameStore = create(
         const nextExitEventId = exitResult.nextEventId;
 
         // spending
-        money += totalSpendingPerTick(afterEmotionalExit.slice(0, visitorsBefore));
+        const spenders = afterEmotionalExit.filter((v) => existingIds.has(v.id));
+        money += totalSpendingPerTick(spenders);
 
         // despawn visitors that reach the exit
         const exit = s.exit;
