@@ -8,10 +8,7 @@ const getRoomTypeAt = (grid: Grid, v: Visitor) => {
   return cell?.roomType ?? null;
 };
 
-export const applyRoomEmotionEffectsOnEntry = (
-  visitors: readonly Visitor[],
-  grid: Grid,
-): Visitor[] => {
+export const applyRoomEmotionEffectsOnEntry = (visitors: Visitor[], grid: Grid): Visitor[] => {
   return visitors.map((v) => {
     // Trigger only when entering a new tile
     const entered =

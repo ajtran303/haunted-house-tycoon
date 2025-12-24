@@ -119,7 +119,7 @@ export const useGameStore = create(
         // Decay happiness
         const decayed = [
           ...decayHappinessForVisitors(withRoomEffects.slice(0, visitorsBefore)),
-          ...moved.slice(visitorsBefore),
+          ...withRoomEffects.slice(visitorsBefore),
         ];
 
         // 5) despawn visitors that reach the exit

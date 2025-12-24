@@ -45,3 +45,14 @@ export const EMOTION_BOUNDS = {
 export const VISITOR_START_FEAR = 0;
 export const VISITOR_START_HAPPINESS = 60;
 export const HAPPINESS_DECAY_PER_TICK = 1; // tunable
+
+export const BASE_SPEND_PER_TICK = 1;
+
+export const FEAR_SPEND_BOOST_START = 20; // fear below this gives no bonus
+export const FEAR_SPEND_BOOST_CAP = 80; // fear at/above this gives max bonus (but below panic)
+export const FEAR_PANIC_THRESHOLD = 90; // fear at/above this stops spend
+export const MAX_FEAR_BONUS_PER_TICK = 4; // at FEAR_SPEND_BOOST_CAP
+
+export const HAPPY_SPEND_BOOST_START = 60; // happiness above this boosts spend
+export const UNHAPPY_SPEND_STOP = 10; // happiness at/below this stops spend
+export const MAX_HAPPY_BONUS_PER_TICK = 6; // at happiness 100 (or your max)
