@@ -112,8 +112,12 @@ export const useGameStore = create(
             ? moveVisitors(visitors, gridW, gridH, s.grid, nextTick)
             : visitors;
 
+        // Apply room effects (on entry) to everyone (including newly spawned if they moved)
+        const withRoomEffects = applyRoomEmotionEffectsOnEntry(moved, s.grid);
+
+        // Decay happiness
         const decayed = [
-          ...decayHappinessForVisitors(moved.slice(0, visitorsBefore)),
+          ...decayHappinessForVisitors(withRoomEffects.slice(0, visitorsBefore)),
           ...moved.slice(visitorsBefore),
         ];
 
