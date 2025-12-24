@@ -19,6 +19,8 @@ export type Visitor = {
   position: Vector;
   prevPos: Vector | null;
   inAttraction: boolean;
+  fear: number;
+  happiness: number;
 };
 
 export type GameSpeed = 1 | 4;

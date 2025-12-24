@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { ADMISSION_FEE, MONEY_PER_VISITOR_PER_TICK, ROOM_COST } from '../core/constants';
+import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
@@ -90,6 +91,8 @@ export const useGameStore = create(
             position: s.entrance,
             prevPos: null,
             inAttraction: false,
+            fear: VISITOR_START_FEAR,
+            happiness: VISITOR_START_HAPPINESS,
           };
           visitors = [...visitors, v];
           nextVisitorId += 1;
@@ -130,7 +133,14 @@ export const useGameStore = create(
       if (s.lifecycle !== 'running' || !s.entrance) return;
 
       const id = s.nextVisitorId;
-      const visitor: Visitor = { id, position: s.entrance, prevPos: null, inAttraction: false };
+      const visitor: Visitor = {
+        id,
+        position: s.entrance,
+        prevPos: null,
+        inAttraction: false,
+        fear: VISITOR_START_FEAR,
+        happiness: VISITOR_START_HAPPINESS,
+      };
 
       set({
         visitors: [...s.visitors, visitor],

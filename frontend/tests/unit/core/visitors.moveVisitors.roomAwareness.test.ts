@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../../../src/core/constants';
 import { createGrid } from '../../../src/core/grid';
 import type { Grid, Visitor } from '../../../src/core/types';
 import { moveVisitors } from '../../../src/core/visitors/moveVisitors';
@@ -23,7 +24,14 @@ describe('moveVisitors - attraction gating', () => {
   it('outside visitors treat hallway/scare as blocked by isWalkable', () => {
     const grid = createGrid(3, 3);
 
-    const v: Visitor = { id: 1, position: { x: 1, y: 1 }, prevPos: null, inAttraction: false };
+    const v: Visitor = {
+      id: 1,
+      position: { x: 1, y: 1 },
+      prevPos: null,
+      inAttraction: false,
+      fear: VISITOR_START_FEAR,
+      happiness: VISITOR_START_HAPPINESS,
+    };
 
     // Right is hallway
     setCell(grid, 2, 1, {
@@ -48,7 +56,14 @@ describe('moveVisitors - attraction gating', () => {
   it('outside visitors can step onto entry and become inAttraction=true', () => {
     const grid = createGrid(3, 3);
 
-    const v: Visitor = { id: 2, position: { x: 1, y: 1 }, prevPos: null, inAttraction: false };
+    const v: Visitor = {
+      id: 2,
+      position: { x: 1, y: 1 },
+      prevPos: null,
+      inAttraction: false,
+      fear: VISITOR_START_FEAR,
+      happiness: VISITOR_START_HAPPINESS,
+    };
 
     // Make entry the only walkable neighbor (in real movement).
     setCell(grid, 1, 0, { type: 'empty' });
@@ -72,7 +87,14 @@ describe('moveVisitors - attraction gating', () => {
     const grid = createGrid(5, 5);
 
     // Visitor already inside and currently on entry tile.
-    const v: Visitor = { id: 3, position: { x: 2, y: 2 }, prevPos: null, inAttraction: true };
+    const v: Visitor = {
+      id: 3,
+      position: { x: 2, y: 2 },
+      prevPos: null,
+      inAttraction: true,
+      fear: VISITOR_START_FEAR,
+      happiness: VISITOR_START_HAPPINESS,
+    };
     setCell(grid, 2, 2, { type: 'floor', occupied: true, roomType: 'entry', roomId: 'entry-0' });
 
     // Block other neighbors so only one "good" candidate exists.

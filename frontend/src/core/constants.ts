@@ -27,3 +27,20 @@ export const ROOM_COST: Record<RoomType, number> = {
 
 export const TICKS_PER_VISITOR_SPAWN = 5;
 export const MONEY_PER_VISITOR_PER_TICK = 5; // for testing
+
+export const EMOTION_MIN = 0;
+export const EMOTION_MAX = 100;
+
+export const EMOTION_BOUNDS = {
+  fear: {
+    min: 0,
+    max: 100,
+  },
+  happiness: {
+    min: 0,
+    max: 100,
+  },
+} as const;
+
+export const VISITOR_START_FEAR = 0;
+export const VISITOR_START_HAPPINESS = 60;
