@@ -7,6 +7,7 @@ import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
+import { applyRoomEmotionEffectsOnEntry } from '../core/visitors/applyRoomEmotionEffects';
 import { decayHappinessForVisitors } from '../core/visitors/emotions';
 import { moveVisitors } from '../core/visitors/moveVisitors';
 import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
