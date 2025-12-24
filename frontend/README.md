@@ -1,9 +1,35 @@
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+
+- [Haunted House Tycoon (Frontend)](#haunted-house-tycoon-frontend)
+   * [Overview](#overview)
+   * [Core Design Principles](#core-design-principles)
+   * [Tech Stack](#tech-stack)
+   * [Getting Started](#getting-started)
+      + [Prerequisites](#prerequisites)
+      + [Install dependencies](#install-dependencies)
+      + [Run the game in development](#run-the-game-in-development)
+      + [Run tests](#run-tests)
+      + [Run determinism checks](#run-determinism-checks)
+   * [How the Game Works (High Level)](#how-the-game-works-high-level)
+   * [Project Structure](#project-structure)
+   * [Key Files to Read First](#key-files-to-read-first)
+   * [Contributing](#contributing)
+      + [Feature Dev Tips](#feature-dev-tips)
+      + [Adding Features (example)](#adding-features-example)
+   * [Current Limitations](#current-limitations)
+   * [Project Status](#project-status)
+   * [License](#license)
+
+<!-- TOC end -->
+
+<!-- TOC --><a name="haunted-house-tycoon-frontend"></a>
 # Haunted House Tycoon (Frontend)
 
 A deterministic management simulation game focused on system trustworthiness, explicit lifecycle control, and emergent failure through player decisions.
 
 This project prioritizes correctness and determinism over early polish or content. All outcomes are driven by transparent simulation rules rather than scripted events or hidden systems.
 
+<!-- TOC --><a name="overview"></a>
 ## Overview
 
 Haunted House Tycoon is a tycoon-style simulation where the player builds and manages a haunted house while time advances and visitors move through the space.
@@ -16,6 +42,7 @@ The core design goal is to ensure that:
 
 There is no save/load system, onboarding tutorial, or difficulty scaling layer at this stage. The game can be started, played, and lost in a single uninterrupted session.
 
+<!-- TOC --><a name="core-design-principles"></a>
 ## Core Design Principles
 
 - Deterministic simulation
@@ -29,6 +56,7 @@ There is no save/load system, onboarding tutorial, or difficulty scaling layer a
 - Failure is allowed
     - The player can ignore problems and lose naturally.
 
+<!-- TOC --><a name="tech-stack"></a>
 ## Tech Stack
 
 - React + TypeScript — UI and application structure
@@ -38,32 +66,39 @@ There is no save/load system, onboarding tutorial, or difficulty scaling layer a
 - Jest — unit testing
 - Node.js — local development environment
 
+<!-- TOC --><a name="getting-started"></a>
 ## Getting Started
+<!-- TOC --><a name="prerequisites"></a>
 ### Prerequisites
 
 - Node.js (18+ recommended)
 - npm
 
+<!-- TOC --><a name="install-dependencies"></a>
 ### Install dependencies
 ```bash
 npm install
 ```
 
+<!-- TOC --><a name="run-the-game-in-development"></a>
 ### Run the game in development
 ```bash
 npm run dev
 ```
 
+<!-- TOC --><a name="run-tests"></a>
 ### Run tests
 ```bash
 npm test
 ```
 
+<!-- TOC --><a name="run-determinism-checks"></a>
 ### Run determinism checks
 ```bash
 npm run determinism
 ```
 
+<!-- TOC --><a name="how-the-game-works-high-level"></a>
 ## How the Game Works (High Level)
 
 - **React** renders the HUD and hosts the Phaser canvas.
@@ -73,6 +108,7 @@ npm run determinism
 - UI and rendering react to state changes; they do not own logic.
 - All meaningful state changes occur through explicit actions or during a simulation tick.
 
+<!-- TOC --><a name="project-structure"></a>
 ## Project Structure
 ```txt
 src/
@@ -90,6 +126,7 @@ tests/
     └── runtime/   # Store and lifecycle unit tests
 ```
 
+<!-- TOC --><a name="key-files-to-read-first"></a>
 ## Key Files to Read First
 
 1. `src/runtime/store.ts`
@@ -99,6 +136,7 @@ tests/
 3. `tests/unit/runtime/`
     - Shows expected behavior for lifecycle, ticking, speed, and failure.
 
+<!-- TOC --><a name="contributing"></a>
 ## Contributing
 
 1. Identify what state changes (money, time, visitors, grid).
@@ -113,6 +151,7 @@ As a rule:
 - Rendering should never be the source of truth.
 - Simulation logic should be testable without Phaser.
 
+<!-- TOC --><a name="feature-dev-tips"></a>
 ### Feature Dev Tips
 
 If a ticket says “add a new ability/system,” you’ll usually:
@@ -129,6 +168,7 @@ If you add a new room type with special behavior, it likely needs:
 3. rendering behavior in Phaser
 4. and possibly special store fields (like entrance/exit)
 
+<!-- TOC --><a name="adding-features-example"></a>
 ### Adding Features (example)
 > “Add a ‘Staff’ system that increases visitor fear but costs upkeep”
 
@@ -147,6 +187,7 @@ If you add a new room type with special behavior, it likely needs:
         - wages reduce money per tick
         - staff affects emotional exits or fear gain deterministically
 
+<!-- TOC --><a name="current-limitations"></a>
 ## Current Limitations
 
 - No save/load system
@@ -156,6 +197,7 @@ If you add a new room type with special behavior, it likely needs:
 
 These are deliberate omissions during the current development phase.
 
+<!-- TOC --><a name="project-status"></a>
 ## Project Status
 
 This project is in active development and is currently focused on:
@@ -166,6 +208,7 @@ This project is in active development and is currently focused on:
 - Deterministic behavior across speeds
 - Content expansion and polish are deferred until system trustworthiness is proven.
 
+<!-- TOC --><a name="license"></a>
 ## License
 
 MIT License
