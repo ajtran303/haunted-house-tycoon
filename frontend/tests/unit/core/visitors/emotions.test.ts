@@ -1,6 +1,11 @@
-import { EMOTION_BOUNDS } from '../../../../src/core/constants';
+import { EMOTION_BOUNDS, HAPPINESS_DECAY_PER_TICK } from '../../../../src/core/constants';
 import type { Visitor } from '../../../../src/core/types';
-import { applyEmotionDelta, clampEmotion } from '../../../../src/core/visitors/emotions';
+import {
+  applyEmotionDelta,
+  clampEmotion,
+  decayHappiness,
+  decayHappinessForVisitors,
+} from '../../../../src/core/visitors/emotions';
 
 const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   id: 1,
@@ -113,5 +118,40 @@ describe('applyEmotionDelta', () => {
     expect(next.position).toEqual({ x: 3, y: 4 });
     expect(next.prevPos).toEqual({ x: 2, y: 4 });
     expect(next.inAttraction).toBe(true);
+  });
+});
+
+describe('happiness decay', () => {
+  it('decays happiness by the default constant per tick', () => {
+    const v = makeVisitor({ happiness: 50 });
+    const next = decayHappiness(v);
+    expect(next.happiness).toBe(50 - HAPPINESS_DECAY_PER_TICK);
+  });
+
+  it('applies to every visitor (regardless of zone fields)', () => {
+    const a = makeVisitor({ id: 1, inAttraction: false, happiness: 10 });
+    const b = makeVisitor({ id: 2, inAttraction: true, happiness: 10 });
+    const next = decayHappinessForVisitors([a, b]);
+    expect(next[0].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
+    expect(next[1].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
+  });
+
+  it('is tunable (supports overriding decay amount)', () => {
+    const v = makeVisitor({ happiness: 10 });
+    expect(decayHappiness(v, 3).happiness).toBe(7);
+    expect(decayHappinessForVisitors([v], 5)[0].happiness).toBe(5);
+  });
+
+  it('cannot reduce happiness below the minimum clamp', () => {
+    const v = makeVisitor({ happiness: EMOTION_BOUNDS.happiness.min });
+    const next = decayHappiness(v, 999);
+    expect(next.happiness).toBe(EMOTION_BOUNDS.happiness.min);
+  });
+
+  it('does not mutate the input visitor', () => {
+    const v = makeVisitor({ happiness: 10 });
+    const next = decayHappiness(v, 1);
+    expect(next).not.toBe(v);
+    expect(v.happiness).toBe(10);
   });
 });
