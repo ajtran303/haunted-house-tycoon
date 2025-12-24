@@ -1,4 +1,4 @@
-import { EMOTION_BOUNDS } from '../constants';
+import { EMOTION_BOUNDS, HAPPINESS_DECAY_PER_TICK } from '../constants';
 import type { Visitor } from '../types';
 
 export type Emotion = 'fear' | 'happiness';
@@ -18,3 +18,14 @@ export const applyEmotionDelta = (v: Visitor, delta: EmotionDelta): Visitor => (
   fear: clampEmotion('fear', v.fear + (delta.fear ?? 0)),
   happiness: clampEmotion('happiness', v.happiness + (delta.happiness ?? 0)),
 });
+
+export const decayHappiness = (v: Visitor, amount = HAPPINESS_DECAY_PER_TICK): Visitor => {
+  const nextHappiness = clampEmotion('happiness', v.happiness - amount);
+
+  return nextHappiness === v.happiness ? v : { ...v, happiness: nextHappiness };
+};
+
+export const decayHappinessForVisitors = (
+  visitors: Visitor[],
+  amount = HAPPINESS_DECAY_PER_TICK,
+): Visitor[] => visitors.map((v) => decayHappiness(v, amount));

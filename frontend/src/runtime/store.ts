@@ -7,6 +7,7 @@ import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
+import { decayHappinessForVisitors } from '../core/visitors/emotions';
 import { moveVisitors } from '../core/visitors/moveVisitors';
 import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
 
@@ -111,12 +112,17 @@ export const useGameStore = create(
             ? moveVisitors(visitors, gridW, gridH, s.grid, nextTick)
             : visitors;
 
+        const decayed = [
+          ...decayHappinessForVisitors(moved.slice(0, visitorsBefore)),
+          ...moved.slice(visitorsBefore),
+        ];
+
         // 5) despawn visitors that reach the exit
         const exit = s.exit;
         const afterDespawn =
           exit == null
-            ? moved
-            : moved.filter((v) => !(v.position.x === exit.x && v.position.y === exit.y));
+            ? decayed
+            : decayed.filter((v) => !(v.position.x === exit.x && v.position.y === exit.y));
 
         return {
           ...s,

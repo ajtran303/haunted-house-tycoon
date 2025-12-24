@@ -44,3 +44,4 @@ export const EMOTION_BOUNDS = {
 
 export const VISITOR_START_FEAR = 0;
 export const VISITOR_START_HAPPINESS = 60;
+export const HAPPINESS_DECAY_PER_TICK = 1; // tunable
