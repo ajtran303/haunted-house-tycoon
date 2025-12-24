@@ -31,5 +31,5 @@ export const spendingPerTick = (v: Visitor): number => {
   return BASE_SPEND_PER_TICK + fearBonus + happyBonus;
 };
 
-export const totalSpendingPerTick = (visitors: readonly Visitor[]): number =>
+export const totalSpendingPerTick = (visitors: Visitor[]): number =>
   visitors.reduce((sum, v) => sum + spendingPerTick(v), 0);

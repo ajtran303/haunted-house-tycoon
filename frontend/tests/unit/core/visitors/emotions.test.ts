@@ -128,9 +128,9 @@ describe('happiness decay', () => {
     expect(next.happiness).toBe(50 - HAPPINESS_DECAY_PER_TICK);
   });
 
-  it('applies to every visitor (regardless of zone fields)', () => {
+  it('applies to every visitor not inAttraction', () => {
     const a = makeVisitor({ id: 1, inAttraction: false, happiness: 10 });
-    const b = makeVisitor({ id: 2, inAttraction: true, happiness: 10 });
+    const b = makeVisitor({ id: 2, inAttraction: false, happiness: 10 });
     const next = decayHappinessForVisitors([a, b]);
     expect(next[0].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
     expect(next[1].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
@@ -153,5 +153,15 @@ describe('happiness decay', () => {
     const next = decayHappiness(v, 1);
     expect(next).not.toBe(v);
     expect(v.happiness).toBe(10);
+  });
+
+  it('does not decay happiness while a visitor is in an attraction', () => {
+    const a = makeVisitor({ id: 1, inAttraction: false, happiness: 10 });
+    const b = makeVisitor({ id: 2, inAttraction: true, happiness: 10 });
+
+    const next = decayHappinessForVisitors([a, b]);
+
+    expect(next[0].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
+    expect(next[1].happiness).toBe(10); // unchanged
   });
 });

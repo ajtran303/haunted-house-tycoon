@@ -25,5 +25,8 @@ export const newGame = (): GameState => {
     selectedRoomType: 'parkEntry',
 
     staffEnabled: false,
+
+    exitEvents: [],
+    nextExitEventId: 1,
   };
 };

@@ -1,15 +1,17 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { ADMISSION_FEE, MONEY_PER_VISITOR_PER_TICK, ROOM_COST } from '../core/constants';
+import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
 import { applyRoomEmotionEffectsOnEntry } from '../core/visitors/applyRoomEmotionEffects';
-import { decayHappinessForVisitors } from '../core/visitors/emotions';
+import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
+import { decayHappiness } from '../core/visitors/emotions';
 import { moveVisitors } from '../core/visitors/moveVisitors';
+import { totalSpendingPerTick } from '../core/visitors/spending';
 import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
 
 type Input =
@@ -75,14 +77,14 @@ export const useGameStore = create(
       set((s) => {
         if (s.lifecycle !== 'running') return s;
 
-        // 1) advance time first
+        // advance time first
         const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
         const nextTick = nextTime.tick;
 
-        // capture how many visitors existed BEFORE this tick (for spending rule)
-        const visitorsBefore = s.visitors.length;
+        // get for calculating spending and decay later
+        const existingIds = new Set(s.visitors.map((v) => v.id));
 
-        // 2) optionally spawn visitor for THIS tick (and charge admission)
+        // optionally spawn visitor for THIS tick (and charge admission)
         let visitors = s.visitors;
         let nextVisitorId = s.nextVisitorId;
         let money = s.money;
@@ -101,10 +103,7 @@ export const useGameStore = create(
           money += ADMISSION_FEE;
         }
 
-        // 3) spending: only visitors that existed BEFORE this tick
-        money += visitorsBefore * MONEY_PER_VISITOR_PER_TICK;
-
-        // 4) movement (move everyone currently in `visitors`, including newly spawned)
+        // movement (move everyone currently in `visitors`, including newly spawned)
         const gridH = s.grid.length;
         const gridW = s.grid[0]?.length ?? 0;
 
@@ -117,17 +116,27 @@ export const useGameStore = create(
         const withRoomEffects = applyRoomEmotionEffectsOnEntry(moved, s.grid);
 
         // Decay happiness
-        const decayed = [
-          ...decayHappinessForVisitors(withRoomEffects.slice(0, visitorsBefore)),
-          ...withRoomEffects.slice(visitorsBefore),
-        ];
+        const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));
 
-        // 5) despawn visitors that reach the exit
+        // Emotional exits
+        const exitResult = removeVisitorsByEmotionalExit(decayed, nextTick, s.nextExitEventId);
+
+        const afterEmotionalExit = exitResult.remaining;
+        const exitEvents = [...s.exitEvents, ...exitResult.events].slice(-50);
+        const nextExitEventId = exitResult.nextEventId;
+
+        // spending
+        const spenders = afterEmotionalExit.filter((v) => existingIds.has(v.id));
+        money += totalSpendingPerTick(spenders);
+
+        // despawn visitors that reach the exit
         const exit = s.exit;
         const afterDespawn =
           exit == null
-            ? decayed
-            : decayed.filter((v) => !(v.position.x === exit.x && v.position.y === exit.y));
+            ? afterEmotionalExit
+            : afterEmotionalExit.filter(
+                (v) => !(v.position.x === exit.x && v.position.y === exit.y),
+              );
 
         return {
           ...s,
@@ -135,6 +144,8 @@ export const useGameStore = create(
           visitors: afterDespawn,
           nextVisitorId,
           money,
+          exitEvents,
+          nextExitEventId,
         };
       });
     },

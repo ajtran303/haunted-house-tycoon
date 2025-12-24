@@ -1,4 +1,5 @@
-import { ADMISSION_FEE, MONEY_PER_VISITOR_PER_TICK } from '../../../src/core/constants';
+import { ADMISSION_FEE } from '../../../src/core/constants';
+import { spendingPerTick } from '../../../src/core/visitors/spending';
 import { useGameStore } from '../../../src/runtime/store';
 
 describe('Spending and Admission', () => {
@@ -13,13 +14,11 @@ describe('Spending and Admission', () => {
   it('tick 1 spawns + charges admission only when entrance exists', () => {
     useGameStore.getState().startRun();
 
-    // Without entrance: no spawn, no admission
     const beforeNoEntrance = useGameStore.getState().money;
     useGameStore.getState().tickOnce(); // tick -> 1
     expect(useGameStore.getState().visitors.length).toBe(0);
     expect(useGameStore.getState().money).toBe(beforeNoEntrance);
 
-    // Reset, add entrance, then tick 1 should spawn + charge
     useGameStore.getState().newGame();
     useGameStore.getState().startRun();
     setEntrance(0, 0);
@@ -34,43 +33,54 @@ describe('Spending and Admission', () => {
     useGameStore.getState().startRun();
     setEntrance(0, 0);
 
-    // Create 1 visitor now (charges admission once)
     useGameStore.getState().spawnVisitor();
     const moneyAfterSpawn = useGameStore.getState().money;
 
-    // Move tick forward to a non-spawn tick.
-    // Easiest: set tick so nextTick is NOT a spawn tick.
-    // With TICKS_PER_VISITOR_SPAWN=5 and tick 3 -> nextTick 4 (not spawn).
-    useGameStore.setState({ tick: 3 });
+    // non-spawn tick
+    useGameStore.setState({ tick: 3 }); // nextTick=4
+    const visitorBeforeTick = useGameStore.getState().visitors[0];
 
-    useGameStore.getState().tickOnce(); // nextTick = 4 (no spawn)
+    useGameStore.getState().tickOnce();
 
-    // No new admission, but spending for the 1 existing visitor applies
+    // Spending should equal spendingPerTick of the pre-existing visitor AFTER this tick's effects.
+    // Easiest deterministic check: compute expected from the visitor *after* the tick (id stable).
+    const visitorAfterTick = useGameStore
+      .getState()
+      .visitors.find((v) => v.id === visitorBeforeTick.id)!;
+    const expectedSpend = spendingPerTick(visitorAfterTick);
+
     expect(useGameStore.getState().visitors.length).toBe(1);
-    expect(useGameStore.getState().money).toBe(moneyAfterSpawn + 1 * MONEY_PER_VISITOR_PER_TICK);
+    expect(useGameStore.getState().money).toBe(moneyAfterSpawn + expectedSpend);
   });
 
   it('spawn ticks always charge admission (example: tick 5), and spending uses visitorsBefore', () => {
     useGameStore.getState().startRun();
     setEntrance(0, 0);
 
-    // Tick 1: spawn + admission
+    // tick 1 spawn
     useGameStore.getState().tickOnce();
 
-    // Advance to tick 4
+    // advance to tick 4
     useGameStore.getState().tickOnce(); // 2
     useGameStore.getState().tickOnce(); // 3
     useGameStore.getState().tickOnce(); // 4
 
     const beforeTick5Money = useGameStore.getState().money;
-    const visitorsBeforeTick5 = useGameStore.getState().visitors.length;
+    const visitorsBeforeTick5 = useGameStore.getState().visitors.slice(); // snapshot visitors
 
-    useGameStore.getState().tickOnce(); // tick 5: spawn + admission + spending for visitorsBeforeTick5
+    useGameStore.getState().tickOnce(); // tick 5: spawn + admission + spending for existing visitors
 
-    expect(useGameStore.getState().visitors.length).toBe(visitorsBeforeTick5 + 1);
-    expect(useGameStore.getState().money).toBe(
-      beforeTick5Money + ADMISSION_FEE + visitorsBeforeTick5 * MONEY_PER_VISITOR_PER_TICK,
-    );
+    const visitorsAfterTick5 = useGameStore.getState().visitors;
+
+    // existing visitors are the ones with ids from snapshot
+    const expectedSpend = visitorsBeforeTick5.reduce((sum, oldV) => {
+      const nowV = visitorsAfterTick5.find((v) => v.id === oldV.id);
+      if (!nowV) return sum; // if it exited (later logic), it wouldn't spend
+      return sum + spendingPerTick(nowV);
+    }, 0);
+
+    expect(useGameStore.getState().visitors.length).toBe(visitorsBeforeTick5.length + 1);
+    expect(useGameStore.getState().money).toBe(beforeTick5Money + ADMISSION_FEE + expectedSpend);
   });
 
   it('no spending when paused', () => {
