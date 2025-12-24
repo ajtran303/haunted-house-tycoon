@@ -1,5 +1,6 @@
 // tests/unit/runtime/store.entranceSpawn.test.ts
-import { ADMISSION_FEE, MONEY_PER_VISITOR_PER_TICK, ROOM_COST } from '../../../src/core/constants';
+import { ADMISSION_FEE, ROOM_COST } from '../../../src/core/constants';
+import { spendingPerTick } from '../../../src/core/visitors/spending';
 import { useGameStore } from '../../../src/runtime/store';
 
 const selectCore = () => {
@@ -183,8 +184,12 @@ describe('Entrance placement + spawn gating', () => {
       useGameStore.getState().tickOnce();
       const afterSpend = selectCore();
 
-      // At minimum, money increased by spending for visitors that existed BEFORE tick 2 (1 visitor)
-      expect(afterSpend.money).toBe(afterSpawn.money + 1 * MONEY_PER_VISITOR_PER_TICK);
+      // Spending is stat-based now. Spending on tick 2 should equal spendingPerTick()
+      // for the one pre-existing visitor AFTER tick 2's effects (decay/room effects).
+      const v = afterSpend.visitors[0]; // same visitor id
+      const expectedSpend = spendingPerTick(v);
+
+      expect(afterSpend.money).toBe(afterSpawn.money + expectedSpend);
     });
 
     it('spawned visitor moves on the next tick (deterministic movement)', () => {

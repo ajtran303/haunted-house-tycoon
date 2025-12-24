@@ -47,6 +47,19 @@ export type GameState = {
 
   // for MVP
   staffEnabled: false;
+
+  exitEvents: ExitEvent[];
+  nextExitEventId: number;
 };
 
 export type RoomType = 'entry' | 'exit' | 'hallway' | 'scare' | 'parkEntry' | 'parkExit';
+
+export type ExitReason = 'panic' | 'misery';
+
+export type ExitEvent = {
+  id: number;
+  tick: number;
+  visitorId: number;
+  reason: ExitReason;
+  position: Vector;
+};
