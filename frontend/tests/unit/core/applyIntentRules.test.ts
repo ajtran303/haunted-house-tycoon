@@ -12,14 +12,15 @@ const v = (overrides: Partial<Visitor> = {}): Visitor =>
     happiness: 60,
     intent: 'explore',
     spawnTick: 0,
+    exploreStartTick: 0,
     ...overrides,
   }) as Visitor;
 
 describe('applyIntentRules', () => {
   it('does nothing when no park exit exists', () => {
     const visitors = [
-      v({ id: 1, spawnTick: 0, intent: 'explore' }),
-      v({ id: 2, spawnTick: 0, intent: 'exit' }),
+      v({ id: 1, exploreStartTick: 0, intent: 'explore' }),
+      v({ id: 2, exploreStartTick: 0, intent: 'exit' }),
     ];
 
     const actual = applyIntentRules(visitors, 999, null);
@@ -28,7 +29,7 @@ describe('applyIntentRules', () => {
   });
 
   it('keeps explore intent before threshold', () => {
-    const visitors = [v({ spawnTick: 10, intent: 'explore' })];
+    const visitors = [v({ exploreStartTick: 10, intent: 'explore' })];
     const tick = 10 + DEFAULT_EXPLORE_TICKS_BEFORE_EXIT - 1;
 
     const actual = applyIntentRules(visitors, tick, { x: 5, y: 5 });
@@ -37,7 +38,7 @@ describe('applyIntentRules', () => {
   });
 
   it('switches explore -> exit at threshold when park exit exists', () => {
-    const visitors = [v({ spawnTick: 10, intent: 'explore' })];
+    const visitors = [v({ exploreStartTick: 10, intent: 'explore' })];
     const tick = 10 + DEFAULT_EXPLORE_TICKS_BEFORE_EXIT;
 
     const actual = applyIntentRules(visitors, tick, { x: 5, y: 5 });
@@ -46,7 +47,7 @@ describe('applyIntentRules', () => {
   });
 
   it('does not change non-explore intents', () => {
-    const visitors = [v({ id: 1, spawnTick: 0, intent: 'exit' })];
+    const visitors = [v({ id: 1, exploreStartTick: 0, intent: 'exit' })];
 
     const actual = applyIntentRules(visitors, 999, { x: 1, y: 1 });
 
@@ -55,9 +56,9 @@ describe('applyIntentRules', () => {
 
   it('is deterministic: same inputs -> same outputs', () => {
     const visitors = [
-      v({ id: 1, spawnTick: 0, intent: 'explore' }),
-      v({ id: 2, spawnTick: 100, intent: 'explore' }),
-      v({ id: 3, spawnTick: 0, intent: 'exit' }),
+      v({ id: 1, exploreStartTick: 0, intent: 'explore' }),
+      v({ id: 2, exploreStartTick: 100, intent: 'explore' }),
+      v({ id: 3, exploreStartTick: 0, intent: 'exit' }),
     ];
 
     const tick = 1000;
@@ -71,8 +72,8 @@ describe('applyIntentRules', () => {
 
   it('only changes the visitors that cross the rule boundary', () => {
     const visitors = [
-      v({ id: 1, spawnTick: 0, intent: 'explore' }),
-      v({ id: 2, spawnTick: 999, intent: 'explore' }),
+      v({ id: 1, exploreStartTick: 0, intent: 'explore' }),
+      v({ id: 2, exploreStartTick: 999, intent: 'explore' }),
     ];
 
     const tick = DEFAULT_EXPLORE_TICKS_BEFORE_EXIT; // visitor 1 crosses, visitor 2 does not
@@ -83,18 +84,18 @@ describe('applyIntentRules', () => {
     expect(actual.find((x) => x.id === 2)?.intent).toBe('explore');
   });
 
-  it('intent changes based on per-visitor age (spawnTick), not global tick', () => {
+  it('intent changes based on per-visitor age (exploreStartTick), not global tick', () => {
     const exit = { x: 9, y: 9 };
     const tick = 60;
 
     const visitors = [
-      { id: 1, position: { x: 0, y: 0 }, intent: 'explore', spawnTick: 0 },
-      { id: 2, position: { x: 0, y: 0 }, intent: 'explore', spawnTick: 50 },
-    ] as any;
+      v({ id: 1, exploreStartTick: 0, intent: 'explore' }),
+      v({ id: 2, exploreStartTick: 50, intent: 'explore' }),
+    ];
 
     const out = applyIntentRules(visitors, tick, exit);
 
-    expect(out.find((v) => v.id === 1)!.intent).toBe('exit'); // age 60
-    expect(out.find((v) => v.id === 2)!.intent).toBe('explore'); // age 10
+    expect(out.find((vv) => vv.id === 1)!.intent).toBe('exit'); // age 60
+    expect(out.find((vv) => vv.id === 2)!.intent).toBe('explore'); // age 10
   });
 });
