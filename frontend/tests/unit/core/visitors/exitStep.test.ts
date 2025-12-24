@@ -152,4 +152,26 @@ describe('exitStep', () => {
 
     expect(out).toEqual(pos);
   });
+
+  it('exitStep chooses a move that reduces Manhattan distance when possible', () => {
+    const pos = { x: 1, y: 1 };
+    const exit = { x: 4, y: 1 };
+
+    const out = exitStep({
+      w: 10,
+      h: 10,
+      pos,
+      visitor: { id: 1 },
+      tick: 0,
+      exit,
+      isWalkable: () => true,
+      isBlocked: () => false,
+    });
+
+    const d0 = Math.abs(pos.x - exit.x) + Math.abs(pos.y - exit.y);
+    const d1 = Math.abs(out.x - exit.x) + Math.abs(out.y - exit.y);
+
+    expect(d1).toBeLessThan(d0);
+  });
+
 });

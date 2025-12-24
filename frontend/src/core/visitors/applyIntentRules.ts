@@ -1,7 +1,5 @@
-import type { Visitor } from '../types';
-import type { Vector } from '../types';
-
-export const EXIT_AFTER_TICKS = 60;
+import type { Vector, Visitor } from '../types';
+import { DEFAULT_EXPLORE_TICKS_BEFORE_EXIT } from '../constants';
 
 export const applyIntentRules = (
   visitors: Visitor[],
@@ -15,12 +13,7 @@ export const applyIntentRules = (
 
     const age = tick - v.spawnTick;
 
-    if (age >= EXIT_AFTER_TICKS) {
-      return {
-        ...v,
-        intent: 'exit',
-      };
-    }
+    if (age >= DEFAULT_EXPLORE_TICKS_BEFORE_EXIT) return { ...v, intent: 'exit' };
 
     return v;
   });

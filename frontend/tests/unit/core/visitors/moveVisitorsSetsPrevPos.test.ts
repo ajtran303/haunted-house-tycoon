@@ -19,6 +19,8 @@ describe('moveVisitors prevPos behavior', () => {
       inAttraction: false,
       fear: 0,
       happiness: 50,
+      intent: 'exit',
+      spawnTick: 1,
     };
 
     const result = moveVisitors(
@@ -46,6 +48,8 @@ describe('moveVisitors prevPos behavior', () => {
       inAttraction: false,
       fear: 0,
       happiness: 50,
+      intent: 'exit',
+      spawnTick: 1,
     };
 
     const afterFirst = moveVisitors([visitor], 2, 1, grid, 1)[0];

@@ -100,7 +100,7 @@ export const useGameStore = create(
             fear: VISITOR_START_FEAR,
             happiness: VISITOR_START_HAPPINESS,
             intent: 'explore',
-            spawnTick: 0,
+            spawnTick: nextTick,
           };
           visitors = [...visitors, v];
           nextVisitorId += 1;
@@ -117,7 +117,7 @@ export const useGameStore = create(
         const moved =
           gridW > 0 && gridH > 0
             ? moveVisitors(withIntent, gridW, gridH, s.grid, nextTick)
-            : visitors;
+            : withIntent;
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
         const withRoomEffects = applyRoomEmotionEffects(moved, s.grid);
@@ -187,7 +187,7 @@ export const useGameStore = create(
         fear: VISITOR_START_FEAR,
         happiness: VISITOR_START_HAPPINESS,
         intent: 'explore',
-        spawnTick: 0,
+        spawnTick: s.tick,
       };
 
       set({

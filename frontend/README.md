@@ -1,28 +1,29 @@
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
 - [Haunted House Tycoon (Frontend)](#haunted-house-tycoon-frontend)
-   * [Overview](#overview)
-   * [Core Design Principles](#core-design-principles)
-   * [Tech Stack](#tech-stack)
-   * [Getting Started](#getting-started)
-      + [Prerequisites](#prerequisites)
-      + [Install dependencies](#install-dependencies)
-      + [Run the game in development](#run-the-game-in-development)
-      + [Run tests](#run-tests)
-      + [Run determinism checks](#run-determinism-checks)
-   * [How the Game Works (High Level)](#how-the-game-works-high-level)
-   * [Project Structure](#project-structure)
-   * [Key Files to Read First](#key-files-to-read-first)
-   * [Contributing](#contributing)
-      + [Feature Dev Tips](#feature-dev-tips)
-      + [Adding Features (example)](#adding-features-example)
-   * [Current Limitations](#current-limitations)
-   * [Project Status](#project-status)
-   * [License](#license)
+  - [Overview](#overview)
+  - [Core Design Principles](#core-design-principles)
+  - [Tech Stack](#tech-stack)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Install dependencies](#install-dependencies)
+    - [Run the game in development](#run-the-game-in-development)
+    - [Run tests](#run-tests)
+    - [Run determinism checks](#run-determinism-checks)
+  - [How the Game Works (High Level)](#how-the-game-works-high-level)
+  - [Project Structure](#project-structure)
+  - [Key Files to Read First](#key-files-to-read-first)
+  - [Contributing](#contributing)
+    - [Feature Dev Tips](#feature-dev-tips)
+    - [Adding Features (example)](#adding-features-example)
+  - [Current Limitations](#current-limitations)
+  - [Project Status](#project-status)
+  - [License](#license)
 
 <!-- TOC end -->
 
 <!-- TOC --><a name="haunted-house-tycoon-frontend"></a>
+
 # Haunted House Tycoon (Frontend)
 
 A deterministic management simulation game focused on system trustworthiness, explicit lifecycle control, and emergent failure through player decisions.
@@ -30,6 +31,7 @@ A deterministic management simulation game focused on system trustworthiness, ex
 This project prioritizes correctness and determinism over early polish or content. All outcomes are driven by transparent simulation rules rather than scripted events or hidden systems.
 
 <!-- TOC --><a name="overview"></a>
+
 ## Overview
 
 Haunted House Tycoon is a tycoon-style simulation where the player builds and manages a haunted house while time advances and visitors move through the space.
@@ -43,20 +45,22 @@ The core design goal is to ensure that:
 There is no save/load system, onboarding tutorial, or difficulty scaling layer at this stage. The game can be started, played, and lost in a single uninterrupted session.
 
 <!-- TOC --><a name="core-design-principles"></a>
+
 ## Core Design Principles
 
 - Deterministic simulation
-    - Given the same inputs, the game will always produce the same results.
+  - Given the same inputs, the game will always produce the same results.
 - Single source of truth
-    - All game state lives in a centralized store.
+  - All game state lives in a centralized store.
 - Tick-driven systems
-    - Time advances in discrete simulation ticks.
+  - Time advances in discrete simulation ticks.
 - No “explanation-only” systems
-    - Every system must affect time, money, or visitors.
+  - Every system must affect time, money, or visitors.
 - Failure is allowed
-    - The player can ignore problems and lose naturally.
+  - The player can ignore problems and lose naturally.
 
 <!-- TOC --><a name="tech-stack"></a>
+
 ## Tech Stack
 
 - React + TypeScript — UI and application structure
@@ -67,38 +71,50 @@ There is no save/load system, onboarding tutorial, or difficulty scaling layer a
 - Node.js — local development environment
 
 <!-- TOC --><a name="getting-started"></a>
+
 ## Getting Started
+
 <!-- TOC --><a name="prerequisites"></a>
+
 ### Prerequisites
 
 - Node.js (18+ recommended)
 - npm
 
 <!-- TOC --><a name="install-dependencies"></a>
+
 ### Install dependencies
+
 ```bash
 npm install
 ```
 
 <!-- TOC --><a name="run-the-game-in-development"></a>
+
 ### Run the game in development
+
 ```bash
 npm run dev
 ```
 
 <!-- TOC --><a name="run-tests"></a>
+
 ### Run tests
+
 ```bash
 npm test
 ```
 
 <!-- TOC --><a name="run-determinism-checks"></a>
+
 ### Run determinism checks
+
 ```bash
 npm run determinism
 ```
 
 <!-- TOC --><a name="how-the-game-works-high-level"></a>
+
 ## How the Game Works (High Level)
 
 - **React** renders the HUD and hosts the Phaser canvas.
@@ -109,7 +125,9 @@ npm run determinism
 - All meaningful state changes occur through explicit actions or during a simulation tick.
 
 <!-- TOC --><a name="project-structure"></a>
+
 ## Project Structure
+
 ```txt
 src/
 ├── core/           # Pure-ish simulation rules (economy, grid, visitors, time)
@@ -127,16 +145,18 @@ tests/
 ```
 
 <!-- TOC --><a name="key-files-to-read-first"></a>
+
 ## Key Files to Read First
 
 1. `src/runtime/store.ts`
-    - Defines all game state and actions.
+   - Defines all game state and actions.
 2. `src/ui/phaser/scenes/BootScene.ts`
-    - Drives the simulation tick loop and rendering subscriptions.
+   - Drives the simulation tick loop and rendering subscriptions.
 3. `tests/unit/runtime/`
-    - Shows expected behavior for lifecycle, ticking, speed, and failure.
+   - Shows expected behavior for lifecycle, ticking, speed, and failure.
 
 <!-- TOC --><a name="contributing"></a>
+
 ## Contributing
 
 1. Identify what state changes (money, time, visitors, grid).
@@ -152,6 +172,7 @@ As a rule:
 - Simulation logic should be testable without Phaser.
 
 <!-- TOC --><a name="feature-dev-tips"></a>
+
 ### Feature Dev Tips
 
 If a ticket says “add a new ability/system,” you’ll usually:
@@ -164,30 +185,33 @@ If a ticket says “add a new ability/system,” you’ll usually:
 If you add a new room type with special behavior, it likely needs:
 
 1. placement validation rules in src/core/placement
-2. simulation effects in src/core/visitors/* or tickOnce
+2. simulation effects in src/core/visitors/\* or tickOnce
 3. rendering behavior in Phaser
 4. and possibly special store fields (like entrance/exit)
 
 <!-- TOC --><a name="adding-features-example"></a>
+
 ### Adding Features (example)
+
 > “Add a ‘Staff’ system that increases visitor fear but costs upkeep”
 
 1. Add state
-    - Add fields in GameState (in src/core/types), e.g. staffCount, staffWagesPerTick
+   - Add fields in GameState (in src/core/types), e.g. staffCount, staffWagesPerTick
 2. Add actions
-    - Add hireStaff() / fireStaff() actions in store.ts (guarded by lifecycle as needed)
+   - Add hireStaff() / fireStaff() actions in store.ts (guarded by lifecycle as needed)
 3. Hook into the tick
-    - In tickOnce, after upkeep (or before), subtract wages
-    - Or modify emotion decay / emotional exit thresholds using staffCount
+   - In tickOnce, after upkeep (or before), subtract wages
+   - Or modify emotion decay / emotional exit thresholds using staffCount
 4. Render & UI
-    - Add HUD display + buttons
-    - Keep rules in core/store, not UI
+   - Add HUD display + buttons
+   - Keep rules in core/store, not UI
 5. Test
-    - Add unit tests that assert:
-        - wages reduce money per tick
-        - staff affects emotional exits or fear gain deterministically
+   - Add unit tests that assert:
+     - wages reduce money per tick
+     - staff affects emotional exits or fear gain deterministically
 
 <!-- TOC --><a name="current-limitations"></a>
+
 ## Current Limitations
 
 - No save/load system
@@ -198,6 +222,7 @@ If you add a new room type with special behavior, it likely needs:
 These are deliberate omissions during the current development phase.
 
 <!-- TOC --><a name="project-status"></a>
+
 ## Project Status
 
 This project is in active development and is currently focused on:
@@ -209,6 +234,7 @@ This project is in active development and is currently focused on:
 - Content expansion and polish are deferred until system trustworthiness is proven.
 
 <!-- TOC --><a name="license"></a>
+
 ## License
 
 MIT License
