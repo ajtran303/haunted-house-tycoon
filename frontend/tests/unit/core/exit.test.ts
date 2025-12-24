@@ -1,3 +1,4 @@
+import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../../../src/core/constants';
 import type { Vector, Visitor } from '../../../src/core/types';
 import { removeVisitorsAtExit, validateExitPlacement } from '../../../src/core/visitors/exit';
 
@@ -6,6 +7,8 @@ const V = (id: number, x: number, y: number, prevPos: Vector | null = null): Vis
   position: { x, y },
   prevPos,
   inAttraction: false,
+  fear: VISITOR_START_FEAR,
+  happiness: VISITOR_START_HAPPINESS,
 });
 
 describe('validateExitPlacement', () => {

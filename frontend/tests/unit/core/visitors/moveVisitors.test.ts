@@ -1,3 +1,4 @@
+import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../../../../src/core/constants';
 import { createGrid } from '../../../../src/core/grid';
 import type { Visitor } from '../../../../src/core/types';
 
@@ -16,6 +17,8 @@ const V = (id: number, x: number, y: number): Visitor => ({
   position: { x, y },
   prevPos: null,
   inAttraction: false,
+  fear: VISITOR_START_FEAR,
+  happiness: VISITOR_START_HAPPINESS,
 });
 
 const stepMock = randomWalkStep as unknown as jest.Mock<
