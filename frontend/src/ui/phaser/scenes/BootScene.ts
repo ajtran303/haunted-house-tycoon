@@ -63,7 +63,11 @@ export class BootScene {
 
     this.unsubscribeLifecycle = useGameStore.subscribe(
       (s) => s.lifecycle,
-      (lifecycle) => this.queueLifecycleWork(lifecycle === 'running'),
+      (lifecycle) => {
+        if (lifecycle !== 'running') this.accumulatedMs = 0;
+
+        this.queueLifecycleWork(lifecycle === 'running');
+      },
     );
 
     this.unsubscribeVisitors = useGameStore.subscribe(
@@ -162,8 +166,13 @@ export class BootScene {
   update(_time: number, delta: number) {
     if (!Number.isFinite(delta) || delta < 0) throw new Error(`Invalid delta ${delta}`);
 
-    const state = useGameStore.getState();
-    if (state.lifecycle !== 'running') return;
+    // Always read current state at time of update
+    let state = useGameStore.getState();
+    if (state.lifecycle !== 'running') {
+      // Ensure no backlog builds up while paused/newGame
+      this.accumulatedMs = 0;
+      return;
+    }
 
     const speed = state.speed;
     if (!Number.isFinite(speed) || speed <= 0) throw new Error(`Invalid speed ${speed}`);
@@ -172,7 +181,14 @@ export class BootScene {
 
     let steps = 0;
     while (this.accumulatedMs >= MS_PER_TICK) {
-      useGameStore.getState().tickOnce();
+      // IMPORTANT: re-check lifecycle each step (pause/newGame can happen mid-frame)
+      state = useGameStore.getState();
+      if (state.lifecycle !== 'running') {
+        this.accumulatedMs = 0;
+        break;
+      }
+
+      state.tickOnce();
       this.accumulatedMs -= MS_PER_TICK;
 
       steps++;
