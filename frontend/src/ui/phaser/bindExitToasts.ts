@@ -1,54 +1,49 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import type { ExitEvent } from '../../core/types';
 import { useGameStore } from '../../runtime/store';
 
-type Unsub = () => void;
+const isRenderableScene = (scene: Phaser.Scene): boolean => {
+  if (!scene?.sys) return false;
 
-let activeUnsub: Unsub | null = null;
-let lastSeenId = 0;
+  // Phaser status: 0=INIT,1=START,2=LOADING,3=CREATING,4=RUNNING,5=PAUSED,6=SLEEPING,7=SHUTDOWN,8=DESTROYED
+  const status = scene.sys.settings?.status;
+
+  // If the scene is shutting down/destroyed, never try to add display objects.
+  if (status === 7 || status === 8) return false;
+
+  // These are required for `add.text` to work.
+  if (!scene.sys.displayList) return false;
+  if (!scene.add) return false;
+
+  return true;
+};
 
 export const bindExitToasts = (
   scene: Phaser.Scene,
   tileSize: number,
   gridOriginX = 0,
   gridOriginY = 0,
-): Unsub => {
-  unbindExitToasts();
-
-  {
-    const s = useGameStore.getState();
-    const last = s.exitEvents[s.exitEvents.length - 1];
-    lastSeenId = last ? last.id : 0;
-  }
-
-  const isSceneAlive = (): boolean => {
-    const sys = (scene as any).sys;
-    // Phaser versions vary; be conservative.
-    if (!sys) return false;
-    if ((sys as any).isDestroyed === true) return false;
-    if (typeof (sys as any).isDestroyed === 'function' && (sys as any).isDestroyed()) return false;
-    if (typeof (sys as any).isActive === 'function' && !(sys as any).isActive()) return false;
-    if ((sys as any).settings && (sys as any).settings.status === 5) return false; // DESTROYED in some Phaser builds
-    return true;
-  };
+) => {
+  // Don’t replay old events on initial bind.
+  const initial = useGameStore.getState();
+  const last = initial.exitEvents[initial.exitEvents.length - 1];
+  let lastSeenId = last ? last.id : 0;
 
   const safeEnqueueToast = (e: ExitEvent) => {
-    (scene as any).time?.delayedCall?.(0, () => {
-      if (!isSceneAlive()) return;
-      const sys = (scene as any).sys;
-      if (!sys?.displayList) return;
-      if (!(scene as any).add?.text) return;
-
+    // Defer so we don't run inside zustand's synchronous setState call stack.
+    // If time isn't available (should be), fall back to immediate.
+    const enqueue = () => {
+      if (!isRenderableScene(scene)) return;
       showExitToast(scene, e, tileSize, gridOriginX, gridOriginY);
-    });
+    };
+
+    if (scene.time?.delayedCall) scene.time.delayedCall(0, enqueue);
+    else enqueue();
   };
 
-  activeUnsub = useGameStore.subscribe(
+  const unsub = useGameStore.subscribe(
     (st) => st.exitEvents,
     (events) => {
-      if (!isSceneAlive()) return;
-
+      // New game clears events => reset cursor so new run can show toasts.
       if (events.length === 0) {
         lastSeenId = 0;
         return;
@@ -56,28 +51,22 @@ export const bindExitToasts = (
 
       const newestId = events[events.length - 1]!.id;
 
+      // If IDs restarted (newGame), reset cursor.
       if (newestId < lastSeenId) {
         lastSeenId = 0;
       }
 
+      // Emit fresh events in order.
       for (const e of events) {
         if (e.id > lastSeenId) {
           safeEnqueueToast(e);
-          lastSeenId = e.id;
+          lastSeenId = e.id; // advance cursor monotonically
         }
       }
     },
   );
 
-  return () => {
-    if (activeUnsub) activeUnsub();
-    activeUnsub = null;
-  };
-};
-
-export const unbindExitToasts = () => {
-  if (activeUnsub) activeUnsub();
-  activeUnsub = null;
+  return () => unsub();
 };
 
 const showExitToast = (
@@ -87,16 +76,14 @@ const showExitToast = (
   gridOriginX: number,
   gridOriginY: number,
 ) => {
-  const sys = (scene as any).sys;
-  if (!sys?.displayList) return;
-  if (!(scene as any).add?.text) return;
+  if (!isRenderableScene(scene)) return;
 
   const wx = gridOriginX + e.position.x * tileSize + tileSize / 2;
   const wy = gridOriginY + e.position.y * tileSize + tileSize / 2;
 
   const label = e.reason === 'panic' ? 'PANIC!' : 'MISERABLE';
 
-  const text = (scene as any).add.text(wx, wy, label, {
+  const text = scene.add.text(wx, wy, label, {
     fontFamily: 'monospace',
     fontSize: '14px',
     color: '#ffffff',
@@ -107,7 +94,7 @@ const showExitToast = (
   text.setOrigin(0.5, 0.5);
   text.setDepth(9999);
 
-  (scene as any).tweens?.add?.({
+  scene.tweens.add({
     targets: text,
     y: wy - tileSize * 0.6,
     alpha: 0,
