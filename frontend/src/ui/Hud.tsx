@@ -38,6 +38,9 @@ export const Hud = () => {
           New Game Started
         </div>
       )}
+      <button onClick={handleNewGame} className={buttonStyle}>
+        New Game
+      </button>
       <div className="mb-1 font-bold">Haunted House Tycoon</div>
       <div>Lifecycle: {lifecycle}</div>
       <div>Day: {day}</div>
@@ -45,9 +48,7 @@ export const Hud = () => {
       <div>Tick: {tick}</div>
       <div>Money: ${money}</div>
       <div>Visitors: {visitorCount}</div>
-      <button onClick={handleNewGame} className={buttonStyle}>
-        New Game
-      </button>
+      <br />
       <button className={buttonStyle} onClick={startRun}>
         Start/Resume
       </button>

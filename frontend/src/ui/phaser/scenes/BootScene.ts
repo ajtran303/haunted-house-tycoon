@@ -41,9 +41,29 @@ export class BootScene {
   private pendingVisitorsFlush = false;
 
   create() {
+    // pause when browser tab/window loses focus or is hidden.
+    // it causes react components (ie. HUD) to become stale.
+    const pauseIfRunning = () => {
+      const s = useGameStore.getState();
+      if (s.lifecycle === 'running') s.pause();
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const self = this as any;
     this.sceneRef = self;
+
+    self.game.events.on('blur', pauseIfRunning);
+
+    const onVisibility = () => {
+      if (document.hidden) pauseIfRunning();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (self as any).__cleanupVisibility = () => {
+      self.game.events.off('blur', pauseIfRunning);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
 
     self.add.text(20, 20, 'Phaser OK', { fontSize: '20px', color: '#ffffff' });
 
@@ -66,9 +86,8 @@ export class BootScene {
     this.unsubscribeLifecycle = useGameStore.subscribe(
       (s) => s.lifecycle,
       (lifecycle) => {
-        if (lifecycle !== 'running') this.accumulatedMs = 0;
-
         this.queueLifecycleWork(lifecycle === 'running');
+        if (lifecycle !== 'running') this.accumulatedMs = 0;
       },
     );
 
@@ -167,10 +186,13 @@ export class BootScene {
 
     this.gridRenderer?.destroy();
     this.visitorsRenderer?.destroy();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.sceneRef as any)?.__cleanupVisibility?.();
   }
 
   update(_time: number, delta: number) {
-    if (!Number.isFinite(delta) || delta < 0) throw new Error(`Invalid delta ${delta}`);
+    if (!Number.isFinite(delta) || delta < 0) return;
 
     // Always read current state at time of update
     let state = useGameStore.getState();
@@ -181,9 +203,10 @@ export class BootScene {
     }
 
     const speed = state.speed;
-    if (!Number.isFinite(speed) || speed <= 0) throw new Error(`Invalid speed ${speed}`);
+    if (!Number.isFinite(speed) || speed <= 0) return;
 
-    this.accumulatedMs += delta * speed;
+    const clampedDelta = Math.min(delta, MS_PER_TICK * 2);
+    this.accumulatedMs += clampedDelta * speed;
 
     let steps = 0;
     while (this.accumulatedMs >= MS_PER_TICK) {
