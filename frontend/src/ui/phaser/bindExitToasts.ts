@@ -15,14 +15,25 @@ export const bindExitToasts = (
   const unsub = useGameStore.subscribe(
     (st) => st.exitEvents,
     (events) => {
+      // If the run reset (newGame), ids restart; reset our cursor too.
+      if (events.length === 0) {
+        lastSeenId = 0;
+        return;
+      }
+
+      // If ids went backwards (new game), reset cursor.
+      const newestId = events[events.length - 1]!.id;
+      if (newestId < lastSeenId) {
+        lastSeenId = 0;
+      }
+
       const fresh = events.filter((e) => e.id > lastSeenId);
       if (fresh.length === 0) return;
 
       for (const e of fresh) {
         safeEnqueueToast(scene, e, tileSize, gridOriginX, gridOriginY);
+        lastSeenId = Math.max(lastSeenId, e.id);
       }
-
-      lastSeenId = fresh[fresh.length - 1]!.id;
     },
   );
 
