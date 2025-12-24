@@ -7,7 +7,7 @@ import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
-import { applyRoomEmotionEffectsOnEntry } from '../core/visitors/applyRoomEmotionEffects';
+import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness } from '../core/visitors/emotions';
 import { moveVisitors } from '../core/visitors/moveVisitors';
@@ -113,7 +113,7 @@ export const useGameStore = create(
             : visitors;
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
-        const withRoomEffects = applyRoomEmotionEffectsOnEntry(moved, s.grid);
+        const withRoomEffects = applyRoomEmotionEffects(moved, s.grid);
 
         // Decay happiness
         const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));

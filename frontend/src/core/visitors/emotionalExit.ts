@@ -2,8 +2,8 @@ import { FEAR_PANIC_THRESHOLD, HAPPINESS_MISERY_THRESHOLD } from '../constants';
 import type { ExitEvent, ExitReason, Visitor } from '../types';
 
 export const getEmotionalExitReason = (v: Visitor): ExitReason | null => {
-  if (v.fear > FEAR_PANIC_THRESHOLD) return 'panic';
-  if (v.happiness < HAPPINESS_MISERY_THRESHOLD) return 'misery';
+  if (v.fear >= FEAR_PANIC_THRESHOLD) return 'panic';
+  if (v.happiness <= HAPPINESS_MISERY_THRESHOLD) return 'misery';
   return null;
 };
 

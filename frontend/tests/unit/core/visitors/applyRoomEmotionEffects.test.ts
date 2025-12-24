@@ -1,7 +1,7 @@
 // src/core/visitors/applyRoomEmotionEffects.test.ts
 import { EMOTION_BOUNDS } from '../../../../src/core/constants';
 import type { Grid, Visitor } from '../../../../src/core/types';
-import { applyRoomEmotionEffectsOnEntry } from '../../../../src/core/visitors/applyRoomEmotionEffects';
+import { applyRoomEmotionEffects } from '../../../../src/core/visitors/applyRoomEmotionEffects';
 
 const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   id: 1,
@@ -25,11 +25,11 @@ const makeGrid = (roomTypeAtCenter: any): Grid => {
   ] as unknown as Grid;
 };
 
-describe('applyRoomEmotionEffectsOnEntry', () => {
+describe('applyRoomEmotionEffects', () => {
   it('Entry gives a small happiness boost on entry', () => {
     const grid = makeGrid('entry');
     const v = makeVisitor({ happiness: 10, fear: 0 });
-    const [next] = applyRoomEmotionEffectsOnEntry([v], grid);
+    const [next] = applyRoomEmotionEffects([v], grid);
 
     expect(next.happiness).toBe(12); // matches mapping (+2)
     expect(next.fear).toBe(0);
@@ -38,7 +38,7 @@ describe('applyRoomEmotionEffectsOnEntry', () => {
   it('Hallway is neutral on entry', () => {
     const grid = makeGrid('hallway');
     const v = makeVisitor({ happiness: 10, fear: 5 });
-    const [next] = applyRoomEmotionEffectsOnEntry([v], grid);
+    const [next] = applyRoomEmotionEffects([v], grid);
 
     expect(next.happiness).toBe(10);
     expect(next.fear).toBe(5);
@@ -47,7 +47,7 @@ describe('applyRoomEmotionEffectsOnEntry', () => {
   it('Scare increases fear and decreases happiness on entry', () => {
     const grid = makeGrid('scare');
     const v = makeVisitor({ happiness: 10, fear: 5 });
-    const [next] = applyRoomEmotionEffectsOnEntry([v], grid);
+    const [next] = applyRoomEmotionEffects([v], grid);
 
     expect(next.fear).toBe(13); // +8
     expect(next.happiness).toBe(8); // -2
@@ -61,7 +61,7 @@ describe('applyRoomEmotionEffectsOnEntry', () => {
       happiness: 10,
       fear: 5,
     });
-    const [next] = applyRoomEmotionEffectsOnEntry([v], grid);
+    const [next] = applyRoomEmotionEffects([v], grid);
 
     expect(next.fear).toBe(5);
     expect(next.happiness).toBe(10);
@@ -73,7 +73,7 @@ describe('applyRoomEmotionEffectsOnEntry', () => {
       fear: EMOTION_BOUNDS.fear.max,
       happiness: EMOTION_BOUNDS.happiness.min,
     });
-    const [next] = applyRoomEmotionEffectsOnEntry([v], grid);
+    const [next] = applyRoomEmotionEffects([v], grid);
 
     expect(next.fear).toBe(EMOTION_BOUNDS.fear.max);
     expect(next.happiness).toBe(EMOTION_BOUNDS.happiness.min);

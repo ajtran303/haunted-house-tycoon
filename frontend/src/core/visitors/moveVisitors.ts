@@ -53,6 +53,8 @@ export const moveVisitors = (
     // BUT if they step onto entry, we flip below (based on nextRoomType).
     const inAttractionNow = v.inAttraction;
 
+    const prevPos = v.position;
+
     const nextPos = randomWalkStep({
       w: gridW,
       h: gridH,
@@ -97,6 +99,7 @@ export const moveVisitors = (
 
     moved.set(v.id, {
       ...v,
+      prevPos,
       position: nextPos,
       inAttraction: inAttractionNext,
     });
