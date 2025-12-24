@@ -111,23 +111,20 @@ export const moveVisitors = (
     const leavingAttraction = inAttractionNow && !inAttractionNext;
     const insideAttraction = inAttractionNext;
 
-    // Enter OR exit resets the explore window
-    const resetExploreWindow = enteringAttraction || leavingAttraction;
+    // Reset only on ENTER
+    const exploreStartTick = enteringAttraction ? tick : v.exploreStartTick;
 
-    // Inside attraction: always explore (prevents park-exit bias while stuck inside)
-    const forcedExplore = insideAttraction || resetExploreWindow;
+    // Intent is explore for the entire time they're inAttraction,
+    // and remains explore when they step out (so they don't snap back to exit immediately)
+    const intent = insideAttraction || leavingAttraction ? 'explore' : v.intent;
 
     moved.set(v.id, {
       ...v,
       prevPos,
       position: nextPos,
       inAttraction: inAttractionNext,
-
-      // force explore on enter/inside/exit
-      intent: forcedExplore ? 'explore' : v.intent,
-
-      // reset timer on enter AND exit
-      exploreStartTick: resetExploreWindow ? tick : v.exploreStartTick,
+      intent,
+      exploreStartTick,
     });
   }
 

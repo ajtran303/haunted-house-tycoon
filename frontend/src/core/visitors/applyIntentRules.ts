@@ -9,6 +9,8 @@ export const applyIntentRules = (
   if (!exit) return visitors;
 
   return visitors.map((v): Visitor => {
+    if (v.inAttraction) return v;
+
     if (v.intent !== 'explore') return v;
 
     const age = tick - v.exploreStartTick;

@@ -98,4 +98,13 @@ describe('applyIntentRules', () => {
     expect(out.find((vv) => vv.id === 1)!.intent).toBe('exit'); // age 60
     expect(out.find((vv) => vv.id === 2)!.intent).toBe('explore'); // age 10
   });
+
+  it('does not change intent while inAttraction (timer paused)', () => {
+    const visitors = [v({ inAttraction: true, intent: 'explore', exploreStartTick: 0 })];
+
+    const tick = 0 + DEFAULT_EXPLORE_TICKS_BEFORE_EXIT;
+    const out = applyIntentRules(visitors, tick, { x: 1, y: 1 });
+
+    expect(out[0].intent).toBe('explore'); // still explore
+  });
 });

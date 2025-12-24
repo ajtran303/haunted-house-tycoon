@@ -84,12 +84,11 @@ describe('moveVisitors attraction intent rules', () => {
     expect(next[0].position).toEqual({ x: 1, y: 0 });
     expect(next[0].inAttraction).toBe(true);
 
-    // The behavior you want:
     expect(next[0].intent).toBe('explore');
     expect(next[0].exploreStartTick).toBe(tick);
   });
 
-  it('WHILE inside attraction: forces intent=explore (even if visitor.intent was exit)', () => {
+  it('WHILE inside attraction: forces intent=explore and does not change exploreStartTick', () => {
     // Grid: [ hallway ] (visitor is already inside)
     const grid = createGrid(2, 1);
     setRoom(grid, 0, 0, 'hallway');
@@ -113,12 +112,10 @@ describe('moveVisitors attraction intent rules', () => {
 
     expect(next[0].inAttraction).toBe(true);
     expect(next[0].intent).toBe('explore');
-    // No enter/exit transition here, so you may or may not reset tick.
-    // With the “reset only on enter/exit” design:
     expect(next[0].exploreStartTick).toBe(10);
   });
 
-  it('on EXIT attraction: forces intent=explore and resets exploreStartTick', () => {
+  it('on EXIT attraction: intent forced to explore but exploreStartTick is NOT reset', () => {
     // Grid: [ hallway ][ exit ]
     const grid = createGrid(2, 1);
     setRoom(grid, 0, 0, 'hallway');
@@ -138,7 +135,7 @@ describe('moveVisitors attraction intent rules', () => {
         position: { x: 0, y: 0 },
         inAttraction: true,
         intent: 'exit',
-        exploreStartTick: 11,
+        exploreStartTick: 111,
       }),
     ];
 
@@ -147,8 +144,7 @@ describe('moveVisitors attraction intent rules', () => {
     expect(next[0].position).toEqual({ x: 1, y: 0 });
     expect(next[0].inAttraction).toBe(false);
 
-    // The behavior you want:
     expect(next[0].intent).toBe('explore');
-    expect(next[0].exploreStartTick).toBe(tick);
+    expect(next[0].exploreStartTick).toBe(111);
   });
 });
