@@ -122,7 +122,7 @@ export const useGameStore = create(
         const exitResult = removeVisitorsByEmotionalExit(decayed, nextTick, s.nextExitEventId);
 
         const afterEmotionalExit = exitResult.remaining;
-        const exitEvents = [...s.exitEvents, ...exitResult.events];
+        const exitEvents = [...s.exitEvents, ...exitResult.events].slice(-50);
         const nextExitEventId = exitResult.nextEventId;
 
         // spending

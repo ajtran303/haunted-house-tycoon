@@ -1,4 +1,5 @@
 import { useGameStore } from '../../../runtime/store';
+import { bindExitToasts } from '../bindExitToasts';
 import { createGridRenderer } from '../render/renderGrid';
 import { createVisitorsRenderer } from '../render/visitorsRenderer';
 
@@ -13,6 +14,7 @@ export class BootScene {
   private unsubscribeGrid?: () => void;
   private unsubscribeLifecycle?: () => void;
   private unsubscribeVisitors?: () => void;
+  private unsubscribeExitToasts?: () => void;
 
   private gridRenderer?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,6 +76,9 @@ export class BootScene {
       (s) => s.visitors,
       (visitors) => this.queueVisitorsWork(visitors),
     );
+
+    const TILE = 24;
+    this.unsubscribeExitToasts = bindExitToasts(this.sceneRef, TILE, 0, 0);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -158,6 +163,7 @@ export class BootScene {
     this.unsubscribeGrid?.();
     this.unsubscribeLifecycle?.();
     this.unsubscribeVisitors?.();
+    this.unsubscribeExitToasts?.();
 
     this.gridRenderer?.destroy();
     this.visitorsRenderer?.destroy();
@@ -192,7 +198,10 @@ export class BootScene {
       this.accumulatedMs -= MS_PER_TICK;
 
       steps++;
-      if (steps > MAX_STEPS_PER_FRAME) throw new Error('Exceeded max tick steps per frame');
+      if (steps >= MAX_STEPS_PER_FRAME) {
+        this.accumulatedMs = 0;
+        break;
+      }
     }
   }
 }
