@@ -20,8 +20,8 @@ const isRenderableScene = (scene: Phaser.Scene): boolean => {
 export const bindExitToasts = (
   scene: Phaser.Scene,
   tileSize: number,
-  gridOriginX = 0,
-  gridOriginY = 0,
+  gridOriginX = 20,
+  gridOriginY = 60,
 ) => {
   // Don’t replay old events on initial bind.
   const initial = useGameStore.getState();
