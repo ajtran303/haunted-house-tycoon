@@ -86,7 +86,7 @@ src/
 
 tests/
 └── unit/
-    └── Core/      # Pure function unit tests
+    └── core/      # Pure function unit tests
     └── runtime/   # Store and lifecycle unit tests
 ```
 
