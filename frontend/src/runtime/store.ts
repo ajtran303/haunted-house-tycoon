@@ -101,6 +101,7 @@ export const useGameStore = create(
             happiness: VISITOR_START_HAPPINESS,
             intent: 'explore',
             spawnTick: nextTick,
+            exploreStartTick: nextTick,
           };
           visitors = [...visitors, v];
           nextVisitorId += 1;
@@ -116,7 +117,7 @@ export const useGameStore = create(
 
         const moved =
           gridW > 0 && gridH > 0
-            ? moveVisitors(withIntent, gridW, gridH, s.grid, nextTick)
+            ? moveVisitors(withIntent, gridW, gridH, s.grid, nextTick, s.exit)
             : withIntent;
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
@@ -188,6 +189,7 @@ export const useGameStore = create(
         happiness: VISITOR_START_HAPPINESS,
         intent: 'explore',
         spawnTick: s.tick,
+        exploreStartTick: s.tick,
       };
 
       set({

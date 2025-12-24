@@ -21,6 +21,7 @@ describe('moveVisitors prevPos behavior', () => {
       happiness: 50,
       intent: 'exit',
       spawnTick: 1,
+      exploreStartTick: 0,
     };
 
     const result = moveVisitors(
@@ -29,6 +30,7 @@ describe('moveVisitors prevPos behavior', () => {
       1,
       grid,
       1, // tick
+      null,
     );
 
     const v = result[0];
@@ -50,10 +52,11 @@ describe('moveVisitors prevPos behavior', () => {
       happiness: 50,
       intent: 'exit',
       spawnTick: 1,
+      exploreStartTick: 0,
     };
 
-    const afterFirst = moveVisitors([visitor], 2, 1, grid, 1)[0];
-    const afterSecond = moveVisitors([afterFirst], 2, 1, grid, 2)[0];
+    const afterFirst = moveVisitors([visitor], 2, 1, grid, 1, null)[0];
+    const afterSecond = moveVisitors([afterFirst], 2, 1, grid, 2, null)[0];
 
     expect(afterSecond.prevPos).toEqual(afterFirst.position);
   });

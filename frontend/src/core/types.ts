@@ -25,6 +25,7 @@ export type Visitor = {
   happiness: number;
   intent: VisitorIntent;
   spawnTick: number;
+  exploreStartTick: number;
 };
 
 export type GameSpeed = 1 | 4;

@@ -2,6 +2,7 @@
 
 import type { Grid, Vector, Visitor } from '../types';
 import { randomWalkStep } from './randomWalkStep';
+import { chooseStepForVisitor } from './chooseStepForVisitor';
 
 const key = (p: Vector) => `${p.x},${p.y}`;
 
@@ -14,6 +15,7 @@ export const moveVisitors = (
   gridH: number,
   grid: Grid,
   tick: number,
+  parkExit: Vector | null,
 ): Visitor[] => {
   const sorted = [...visitors].sort((a, b) => a.id - b.id);
   const occupied = new Set(sorted.map((v) => key(v.position)));
@@ -55,21 +57,20 @@ export const moveVisitors = (
 
     const prevPos = v.position;
 
-    const nextPos = randomWalkStep({
-      w: gridW,
-      h: gridH,
-      pos: v.position,
-      visitorId: v.id,
-      tick,
-      isWalkable: (p) => canStepTo(p, inAttractionNow),
-      isBlocked: (p) => occupied.has(key(p)),
-
-      isPreferred: inAttractionNow
-        ? (p) => {
+    const nextPos = inAttractionNow
+      ? randomWalkStep({
+          w: gridW,
+          h: gridH,
+          pos: v.position,
+          visitorId: v.id,
+          tick,
+          isWalkable: (p) => canStepTo(p, true),
+          isBlocked: (p) => occupied.has(key(p)),
+          isPreferred: (p) => {
             const rt = getCell(p)?.roomType;
             if (!rt) return false;
 
-            // While inside: always prefer exit if adjacent.
+            // While inside: always prefer attraction exit if adjacent.
             if (rt === 'exit') return true;
 
             // From entry: prefer stepping onto hallway/scare.
@@ -81,9 +82,18 @@ export const moveVisitors = (
             }
 
             return false;
-          }
-        : undefined,
-    });
+          },
+        })
+      : chooseStepForVisitor({
+          w: gridW,
+          h: gridH,
+          pos: v.position,
+          visitor: v, // NOTE: uses v.intent
+          tick,
+          exit: parkExit, // NOTE: park exit from state
+          isWalkable: (p) => canStepTo(p, false),
+          isBlocked: (p) => occupied.has(key(p)),
+        });
 
     occupied.add(key(nextPos));
 
@@ -97,11 +107,24 @@ export const moveVisitors = (
     // Stepping onto exit ends attraction (if inside). Outside stepping onto exit does nothing special.
     if (inAttractionNow && nextRoomType === 'exit') inAttractionNext = false;
 
+    const enteringAttraction = !inAttractionNow && inAttractionNext;
+    const leavingAttraction = inAttractionNow && !inAttractionNext;
+    const insideAttraction = inAttractionNext;
+
+    // Reset only on ENTER
+    const exploreStartTick = enteringAttraction ? tick : v.exploreStartTick;
+
+    // Intent is explore for the entire time they're inAttraction,
+    // and remains explore when they step out (so they don't snap back to exit immediately)
+    const intent = insideAttraction || leavingAttraction ? 'explore' : v.intent;
+
     moved.set(v.id, {
       ...v,
       prevPos,
       position: nextPos,
       inAttraction: inAttractionNext,
+      intent,
+      exploreStartTick,
     });
   }
 

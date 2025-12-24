@@ -33,6 +33,7 @@ describe('moveVisitors - attraction gating', () => {
       happiness: VISITOR_START_HAPPINESS,
       intent: 'explore',
       spawnTick: 0,
+      exploreStartTick: 0,
     };
 
     // Right is hallway
@@ -50,7 +51,7 @@ describe('moveVisitors - attraction gating', () => {
       return pos; // stay
     });
 
-    const moved = moveVisitors([v], 3, 3, grid, 0)[0];
+    const moved = moveVisitors([v], 3, 3, grid, 0, null)[0];
     expect(moved.position).toEqual({ x: 1, y: 1 });
     expect(moved.inAttraction).toBe(false);
   });
@@ -67,6 +68,7 @@ describe('moveVisitors - attraction gating', () => {
       happiness: VISITOR_START_HAPPINESS,
       intent: 'explore',
       spawnTick: 0,
+      exploreStartTick: 0,
     };
 
     // Make entry the only walkable neighbor (in real movement).
@@ -82,7 +84,7 @@ describe('moveVisitors - attraction gating', () => {
       return desired;
     });
 
-    const moved = moveVisitors([v], 3, 3, grid, 0)[0];
+    const moved = moveVisitors([v], 3, 3, grid, 0, null)[0];
     expect(moved.position).toEqual({ x: 2, y: 1 });
     expect(moved.inAttraction).toBe(true);
   });
@@ -100,6 +102,7 @@ describe('moveVisitors - attraction gating', () => {
       happiness: VISITOR_START_HAPPINESS,
       intent: 'explore',
       spawnTick: 0,
+      exploreStartTick: 0,
     };
     setCell(grid, 2, 2, { type: 'floor', occupied: true, roomType: 'entry', roomId: 'entry-0' });
 
@@ -125,7 +128,7 @@ describe('moveVisitors - attraction gating', () => {
       return desired;
     });
 
-    const moved = moveVisitors([v], 5, 5, grid, 0)[0];
+    const moved = moveVisitors([v], 5, 5, grid, 0, null)[0];
     expect(moved.position).toEqual({ x: 2, y: 3 });
     expect(moved.inAttraction).toBe(true);
   });

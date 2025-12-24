@@ -11,6 +11,7 @@ const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   happiness: 50,
   intent: 'explore',
   spawnTick: 0,
+  exploreStartTick: 0,
   ...overrides,
 });
 
