@@ -14,6 +14,8 @@ export type Grid = Cell[][];
 
 export type Vector = { x: number; y: number };
 
+export type VisitorIntent = 'explore' | 'exit';
+
 export type Visitor = {
   id: number;
   position: Vector;
@@ -21,6 +23,8 @@ export type Visitor = {
   inAttraction: boolean;
   fear: number;
   happiness: number;
+  intent: VisitorIntent;
+  spawnTick: number;
 };
 
 export type GameSpeed = 1 | 4;

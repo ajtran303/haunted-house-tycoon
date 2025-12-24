@@ -9,10 +9,16 @@ type VisitorsRenderer = {
   destroy: () => void;
 };
 
+// Dev only
+const SHOW_INTENT = true;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dots = new Map<number, any>();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const intentLabels = new Map<number, any>();
 
   const draw = (visitors: Visitor[]) => {
     const alive = new Set<number>();
@@ -20,6 +26,7 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
     for (const v of visitors) {
       alive.add(v.id);
 
+      // --- dot ---
       let dot = dots.get(v.id);
       if (!dot) {
         dot = scene.add.circle(0, 0, 4, 0xffcc00);
@@ -31,12 +38,42 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
       const py = ORIGIN_Y + v.position.y * CELL_SIZE + CELL_SIZE / 2;
 
       dot.setPosition(px, py);
+
+      // --- intent label (dev-only) ---
+      if (SHOW_INTENT) {
+        let label = intentLabels.get(v.id);
+        if (!label) {
+          label = scene.add.text(0, 0, '', {
+            fontFamily: 'monospace',
+            fontSize: '12px',
+          });
+          label.setOrigin(0.5, 1); // centered, anchored above
+          label.setDepth(11); // above the dot
+          intentLabels.set(v.id, label);
+        }
+
+        const text = v.intent === 'exit' ? 'X' : 'E';
+        if (label.text !== text) label.setText(text);
+
+        // Slightly above the dot
+        label.setPosition(px, py - CELL_SIZE * 0.35);
+      }
     }
 
+    // cleanup removed visitors
     for (const [id, dot] of Array.from(dots)) {
       if (!alive.has(id)) {
         dot.destroy();
         dots.delete(id);
+      }
+    }
+
+    if (SHOW_INTENT) {
+      for (const [id, label] of Array.from(intentLabels)) {
+        if (!alive.has(id)) {
+          label.destroy();
+          intentLabels.delete(id);
+        }
       }
     }
   };
@@ -44,6 +81,9 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
   const destroy = () => {
     for (const dot of Array.from(dots.values())) dot.destroy();
     dots.clear();
+
+    for (const label of Array.from(intentLabels.values())) label.destroy();
+    intentLabels.clear();
   };
 
   return { draw, destroy };

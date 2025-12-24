@@ -68,3 +68,6 @@ export const ROOM_UPKEEP_PER_TICK: Partial<Record<RoomType, number>> = {
   parkEntry: 0,
   parkExit: 0,
 };
+
+export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 30; // for dev
+// export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 60;

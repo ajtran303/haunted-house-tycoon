@@ -31,6 +31,8 @@ describe('moveVisitors - attraction gating', () => {
       inAttraction: false,
       fear: VISITOR_START_FEAR,
       happiness: VISITOR_START_HAPPINESS,
+      intent: 'explore',
+      spawnTick: 0,
     };
 
     // Right is hallway
@@ -63,6 +65,8 @@ describe('moveVisitors - attraction gating', () => {
       inAttraction: false,
       fear: VISITOR_START_FEAR,
       happiness: VISITOR_START_HAPPINESS,
+      intent: 'explore',
+      spawnTick: 0,
     };
 
     // Make entry the only walkable neighbor (in real movement).
@@ -94,6 +98,8 @@ describe('moveVisitors - attraction gating', () => {
       inAttraction: true,
       fear: VISITOR_START_FEAR,
       happiness: VISITOR_START_HAPPINESS,
+      intent: 'explore',
+      spawnTick: 0,
     };
     setCell(grid, 2, 2, { type: 'floor', occupied: true, roomType: 'entry', roomId: 'entry-0' });
 
