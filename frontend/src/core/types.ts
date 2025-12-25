@@ -1,4 +1,4 @@
-export type Lifecycle = 'stopped' | 'paused' | 'running' | 'failed';
+export type Lifecycle = 'paused' | 'running' | 'failed';
 
 // add more later, i.e hallway, room, scare, entrance, exit, etc.
 export type CellType = 'empty' | 'floor';
