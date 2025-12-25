@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { ROOM_COST } from '../../../core/constants';
 import type { Cell, Grid } from '../../../core/types';
 
@@ -44,7 +46,6 @@ const fillForCell = (cell: Cell) => {
 };
 
 export const createGridRenderer = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scene: any,
   grid: Grid,
   onCellClick: (x: number, y: number) => void,
@@ -56,7 +57,6 @@ export const createGridRenderer = (
   let clicksEnabled = true;
   let currentGrid: Grid = grid;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rects: any[][] = [];
 
   // Hover highlight (outline)
@@ -109,7 +109,6 @@ export const createGridRenderer = (
   };
 
   for (let y = 0; y < height; y++) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const row: any[] = [];
     for (let x = 0; x < width; x++) {
       const r = scene.add.rectangle(
