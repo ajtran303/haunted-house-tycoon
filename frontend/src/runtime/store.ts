@@ -96,6 +96,20 @@ export const useGameStore = create(
           }
         }
 
+        // Immediate fail: exit structurally blocked by player construction
+        if (s.exit && gridW > 0 && gridH > 0) {
+          if (tileIsStructurallyBlocked(s.grid, s.exit)) {
+            return {
+              ...s,
+              ...nextTime,
+              money: 0,
+              visitors: [],
+              lifecycle: 'failed',
+              // (optional later) add a failure reason/toast/event
+            };
+          }
+        }
+
         // get for calculating spending and decay later
         const existingIds = new Set(s.visitors.map((v) => v.id));
 
