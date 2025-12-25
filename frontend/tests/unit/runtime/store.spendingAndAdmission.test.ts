@@ -33,7 +33,7 @@ describe('Spending and Admission', () => {
     useGameStore.getState().startRun();
     setEntrance(0, 0);
 
-    useGameStore.getState().spawnVisitor();
+    useGameStore.getState().tickOnce();
     const moneyAfterSpawn = useGameStore.getState().money;
 
     // non-spawn tick
@@ -87,7 +87,7 @@ describe('Spending and Admission', () => {
     useGameStore.getState().startRun();
     setEntrance(0, 0);
 
-    useGameStore.getState().spawnVisitor();
+    useGameStore.getState().tickOnce();
     useGameStore.getState().pause();
 
     const before = useGameStore.getState().money;
