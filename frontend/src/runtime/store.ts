@@ -14,7 +14,8 @@ import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness } from '../core/visitors/emotions';
 import { moveVisitors } from '../core/visitors/moveVisitors';
 import { totalSpendingPerTick } from '../core/visitors/spending';
-import { shouldSpawnFakeVisitor } from '../core/visitorsFake';
+import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
+import { entranceIsStructurallyBlocked } from '../core/visitors/entranceBlocked';
 
 type Input =
   | { type: 'selectRoomType'; roomType: RoomType }
@@ -28,8 +29,6 @@ type Actions = {
   resume: () => void;
   fail: () => void;
 
-  startRunWithInitialVisitor: () => void;
-
   // speed
   setSpeed1x: () => void;
   setSpeed4x: () => void;
@@ -38,7 +37,6 @@ type Actions = {
   tickOnce: () => void;
 
   // visitors
-  spawnVisitor: () => void;
   despawnVisitor: (id: number) => void;
   despawnVisitorsAtExit: () => void;
 
@@ -48,6 +46,9 @@ type Actions = {
   // input
   dispatchInput: (input: Input) => void;
 };
+
+const isVisitorAt = (visitors: Visitor[], x: number, y: number) =>
+  visitors.some((v) => v.position.x === x && v.position.y === y);
 
 export const useGameStore = create(
   subscribeWithSelector<GameState & Actions>((set, get) => ({
@@ -65,21 +66,6 @@ export const useGameStore = create(
 
     fail: () => set((s) => (s.lifecycle !== 'failed' ? { ...s, lifecycle: 'failed' } : s)),
 
-    // Start/run + ensure exactly one initial visitor (and only once)
-    startRunWithInitialVisitor: () => {
-      const s = get();
-
-      if (s.lifecycle === 'running') return;
-
-      set({ lifecycle: 'running' as Lifecycle });
-
-      // Spawn exactly one initial visitor if none exist yet.
-      // Admission is charged on spawn (once per visitor).
-      if (s.visitors.length === 0 && s.entrance) {
-        get().spawnVisitor();
-      }
-    },
-
     setSpeed1x: () => set({ speed: 1 }),
     setSpeed4x: () => set({ speed: 4 }),
 
@@ -92,6 +78,24 @@ export const useGameStore = create(
         const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
         const nextTick = nextTime.tick;
 
+        // movement bounds
+        const gridH = s.grid.length;
+        const gridW = s.grid[0]?.length ?? 0;
+
+        // Immediate fail: entrance structurally blocked by player construction
+        if (s.entrance && gridW > 0 && gridH > 0) {
+          if (entranceIsStructurallyBlocked(s.grid, s.entrance)) {
+            return {
+              ...s,
+              ...nextTime,
+              money: 0,
+              visitors: [],
+              lifecycle: 'failed',
+              // (optional later) add a failure reason/toast/event
+            };
+          }
+        }
+
         // get for calculating spending and decay later
         const existingIds = new Set(s.visitors.map((v) => v.id));
 
@@ -100,29 +104,31 @@ export const useGameStore = create(
         let nextVisitorId = s.nextVisitorId;
         let money = s.money;
 
-        if (s.entrance && shouldSpawnFakeVisitor(nextTick)) {
-          const v: Visitor = {
-            id: nextVisitorId,
-            position: s.entrance,
-            prevPos: null,
-            inAttraction: false,
-            fear: VISITOR_START_FEAR,
-            happiness: VISITOR_START_HAPPINESS,
-            intent: 'explore',
-            spawnTick: nextTick,
-            exploreStartTick: nextTick,
-          };
-          visitors = [...visitors, v];
-          nextVisitorId += 1;
-          money += ADMISSION_FEE;
+        if (s.entrance && shouldSpawnVisitor(nextTick)) {
+          const ex = s.entrance;
+
+          // Prevent spawning if entrance tile already has a visitor
+          if (!isVisitorAt(visitors, ex.x, ex.y)) {
+            const v: Visitor = {
+              id: nextVisitorId,
+              position: ex,
+              prevPos: null,
+              inAttraction: false,
+              fear: VISITOR_START_FEAR,
+              happiness: VISITOR_START_HAPPINESS,
+              intent: 'explore',
+              spawnTick: nextTick,
+              exploreStartTick: nextTick,
+            };
+
+            visitors = [...visitors, v];
+            nextVisitorId += 1;
+            money += ADMISSION_FEE;
+          }
         }
 
         // set intent rules
         const withIntent = applyIntentRules(visitors, nextTick, s.exit);
-
-        // movement (move everyone currently on the grid, including newly spawned)
-        const gridH = s.grid.length;
-        const gridW = s.grid[0]?.length ?? 0;
 
         const moved =
           gridW > 0 && gridH > 0
@@ -181,30 +187,6 @@ export const useGameStore = create(
           exitEvents,
           nextExitEventId,
         };
-      });
-    },
-
-    spawnVisitor: () => {
-      const s = get();
-      if (s.lifecycle !== 'running' || !s.entrance) return;
-
-      const id = s.nextVisitorId;
-      const visitor: Visitor = {
-        id,
-        position: s.entrance,
-        prevPos: null,
-        inAttraction: false,
-        fear: VISITOR_START_FEAR,
-        happiness: VISITOR_START_HAPPINESS,
-        intent: 'explore',
-        spawnTick: s.tick,
-        exploreStartTick: s.tick,
-      };
-
-      set({
-        visitors: [...s.visitors, visitor],
-        nextVisitorId: s.nextVisitorId + 1,
-        money: s.money + ADMISSION_FEE,
       });
     },
 
