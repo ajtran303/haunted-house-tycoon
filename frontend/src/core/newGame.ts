@@ -28,6 +28,9 @@ const newGameState: GameState = {
   exitEvents: [],
   nextExitEventId: 1,
 
+  parkExitEvents: [],
+  nextParkExitEventId: 1,
+
   placementEvents: [],
   nextPlacementEventId: 1,
 };
