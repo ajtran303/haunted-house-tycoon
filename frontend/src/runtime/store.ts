@@ -25,6 +25,9 @@ type Actions = {
   newGame: () => void;
   startRun: () => void;
   pause: () => void;
+  resume: () => void;
+  fail: () => void;
+
   startRunWithInitialVisitor: () => void;
 
   // speed
@@ -52,9 +55,15 @@ export const useGameStore = create(
 
     newGame: () => set(newGame()),
 
-    startRun: () => set({ lifecycle: 'running' as Lifecycle }),
+    // runtime/store.ts
 
-    pause: () => set({ lifecycle: 'paused' as Lifecycle }),
+    startRun: () => set((s) => (s.lifecycle === 'paused' ? { ...s, lifecycle: 'running' } : s)),
+
+    pause: () => set((s) => (s.lifecycle === 'running' ? { ...s, lifecycle: 'paused' } : s)),
+
+    resume: () => set((s) => (s.lifecycle === 'paused' ? { ...s, lifecycle: 'running' } : s)),
+
+    fail: () => set((s) => (s.lifecycle !== 'failed' ? { ...s, lifecycle: 'failed' } : s)),
 
     // Start/run + ensure exactly one initial visitor (and only once)
     startRunWithInitialVisitor: () => {

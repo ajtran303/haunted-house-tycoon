@@ -22,7 +22,7 @@ export const Hud = () => {
     setShowBanner(true);
   };
 
-  const startRun = useGameStore((s) => s.startRunWithInitialVisitor);
+  const resume = useGameStore((s) => s.resume);
 
   const pause = useGameStore((s) => s.pause);
 
@@ -49,7 +49,7 @@ export const Hud = () => {
       <div>Money: ${money}</div>
       <div>Visitors: {visitorCount}</div>
       <br />
-      <button className={buttonStyle} onClick={startRun}>
+      <button className={buttonStyle} onClick={resume}>
         Start/Resume
       </button>
       <button className={buttonStyle} onClick={pause}>
