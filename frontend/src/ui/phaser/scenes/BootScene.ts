@@ -72,7 +72,11 @@ export class BootScene {
       document.removeEventListener('visibilitychange', onVisibility);
     };
 
-    this.unsubHud = bindHudOverlay(self);
+    const TILE = 24;
+    const GRID_X = 20;
+    const GRID_Y = 60;
+
+    this.unsubHud = bindHudOverlay(self, TILE, GRID_X, GRID_Y);
 
     self.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.unsubHud?.();
@@ -108,11 +112,10 @@ export class BootScene {
       (visitors) => this.queueVisitorsWork(visitors),
     );
 
-    const TILE = 24;
-
     this.unsubscribeExitToasts = bindExitToasts(this.sceneRef, TILE, 0, 0);
-    this.unsubscribePlacementFeedback = bindPlacementFeedback(this.sceneRef, TILE, 20, 60);
-    this.unsubHover = bindVisitorHover(self, TILE, 20, 60);
+    this.unsubscribePlacementFeedback = bindPlacementFeedback(this.sceneRef, TILE, GRID_X, GRID_Y);
+
+    this.unsubHover = bindVisitorHover(self, TILE, GRID_X, GRID_Y);
 
     self.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.unsubHover?.();

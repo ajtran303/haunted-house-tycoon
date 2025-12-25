@@ -11,13 +11,23 @@ const isRenderableScene = (scene: Phaser.Scene): boolean => {
   return true;
 };
 
-export const bindHudOverlay = (scene: Phaser.Scene) => {
+export const bindHudOverlay = (
+  scene: Phaser.Scene,
+  tileSize: number,
+  gridOriginX = 20,
+  gridOriginY = 60,
+) => {
   if (!isRenderableScene(scene)) return () => {};
 
-  // pinned HUD layer (always visible at all speeds / paused)
-  const layer = scene.add.container(12, 10);
-  layer.setScrollFactor(0);
-  layer.setDepth(10_000);
+  // HUD pinned at top-left
+  const hudLayer = scene.add.container(12, 10);
+  hudLayer.setScrollFactor(0);
+  hudLayer.setDepth(10_000);
+
+  // Warnings pinned under the playable grid (screen-space)
+  const warnLayer = scene.add.container(gridOriginX, gridOriginY);
+  warnLayer.setScrollFactor(0);
+  warnLayer.setDepth(10_000);
 
   const hudText = scene.add.text(0, 0, '', {
     fontFamily: 'monospace',
@@ -27,7 +37,7 @@ export const bindHudOverlay = (scene: Phaser.Scene) => {
     padding: { x: 8, y: 6 },
   });
 
-  const warnText = scene.add.text(0, 44, '', {
+  const warnText = scene.add.text(0, 0, '', {
     fontFamily: 'monospace',
     fontSize: '14px',
     color: '#ffffff',
@@ -44,10 +54,16 @@ export const bindHudOverlay = (scene: Phaser.Scene) => {
     warnText.setText('');
   });
 
-  layer.add([hudText, warnText]);
+  hudLayer.add([hudText]);
+  warnLayer.add([warnText]);
 
   const render = () => {
     const st = useGameStore.getState();
+
+    // Position warnings under current grid height (safe even if grid changes)
+    const gridH = st.grid.length;
+    const warnY = gridOriginY + gridH * tileSize + 8; // margin under grid
+    warnLayer.setPosition(gridOriginX, warnY);
 
     const hud = selectHudSnapshot(st);
     hudText.setText(
@@ -101,6 +117,7 @@ export const bindHudOverlay = (scene: Phaser.Scene) => {
       parkExitEventsLen: st.parkExitEvents.length,
       lifecycle: st.lifecycle,
       speed: st.speed,
+      gridH: st.grid.length,
     }),
     () => {
       const enqueue = () => {
@@ -113,13 +130,13 @@ export const bindHudOverlay = (scene: Phaser.Scene) => {
     },
   );
 
-  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+  const cleanup = () => {
     unsub();
-    layer.destroy(true);
-  });
-
-  return () => {
-    unsub();
-    layer.destroy(true);
+    hudLayer.destroy(true);
+    warnLayer.destroy(true);
   };
+
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);
+
+  return cleanup;
 };

@@ -1,6 +1,5 @@
-import type { Visitor } from '../../core/types';
-import { getVisitorMood, VisitorMood } from '../../ui/visitorMood';
 import { useGameStore } from '../../runtime/store';
+import { getVisitorMood, VisitorMood } from '../../ui/visitorMood';
 
 // Tune these to match your actual constants later
 const moodLabel = (m: VisitorMood): string => {
