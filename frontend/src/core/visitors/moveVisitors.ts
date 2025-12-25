@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { Grid, Vector, Visitor } from '../types';
-import { randomWalkStep } from './randomWalkStep';
 import { chooseStepForVisitor } from './chooseStepForVisitor';
+import { randomWalkStep } from './randomWalkStep';
 
 const key = (p: Vector) => `${p.x},${p.y}`;
 

@@ -173,5 +173,4 @@ describe('exitStep', () => {
 
     expect(d1).toBeLessThan(d0);
   });
-
 });

@@ -1,5 +1,5 @@
-import type { Vector, Visitor } from '../types';
 import { DEFAULT_EXPLORE_TICKS_BEFORE_EXIT } from '../constants';
+import type { Vector, Visitor } from '../types';
 
 export const applyIntentRules = (
   visitors: Visitor[],
