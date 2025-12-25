@@ -55,6 +55,9 @@ export type GameState = {
 
   exitEvents: ExitEvent[];
   nextExitEventId: number;
+
+  placementEvents: PlacementEvent[];
+  nextPlacementEventId: number;
 };
 
 export type RoomType = 'entry' | 'exit' | 'hallway' | 'scare' | 'parkEntry' | 'parkExit';
@@ -66,5 +69,22 @@ export type ExitEvent = {
   tick: number;
   visitorId: number;
   reason: ExitReason;
+  position: Vector;
+};
+
+export type PlacementFailReason =
+  | 'out_of_bounds'
+  | 'cell_occupied'
+  | 'insufficient_funds'
+  | 'invalid_entrance_placement'
+  | 'invalid_exit_placement'
+  | 'entrance_already_exists'
+  | 'exit_already_exists';
+
+export type PlacementEvent = {
+  id: number;
+  tick: number;
+  roomType: RoomType;
+  reason: PlacementFailReason;
   position: Vector;
 };

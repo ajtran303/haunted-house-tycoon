@@ -3,6 +3,7 @@ import type { Cell, Grid, RoomType } from './types';
 export type PlaceRoomOk = {
   ok: true;
   roomId: string;
+  reason?: null;
 };
 
 export type PlaceRoomFail = {

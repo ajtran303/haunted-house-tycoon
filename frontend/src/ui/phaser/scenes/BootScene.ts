@@ -1,5 +1,6 @@
 import { useGameStore } from '../../../runtime/store';
 import { bindExitToasts } from '../bindExitToasts';
+import { bindPlacementFeedback } from '../bindPlacementFeedback';
 import { createGridRenderer } from '../render/renderGrid';
 import { createVisitorsRenderer } from '../render/visitorsRenderer';
 
@@ -15,6 +16,7 @@ export class BootScene {
   private unsubscribeLifecycle?: () => void;
   private unsubscribeVisitors?: () => void;
   private unsubscribeExitToasts?: () => void;
+  private unsubscribePlacementFeedback?: () => void;
 
   private gridRenderer?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,6 +100,7 @@ export class BootScene {
 
     const TILE = 24;
     this.unsubscribeExitToasts = bindExitToasts(this.sceneRef, TILE, 0, 0);
+    this.unsubscribePlacementFeedback = bindPlacementFeedback(this.sceneRef, TILE, 20, 60);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

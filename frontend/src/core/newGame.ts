@@ -27,6 +27,9 @@ const newGameState: GameState = {
 
   exitEvents: [],
   nextExitEventId: 1,
+
+  placementEvents: [],
+  nextPlacementEventId: 1,
 };
 
 export const newGame = (): GameState => {
