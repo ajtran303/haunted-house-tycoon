@@ -17,8 +17,6 @@ describe('visitor spawnTick', () => {
 
     for (let i = 0; i < 10; i++) s.tickOnce();
 
-    s.spawnVisitor();
-
     const after = useGameStore.getState();
     expect(after.visitors.length).toBeGreaterThan(0);
 
