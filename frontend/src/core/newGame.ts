@@ -27,7 +27,7 @@ const newGameState: GameState = {
 
   exitEvents: [],
   nextExitEventId: 1,
-}
+};
 
 export const newGame = (): GameState => {
   return newGameState;

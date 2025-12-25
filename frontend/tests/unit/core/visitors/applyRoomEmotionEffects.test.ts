@@ -47,13 +47,13 @@ describe('applyRoomEmotionEffects', () => {
     expect(next.fear).toBe(5);
   });
 
-  it('Scare increases fear and decreases happiness on entry', () => {
+  it('Scare increases fear and does not affect happiness on entry', () => {
     const grid = makeGrid('scare');
     const v = makeVisitor({ happiness: 10, fear: 5 });
     const [next] = applyRoomEmotionEffects([v], grid);
 
     expect(next.fear).toBe(13); // +8
-    expect(next.happiness).toBe(8); // -2
+    expect(next.happiness).toBe(10);
   });
 
   it('Does not trigger if visitor did not enter a new cell', () => {
