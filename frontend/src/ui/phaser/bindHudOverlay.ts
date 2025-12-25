@@ -1,0 +1,125 @@
+import { useGameStore } from '../../runtime/store';
+import { selectCriticalSnapshot, selectHudSnapshot } from '../hud/selectors';
+
+const isRenderableScene = (scene: Phaser.Scene): boolean => {
+  if (!scene?.sys) return false;
+  const status = scene.sys.settings?.status;
+  // 7=SHUTDOWN, 8=DESTROYED
+  if (status === 7 || status === 8) return false;
+  if (!scene.sys.displayList) return false;
+  if (!scene.add) return false;
+  return true;
+};
+
+export const bindHudOverlay = (scene: Phaser.Scene) => {
+  if (!isRenderableScene(scene)) return () => {};
+
+  // pinned HUD layer (always visible at all speeds / paused)
+  const layer = scene.add.container(12, 10);
+  layer.setScrollFactor(0);
+  layer.setDepth(10_000);
+
+  const hudText = scene.add.text(0, 0, '', {
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    color: '#ffffff',
+    backgroundColor: '#000000',
+    padding: { x: 8, y: 6 },
+  });
+
+  const warnText = scene.add.text(0, 44, '', {
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    color: '#ffffff',
+    backgroundColor: '#000000',
+    padding: { x: 8, y: 6 },
+  });
+
+  warnText.setVisible(false);
+
+  // Self-clearing/dismissible: click hides current banner (does not block sim)
+  warnText.setInteractive({ useHandCursor: true });
+  warnText.on('pointerdown', () => {
+    warnText.setVisible(false);
+    warnText.setText('');
+  });
+
+  layer.add([hudText, warnText]);
+
+  const render = () => {
+    const st = useGameStore.getState();
+
+    const hud = selectHudSnapshot(st);
+    hudText.setText(
+      [
+        `MONEY: $${hud.money}`,
+        `VISITORS: ${hud.visitorCount}`,
+        `AVG HAPPY: ${hud.avgHappiness.toFixed(0)}`,
+        `AVG FEAR: ${hud.avgFear.toFixed(0)}`,
+      ].join('  |  '),
+    );
+
+    const crit = selectCriticalSnapshot(st);
+    const msgs: string[] = [];
+
+    // money warnings
+    if (crit.flags.has('bankruptcy_imminent')) msgs.push('BANKRUPTCY IMMINENT');
+    else if (crit.flags.has('money_low')) msgs.push('MONEY LOW');
+
+    // risk warnings
+    if (crit.flags.has('fear_high')) msgs.push('FEAR HIGH');
+
+    // outcome warnings (real exits + deaths)
+    if (crit.flags.has('exiting_rapidly')) msgs.push(`EXITS SPIKING (${crit.exitsInWindow})`);
+
+    if (crit.flags.has('deaths_spiking')) {
+      msgs.push(`DEATHS SPIKING (${crit.deathsInWindow})`);
+      // optional details
+      // msgs.push(`PANIC: ${crit.panicInWindow} MISERY: ${crit.miseryInWindow}`);
+    }
+
+    if (msgs.length) {
+      warnText.setText(msgs.join('  |  '));
+      warnText.setVisible(true);
+    } else {
+      warnText.setVisible(false);
+      warnText.setText('');
+    }
+  };
+
+  // initial
+  render();
+
+  // Update immediately on real state change (keep selector truthful).
+  // Minimal subscribe: include lengths + tick so averages update as visitors change.
+  const unsub = useGameStore.subscribe(
+    (st) => ({
+      money: st.money,
+      tick: st.tick,
+      visitorsLen: st.visitors.length,
+      exitEventsLen: st.exitEvents.length,
+      parkExitEventsLen: st.parkExitEvents.length,
+      lifecycle: st.lifecycle,
+      speed: st.speed,
+    }),
+    () => {
+      const enqueue = () => {
+        if (!isRenderableScene(scene)) return;
+        render();
+      };
+      // defer out of zustand setState stack
+      if (scene.time?.delayedCall) scene.time.delayedCall(0, enqueue);
+      else enqueue();
+    },
+  );
+
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    unsub();
+    layer.destroy(true);
+  });
+
+  return () => {
+    unsub();
+    layer.destroy(true);
+  };
+};

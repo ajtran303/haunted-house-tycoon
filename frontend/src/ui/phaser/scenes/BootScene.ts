@@ -1,5 +1,6 @@
 import { useGameStore } from '../../../runtime/store';
 import { bindExitToasts } from '../bindExitToasts';
+import { bindHudOverlay } from '../bindHudOverlay';
 import { bindPlacementFeedback } from '../bindPlacementFeedback';
 import { createGridRenderer } from '../render/renderGrid';
 import { createVisitorsRenderer } from '../render/visitorsRenderer';
@@ -42,6 +43,8 @@ export class BootScene {
   private pendingVisitors?: any;
   private pendingVisitorsFlush = false;
 
+  private unsubHud?: () => void;
+
   create() {
     // pause when browser tab/window loses focus or is hidden.
     // it causes react components (ie. HUD) to become stale.
@@ -67,7 +70,12 @@ export class BootScene {
       document.removeEventListener('visibilitychange', onVisibility);
     };
 
-    self.add.text(20, 20, 'Phaser OK', { fontSize: '20px', color: '#ffffff' });
+    this.unsubHud = bindHudOverlay(self);
+
+    self.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.unsubHud?.();
+      this.unsubHud = undefined;
+    });
 
     const initial = useGameStore.getState();
 

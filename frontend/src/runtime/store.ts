@@ -8,7 +8,7 @@ import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
 import { applyTimeTick } from '../core/time';
-import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
+import type { GameState, Lifecycle, ParkExitEvent, RoomType, Visitor } from '../core/types';
 import { applyIntentRules } from '../core/visitors/applyIntentRules';
 import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
@@ -35,10 +35,6 @@ type Actions = {
 
   // time
   tickOnce: () => void;
-
-  // visitors
-  despawnVisitor: (id: number) => void;
-  despawnVisitorsAtExit: () => void;
 
   // placement
   placeRoomAt: (x: number, y: number) => void;
@@ -145,7 +141,7 @@ export const useGameStore = create(
         // Decay happiness
         const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));
 
-        // Emotional exits
+        // Emotional exits ie. deaths
         const exitResult = removeVisitorsByEmotionalExit(decayed, nextTick, s.nextExitEventId);
 
         const afterEmotionalExit = exitResult.remaining;
@@ -161,13 +157,33 @@ export const useGameStore = create(
 
         // despawn visitors that reach the exit
         const exit = s.exit;
+
+        let parkExitEvents = s.parkExitEvents;
+        let nextParkExitEventId = s.nextParkExitEventId;
+
         const afterDespawn =
           exit == null
             ? afterEmotionalExit
-            : afterEmotionalExit.filter(
-                (v) => !(v.position.x === exit.x && v.position.y === exit.y),
-              );
+            : (() => {
+                const leaving = afterEmotionalExit.filter(
+                  (v) => v.position.x === exit.x && v.position.y === exit.y,
+                );
 
+                if (leaving.length > 0) {
+                  const newEvents: ParkExitEvent[] = leaving.map((v) => ({
+                    id: nextParkExitEventId++,
+                    tick: nextTick,
+                    visitorId: v.id,
+                    position: v.position,
+                  }));
+
+                  parkExitEvents = [...parkExitEvents, ...newEvents].slice(-200);
+                }
+
+                return afterEmotionalExit.filter(
+                  (v) => !(v.position.x === exit.x && v.position.y === exit.y),
+                );
+              })();
         // check for bankruptcy
         if (money <= 0) {
           return {
@@ -179,6 +195,8 @@ export const useGameStore = create(
             lifecycle: 'failed',
             exitEvents,
             nextExitEventId,
+            parkExitEvents,
+            nextParkExitEventId,
           };
         }
 
@@ -190,29 +208,9 @@ export const useGameStore = create(
           money,
           exitEvents,
           nextExitEventId,
+          parkExitEvents,
+          nextParkExitEventId,
         };
-      });
-    },
-
-    despawnVisitor: (id) => {
-      set((s) => ({
-        ...s,
-        visitors: s.visitors.filter((v) => v.id !== id),
-      }));
-    },
-
-    despawnVisitorsAtExit: () => {
-      set((s) => {
-        if (!s.exit) return s;
-
-        const ex = s.exit;
-        const nextVisitors = s.visitors.filter(
-          (v) => !(v.position.x === ex.x && v.position.y === ex.y),
-        );
-
-        if (nextVisitors.length === s.visitors.length) return s;
-
-        return { ...s, visitors: nextVisitors };
       });
     },
 

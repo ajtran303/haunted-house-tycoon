@@ -53,8 +53,13 @@ export type GameState = {
   // for MVP
   staffEnabled: false;
 
+  // deaths (panic/misery)
   exitEvents: ExitEvent[];
   nextExitEventId: number;
+
+  // real park exits
+  parkExitEvents: ParkExitEvent[];
+  nextParkExitEventId: number;
 
   placementEvents: PlacementEvent[];
   nextPlacementEventId: number;
@@ -62,13 +67,23 @@ export type GameState = {
 
 export type RoomType = 'entry' | 'exit' | 'hallway' | 'scare' | 'parkEntry' | 'parkExit';
 
+// NOTE: These are actually reasons for "deaths"
 export type ExitReason = 'panic' | 'misery';
 
+// And this is the "Death Event"
 export type ExitEvent = {
   id: number;
   tick: number;
   visitorId: number;
   reason: ExitReason;
+  position: Vector;
+};
+
+// This is actually the real exit event
+export type ParkExitEvent = {
+  id: number;
+  tick: number;
+  visitorId: number;
   position: Vector;
 };
 
