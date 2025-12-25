@@ -1,4 +1,7 @@
+import { ROOM_COST } from '../../../core/constants';
 import type { Cell, Grid } from '../../../core/types';
+
+const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
 const CELL_SIZE = 24;
 const ORIGIN_X = 20;
@@ -49,8 +52,61 @@ export const createGridRenderer = (
   const height = grid.length;
   const width = grid[0]?.length ?? 0;
 
+  // Renderer-local only (no store mutations)
+  let clicksEnabled = true;
+  let currentGrid: Grid = grid;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rects: any[][] = [];
+
+  // Hover highlight (outline)
+  const highlight = scene.add
+    .rectangle(ORIGIN_X, ORIGIN_Y, CELL_SIZE - 1, CELL_SIZE - 1)
+    .setOrigin(0, 0)
+    .setFillStyle(0x000000, 0)
+    .setStrokeStyle(2, 0xffffff, 1)
+    .setVisible(false);
+
+  // Hover tooltip (temporary overlay; follow mouse)
+  const infoText = scene.add
+    .text(0, 0, '', {
+      fontFamily: 'monospace',
+      fontSize: '12px',
+      color: '#ffffff',
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      padding: { x: 6, y: 4 },
+    })
+    .setDepth(10)
+    .setVisible(false);
+
+  const formatHoverInfo = (cell: Cell) => {
+    const roomType = cell.occupied ? (cell.roomType ?? 'unknown') : 'empty';
+    const roomId = cell.occupied ? (cell.roomId ?? '—') : '—';
+    const cost = cell.occupied && cell.roomType ? ROOM_COST[cell.roomType] : undefined;
+    const costStr = cost === undefined ? '—' : String(cost);
+    return `type: ${roomType}\ncost: ${costStr}\nid: ${roomId}`;
+  };
+
+  const positionTooltip = (pointer: any) => {
+    // Pointer coords are in screen space; with no camera movement these map to world.
+    // If you later add camera scrolling/zoom, swap to pointer.worldX/worldY.
+    const offsetX = 14;
+    const offsetY = 18;
+
+    const rawX = pointer.x + offsetX;
+    const rawY = pointer.y + offsetY;
+
+    // Clamp to viewport so text doesn't go off-screen.
+    const viewW = scene.scale?.width ?? scene.sys.game.config.width;
+    const viewH = scene.scale?.height ?? scene.sys.game.config.height;
+
+    // getBounds is safe after setText (Phaser recalculates size lazily)
+    const b = infoText.getBounds();
+    const x = clamp(rawX, 4, Math.max(4, viewW - b.width - 4));
+    const y = clamp(rawY, 4, Math.max(4, viewH - b.height - 4));
+
+    infoText.setPosition(x, y);
+  };
 
   for (let y = 0; y < height; y++) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,9 +121,35 @@ export const createGridRenderer = (
       );
       r.setOrigin(0, 0);
 
-      // ✅ make each cell clickable
+      // Keep input enabled so hover feedback always works.
+      // Gate only the click action via clicksEnabled.
       r.setInteractive({ useHandCursor: true });
-      r.on('pointerdown', () => onCellClick(x, y));
+
+      r.on('pointerdown', () => {
+        if (!clicksEnabled) return;
+        onCellClick(x, y);
+      });
+
+      r.on('pointerover', (pointer: any) => {
+        const cell = currentGrid[y]?.[x];
+        if (!cell || !cell.occupied) return;
+
+        highlight.setPosition(ORIGIN_X + x * CELL_SIZE, ORIGIN_Y + y * CELL_SIZE).setVisible(true);
+
+        infoText.setText(formatHoverInfo(cell)).setVisible(true);
+        positionTooltip(pointer);
+      });
+
+      // Follow mouse while hovering this cell
+      r.on('pointermove', (pointer: any) => {
+        if (!infoText.visible) return;
+        positionTooltip(pointer);
+      });
+
+      r.on('pointerout', () => {
+        highlight.setVisible(false);
+        infoText.setVisible(false);
+      });
 
       row.push(r);
     }
@@ -75,6 +157,8 @@ export const createGridRenderer = (
   }
 
   const draw = (next: Grid) => {
+    currentGrid = next;
+
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const cell = next[y][x];
@@ -84,17 +168,15 @@ export const createGridRenderer = (
   };
 
   const setEnabled = (enabled: boolean) => {
-    // disable clicks when paused (and also disable hand cursor)
-    for (const row of rects) {
-      for (const r of row) {
-        if (r.input) r.input.enabled = enabled;
-      }
-    }
+    // Disable placement clicks when paused, but keep hover feedback working.
+    clicksEnabled = enabled;
   };
 
   draw(grid);
 
   const destroy = () => {
+    highlight.destroy();
+    infoText.destroy();
     for (const row of rects) for (const r of row) r.destroy();
   };
 
