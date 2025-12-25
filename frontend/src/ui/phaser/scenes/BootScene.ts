@@ -2,6 +2,7 @@ import { useGameStore } from '../../../runtime/store';
 import { bindExitToasts } from '../bindExitToasts';
 import { bindHudOverlay } from '../bindHudOverlay';
 import { bindPlacementFeedback } from '../bindPlacementFeedback';
+import { bindVisitorHover } from '../bindVisitorHover';
 import { createGridRenderer } from '../render/renderGrid';
 import { createVisitorsRenderer } from '../render/visitorsRenderer';
 
@@ -18,6 +19,7 @@ export class BootScene {
   private unsubscribeVisitors?: () => void;
   private unsubscribeExitToasts?: () => void;
   private unsubscribePlacementFeedback?: () => void;
+  private unsubHover?: () => void;
 
   private gridRenderer?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,8 +109,15 @@ export class BootScene {
     );
 
     const TILE = 24;
+
     this.unsubscribeExitToasts = bindExitToasts(this.sceneRef, TILE, 0, 0);
     this.unsubscribePlacementFeedback = bindPlacementFeedback(this.sceneRef, TILE, 20, 60);
+    this.unsubHover = bindVisitorHover(self, TILE, 20, 60);
+
+    self.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.unsubHover?.();
+      this.unsubHover = undefined;
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -194,6 +203,9 @@ export class BootScene {
     this.unsubscribeLifecycle?.();
     this.unsubscribeVisitors?.();
     this.unsubscribeExitToasts?.();
+    this.unsubscribePlacementFeedback?.();
+    this.unsubHover?.();
+    this.unsubHud?.();
 
     this.gridRenderer?.destroy();
     this.visitorsRenderer?.destroy();
