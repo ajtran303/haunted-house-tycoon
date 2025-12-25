@@ -30,9 +30,9 @@ export const getVisitorMood = (v: Visitor): VisitorMood => {
   if (happiness >= 0.7 && fear <= 0.2) return 'happy';
 
   // --- MISERY APPROACH (only when fear isn't already dominating) ---
-  const normalezedMisery = HAPPINESS_MISERY_THRESHOLD / happyMax; // e.g. 0.05
-  const normalizedMiserable = Math.min(1, normalezedMisery + 0.1); // e.g. 0.15 (near misery)
-  const unhappy01 = Math.min(1, normalezedMisery + 0.3); // e.g. 0.35 (approaching misery)
+  const normalizedMisery = HAPPINESS_MISERY_THRESHOLD / happyMax; // e.g. 0.05
+  const normalizedMiserable = Math.min(1, normalizedMisery + 0.1); // e.g. 0.15 (near misery)
+  const unhappy01 = Math.min(1, normalizedMisery + 0.3); // e.g. 0.35 (approaching misery)
 
   if (happiness <= normalizedMiserable) return 'miserable';
   if (happiness <= unhappy01) return 'unhappy';
