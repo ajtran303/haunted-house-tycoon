@@ -6,16 +6,16 @@ import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { upkeepPerTick } from '../core/economy';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
+import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
 import { applyTimeTick } from '../core/time';
 import type { GameState, Lifecycle, RoomType, Visitor } from '../core/types';
 import { applyIntentRules } from '../core/visitors/applyIntentRules';
 import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness } from '../core/visitors/emotions';
+import { entranceIsStructurallyBlocked } from '../core/visitors/entranceBlocked';
 import { moveVisitors } from '../core/visitors/moveVisitors';
 import { totalSpendingPerTick } from '../core/visitors/spending';
-import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
-import { entranceIsStructurallyBlocked } from '../core/visitors/entranceBlocked';
 
 type Input =
   | { type: 'selectRoomType'; roomType: RoomType }
@@ -58,13 +58,17 @@ export const useGameStore = create(
 
     // runtime/store.ts
 
-    startRun: () => set((s) => (s.lifecycle === 'paused' ? { ...s, lifecycle: 'running' } : s)),
+    startRun: () =>
+      set((s) => (s.lifecycle === 'paused' ? { ...s, lifecycle: 'running' as Lifecycle } : s)),
 
-    pause: () => set((s) => (s.lifecycle === 'running' ? { ...s, lifecycle: 'paused' } : s)),
+    pause: () =>
+      set((s) => (s.lifecycle === 'running' ? { ...s, lifecycle: 'paused' as Lifecycle } : s)),
 
-    resume: () => set((s) => (s.lifecycle === 'paused' ? { ...s, lifecycle: 'running' } : s)),
+    resume: () =>
+      set((s) => (s.lifecycle === 'paused' ? { ...s, lifecycle: 'running' as Lifecycle } : s)),
 
-    fail: () => set((s) => (s.lifecycle !== 'failed' ? { ...s, lifecycle: 'failed' } : s)),
+    fail: () =>
+      set((s) => (s.lifecycle !== 'failed' ? { ...s, lifecycle: 'failed' as Lifecycle } : s)),
 
     setSpeed1x: () => set({ speed: 1 }),
     setSpeed4x: () => set({ speed: 4 }),
@@ -228,7 +232,23 @@ export const useGameStore = create(
         nextRoomId: s.nextRoomId,
       });
 
-      if (!applied.result.ok) return;
+      if (!applied.result.ok) {
+        set((st) => ({
+          ...st,
+          placementEvents: [
+            ...st.placementEvents,
+            {
+              id: st.nextPlacementEventId,
+              tick: st.tick,
+              roomType: st.selectedRoomType,
+              reason: applied.result.reason,
+              position: { x, y },
+            },
+          ].slice(-50),
+          nextPlacementEventId: st.nextPlacementEventId + 1,
+        }));
+        return; // non-blocking: game keeps running
+      }
 
       set({
         grid: applied.grid,
