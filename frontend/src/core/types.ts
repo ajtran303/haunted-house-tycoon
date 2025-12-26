@@ -8,26 +8,36 @@ export type Cell = {
   occupied: boolean;
   roomId: string | null;
   roomType: RoomType | null;
+  portalTo?: string; // attractionId if this is a portal tile
 };
 
 export type Grid = Cell[][];
+
+export type AttractionGrid = {
+  id: string;
+  grid: Grid;
+  entryPoint: Vector;
+  exitPoint: Vector;
+};
 
 export type Vector = { x: number; y: number };
 
 export type VisitorIntent = 'explore' | 'exit';
 
+export type VisitorLocation = { type: 'midway' } | { type: 'attraction'; attractionId: string };
+
 export type Visitor = {
   id: number;
   position: Vector;
   prevPos: Vector | null;
-  inAttraction: boolean;
+  inAttraction: boolean; // DEPRECATED: will be removed, use location instead
+  location: VisitorLocation;
+  returnPortalPos: Vector | null; // Portal position visitor entered from (for returning to midway)
   fear: number;
   happiness: number;
   intent: VisitorIntent;
   spawnTick: number;
   exploreStartTick: number;
-  location: VisitorLocation;
-  returnPortalPos: Vector | null; // which portal they entered from
 };
 
 export type GameSpeed = 1 | 4;
@@ -42,7 +52,7 @@ export type GameState = {
   money: number;
 
   midwayGrid: Grid;
-  attractions: Record<string, AttractionGrid>; // keyed by id
+  attractions: Record<string, AttractionGrid>;
 
   visitors: Visitor[];
   nextVisitorId: number;
@@ -113,12 +123,3 @@ export type PlacementEvent = {
   reason: PlacementFailReason;
   position: Vector;
 };
-
-type AttractionGrid = {
-  id: string;
-  grid: Grid;
-  entryPoint: Vector; // where visitors spawn when entering
-  exitPoint: Vector; // where visitors must reach to leave
-};
-
-type VisitorLocation = { type: 'midway' } | { type: 'attraction'; attractionId: string };
