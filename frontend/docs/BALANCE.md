@@ -135,11 +135,18 @@ When visitor doesn't move inside attraction:
 
 ### Amenity Rooms (Midway Only)
 
-| Room | Fear | Happiness | Spending | Notes |
-|------|------|-----------|----------|-------|
-| `foodStall` | TBD | TBD | TBD | First amenity type |
+All amenities are 3-cell trominoes with identical effects (can tune individually later):
 
-**Design intent:** Amenities counter baseline decay. Net positive on midway.
+| Room | Shape | Fear | Happiness | Purchase | Cost |
+|------|-------|------|-----------|----------|------|
+| `foodStall` | L-up-left | -5 | +5 | $10 × multiplier | $150 |
+| `giftShop` | I-horizontal | -5 | +5 | $10 × multiplier | $300 |
+| `restroom` | I-vertical | -5 | +5 | $10 × multiplier | $250 |
+| `photoBooth` | L-up-right | -5 | +5 | $10 × multiplier | $275 |
+| `arcade` | L-down-right | -5 | +5 | $10 × multiplier | $350 |
+| `firstAid` | L-down-left | -5 | +5 | $10 × multiplier | $200 |
+
+**Design intent:** Amenities counter fear and boost happiness. One-time effect on entry + purchase income. Larger shapes = more strategic placement.
 
 ## Staff (When Implemented)
 
@@ -158,13 +165,22 @@ When visitor doesn't move inside attraction:
 ### Fear vs Recovery Rate
 
 ```
-Scare room fear: +8 per entry
-Fear recovery: 2 per tick (midway only)
+Scare room fear:    +8 per entry
+Fear recovery:      -2 per tick (midway only)
+Amenity relief:     -5 per entry (one-time)
 
-Ratio: One scare room takes 4 ticks to recover from
+Ratio: 4:1 (one scare room = 4 ticks of midway recovery)
+
+Example scenario:
+- Visitor goes through attraction with 3 scare rooms: +24 fear
+- Returns to midway, needs 12 ticks to recover naturally
+- OR visits 2 amenities (-10 fear) + 7 ticks midway time
+- Panic threshold (90) requires ~11 scare rooms from 0 fear
 ```
 
-**Why:** Attractions should feel risky. Recovery should feel like relief, not instant reset.
+**Why:** Attractions should feel risky. Recovery should feel like relief, not instant reset. Amenities provide faster recovery but cost money to build.
+
+**Verified by:** `tests/unit/core/fearBalance.test.ts`
 
 ### Income vs Upkeep
 

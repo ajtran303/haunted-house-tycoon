@@ -8,7 +8,7 @@ export const ROOM_EMOTION_EFFECTS: Partial<Record<RoomType, EmotionDelta>> = {
   hallway: {
     /* neutral */
   },
-  scare: { fear: +8 },
+  scare: { fear: +8 }, // See constants.ts for balance rationale (4:1 vs recovery rate)
   exit: {
     /* optional: neutral */
   },
