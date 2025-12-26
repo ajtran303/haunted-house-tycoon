@@ -68,7 +68,14 @@ export type GameState = {
   nextPlacementEventId: number;
 };
 
-export type RoomType = 'entry' | 'exit' | 'hallway' | 'scare' | 'parkEntry' | 'parkExit';
+export type RoomType =
+  | 'entry'
+  | 'exit'
+  | 'hallway'
+  | 'scare'
+  | 'parkEntry'
+  | 'parkExit'
+  | 'attractionPortal';
 
 // NOTE: These are actually reasons for "deaths"
 export type ExitReason = 'panic' | 'misery';
