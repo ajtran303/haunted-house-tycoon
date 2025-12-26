@@ -65,7 +65,7 @@ export type GameState = {
   exit: Vector | null;
 
   nextRoomId: number;
-  selectedRoomType: RoomType;
+  selectedRoomType: RoomType | null;
 
   // for MVP
   staffEnabled: false;

@@ -81,6 +81,10 @@ export class BootScene {
     const GRID_X = 20;
     const GRID_Y = 60;
 
+    // Expose scene for direct view rebuilds from React
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__bootScene = this;
+
     this.unsubHud = bindHudOverlay(self, TILE, GRID_X, GRID_Y);
 
     self.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -98,16 +102,22 @@ export class BootScene {
     this.visitorsRenderer.draw(this.getVisitorsForView(initial));
 
     // Subscribe to view changes - rebuild grid when switching views
-    // Use a string key to ensure proper change detection
-    this.unsubscribeView = useGameStore.subscribe(
-      (s) =>
-        s.currentView.type === 'midway' ? 'midway' : `attraction:${s.currentView.attractionId}`,
-      (viewKey, prevViewKey) => {
-        if (viewKey !== prevViewKey) {
-          this.rebuildForCurrentView();
-        }
-      },
-    );
+    let lastViewKey =
+      initial.currentView.type === 'midway'
+        ? 'midway'
+        : `attraction:${initial.currentView.attractionId}`;
+
+    this.unsubscribeView = useGameStore.subscribe((state) => {
+      const viewKey =
+        state.currentView.type === 'midway'
+          ? 'midway'
+          : `attraction:${state.currentView.attractionId}`;
+
+      if (viewKey !== lastViewKey) {
+        lastViewKey = viewKey;
+        this.rebuildForCurrentView();
+      }
+    });
 
     // Subscribe to the appropriate grid based on current view
     this.unsubscribeGrid = useGameStore.subscribe(
@@ -186,6 +196,10 @@ export class BootScene {
     this.buildRenderer(grid);
     this.gridRenderer?.setEnabled(state.lifecycle === 'running');
     this.visitorsRenderer?.draw(this.getVisitorsForView(state));
+  }
+
+  public forceViewRebuild() {
+    this.rebuildForCurrentView();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

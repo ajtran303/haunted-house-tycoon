@@ -257,6 +257,7 @@ export const useGameStore = create(
       if (s.lifecycle !== 'running') return;
 
       const roomType = s.selectedRoomType;
+      if (!roomType) return; // Nothing selected
 
       // Get the grid we're currently viewing/placing on
       const currentGrid =
@@ -270,7 +271,7 @@ export const useGameStore = create(
         grid: currentGrid,
         x,
         y,
-        roomType: s.selectedRoomType,
+        roomType,
         money: s.money,
         costByType: ROOM_COST,
         nextRoomId: s.nextRoomId,
@@ -309,14 +310,18 @@ export const useGameStore = create(
           );
         }
 
+        // Determine if we should clear selection after placement
+        const clearSelection =
+          roomType === 'parkEntry' || roomType === 'parkExit' || roomType === 'attractionPortal';
+
         set({
           midwayGrid: gridToSet,
           money: applied.money,
           nextRoomId: applied.nextRoomId,
           ...(roomType === 'parkEntry' ? { entrance: { x, y } } : null),
           ...(roomType === 'parkExit' ? { exit: { x, y } } : null),
-          // Clear target after placing portal
           ...(roomType === 'attractionPortal' ? { targetAttractionId: null } : null),
+          ...(clearSelection ? { selectedRoomType: null } : null),
         });
       } else {
         // Update attraction grid

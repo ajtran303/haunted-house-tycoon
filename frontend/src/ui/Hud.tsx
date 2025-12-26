@@ -30,6 +30,8 @@ export const Hud = () => {
     viewAttraction(attractionId);
   };
 
+  const isRunning = lifecycle === 'running';
+
   const resume = useGameStore((s) => s.resume);
 
   const pause = useGameStore((s) => s.pause);
@@ -65,33 +67,36 @@ export const Hud = () => {
       </button>
       <br />
       <br />
-      <SpeedControls />
+      {isRunning && <SpeedControls />}
       <br />
 
-      {/* View Switcher */}
-      <div className="mb-2 border-t pt-2">
-        <div className="mb-1 font-bold">View</div>
-        <button
-          className={`${buttonStyle} ${currentView.type === 'midway' ? 'bg-gray-200' : ''}`}
-          onClick={viewMidway}
-        >
-          Midway
-        </button>
-
-        {/* List of attractions */}
-        {Object.values(attractions).map((attraction) => (
+      {/* View Switcher - only shown when running */}
+      {isRunning && (
+        <div className="mb-2 border-t pt-2">
+          <div className="mb-1 font-bold">View</div>
           <button
-            key={attraction.id}
-            className={`${buttonStyle} ${currentView.type === 'attraction' && currentView.attractionId === attraction.id ? 'bg-gray-200' : ''}`}
-            onClick={() => handleAttractionClick(attraction.id)}
+            className={`${buttonStyle} ${currentView.type === 'midway' ? 'bg-gray-200' : ''}`}
+            onClick={viewMidway}
           >
-            {attraction.name}
+            Midway
           </button>
-        ))}
-      </div>
+
+          {/* List of attractions */}
+          {Object.values(attractions).map((attraction) => (
+            <button
+              key={attraction.id}
+              className={`${buttonStyle} ${currentView.type === 'attraction' && currentView.attractionId === attraction.id ? 'bg-gray-200' : ''}`}
+              onClick={() => handleAttractionClick(attraction.id)}
+            >
+              {attraction.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <br />
-      <RoomSelector />
+      {/* Room Selector - only shown when running */}
+      {isRunning && <RoomSelector />}
     </div>
   );
 };
