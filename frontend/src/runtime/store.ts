@@ -335,6 +335,7 @@ export const useGameStore = create(
       } else {
         // Update attraction grid
         const attractionId = s.currentView.attractionId;
+        const clearSelection = roomType === 'entry' || roomType === 'exit';
         set((st) => ({
           ...st,
           attractions: {
@@ -349,6 +350,7 @@ export const useGameStore = create(
           },
           money: applied.money,
           nextRoomId: applied.nextRoomId,
+          ...(clearSelection ? { selectedRoomType: null } : null),
         }));
       }
     },
