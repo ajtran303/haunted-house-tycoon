@@ -22,6 +22,7 @@ const COLOR_HALLWAY = 0x95a5a6;
 const COLOR_SCARE = 0x9b59b6;
 const COLOR_PARK_ENTRY = 0x0000ff;
 const COLOR_PARK_EXIT = 0xe74c3c;
+const COLOR_PORTAL = 0xff8800; // Orange for portals
 
 const fillForCell = (cell: Cell) => {
   if (!cell.occupied) return COLOR_EMPTY;
@@ -39,6 +40,8 @@ const fillForCell = (cell: Cell) => {
       return COLOR_PARK_ENTRY;
     case 'parkExit':
       return COLOR_PARK_EXIT;
+    case 'attractionPortal':
+      return COLOR_PORTAL;
     default:
       // fallback if older saves/tests don’t set roomType yet
       return 0x666666;
@@ -84,7 +87,8 @@ export const createGridRenderer = (
     const roomId = cell.occupied ? (cell.roomId ?? '—') : '—';
     const cost = cell.occupied && cell.roomType ? ROOM_COST[cell.roomType] : undefined;
     const costStr = cost === undefined ? '—' : String(cost);
-    return `type: ${roomType}\ncost: ${costStr}\nid: ${roomId}`;
+    const portalInfo = cell.portalTo ? `\nportal→ ${cell.portalTo}` : '';
+    return `type: ${roomType}\ncost: ${costStr}\nid: ${roomId}${portalInfo}`;
   };
 
   const positionTooltip = (pointer: any) => {

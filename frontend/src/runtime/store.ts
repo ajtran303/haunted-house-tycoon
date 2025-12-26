@@ -331,6 +331,9 @@ export const useGameStore = create(
             [attractionId]: {
               ...st.attractions[attractionId],
               grid: applied.grid,
+              // Update entry/exit points when those tiles are placed
+              ...(roomType === 'entry' ? { entryPoint: { x, y } } : null),
+              ...(roomType === 'exit' ? { exitPoint: { x, y } } : null),
             },
           },
           money: applied.money,
