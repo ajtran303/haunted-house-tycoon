@@ -33,6 +33,7 @@ export const removeVisitorsByEmotionalExit = (
       visitorId: v.id,
       reason,
       position: v.position,
+      location: v.location,
     });
 
     id += 1;
