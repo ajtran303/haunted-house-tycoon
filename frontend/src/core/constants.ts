@@ -24,6 +24,7 @@ export const ROOM_COST: Record<RoomType, number> = {
   parkEntry: 0,
   parkExit: 0,
   attractionPortal: 0,
+  foodStall: 150,
 };
 
 export const TICKS_PER_VISITOR_SPAWN = 5;
@@ -69,7 +70,13 @@ export const ROOM_UPKEEP_PER_TICK: Partial<Record<RoomType, number>> = {
   exit: 0,
   parkEntry: 0,
   parkExit: 0,
+  foodStall: 0,
 };
 
 export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 30; // for dev
 // export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 60;
+
+// Amenity effects (applied once on entry)
+export const AMENITY_HAPPINESS_BOOST = 5;
+export const AMENITY_FEAR_REDUCTION = 5;
+export const AMENITY_BASE_PURCHASE = 10;

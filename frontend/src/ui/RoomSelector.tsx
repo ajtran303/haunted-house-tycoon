@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { ROOM_COST } from '../core/constants';
 import { useGameStore } from '../runtime/store';
 
 export const RoomSelector = () => {
@@ -96,6 +97,19 @@ export const RoomSelector = () => {
         </div>
       )}
 
+      {/* Amenities - midway only */}
+      {inMidway && (
+        <div className="mt-2">
+          <div className="text-xs text-gray-600">Amenities:</div>
+          <button
+            className={btn(selected === 'foodStall')}
+            onClick={() => dispatch({ type: 'selectRoomType', roomType: 'foodStall' })}
+          >
+            Food Stall (${ROOM_COST.foodStall})
+          </button>
+        </div>
+      )}
+
       {/* Create Attraction - only show on midway after park entry/exit placed */}
       {inMidway && entrance && exit && (
         <div className="mt-2">
@@ -165,7 +179,7 @@ export const RoomSelector = () => {
                   className={btn(selected === 'entry')}
                   onClick={() => dispatch({ type: 'selectRoomType', roomType: 'entry' })}
                 >
-                  Entry
+                  Entry (${ROOM_COST.entry})
                 </button>
               )}
               {!hasAttractionExit && (
@@ -173,7 +187,7 @@ export const RoomSelector = () => {
                   className={btn(selected === 'exit')}
                   onClick={() => dispatch({ type: 'selectRoomType', roomType: 'exit' })}
                 >
-                  Exit
+                  Exit (${ROOM_COST.exit})
                 </button>
               )}
             </div>
@@ -183,13 +197,13 @@ export const RoomSelector = () => {
               className={btn(selected === 'hallway')}
               onClick={() => dispatch({ type: 'selectRoomType', roomType: 'hallway' })}
             >
-              Hallway
+              Hallway (${ROOM_COST.hallway})
             </button>
             <button
               className={btn(selected === 'scare')}
               onClick={() => dispatch({ type: 'selectRoomType', roomType: 'scare' })}
             >
-              Scare
+              Scare (${ROOM_COST.scare})
             </button>
           </div>
         </>
