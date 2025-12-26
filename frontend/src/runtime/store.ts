@@ -17,12 +17,12 @@ import type {
   RoomType,
   Visitor,
 } from '../core/types';
+import { calculateAmenityPurchases } from '../core/visitors/amenityPurchases';
 import { applyIntentRules } from '../core/visitors/applyIntentRules';
 import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness, recoverFear } from '../core/visitors/emotions';
 import { moveVisitorsMultiGrid } from '../core/visitors/moveVisitorsMultiGrid';
-import { calculateAmenityPurchases } from '../core/visitors/amenityPurchases';
 import { totalSpendingPerTick } from '../core/visitors/spending';
 import { tileIsStructurallyBlocked } from '../core/visitors/tileIsStructurallyBlocked';
 
@@ -176,8 +176,10 @@ export const useGameStore = create(
         money += calculateAmenityPurchases(moved, s.midwayGrid);
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
-        // TODO: Make this location-aware when room effects are differentiated
-        const withRoomEffects = applyRoomEmotionEffects(moved, s.midwayGrid);
+        const withRoomEffects = applyRoomEmotionEffects(moved, {
+          midwayGrid: s.midwayGrid,
+          attractions: s.attractions,
+        });
 
         // Decay happiness (midway only, handled inside decayHappiness)
         const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));

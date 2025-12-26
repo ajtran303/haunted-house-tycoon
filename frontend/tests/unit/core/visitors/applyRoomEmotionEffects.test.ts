@@ -24,11 +24,17 @@ const makeGrid = (roomTypeAtCenter: any): Grid => {
   ] as unknown as Grid;
 };
 
+// Wrap grid in lookup for new signature (visitors default to midway)
+const makeLookup = (grid: Grid) => ({
+  midwayGrid: grid,
+  attractions: {},
+});
+
 describe('applyRoomEmotionEffects', () => {
   it('Entry gives a small happiness boost on entry', () => {
     const grid = makeGrid('entry');
     const v = makeVisitor({ happiness: 10, fear: 0 });
-    const [next] = applyRoomEmotionEffects([v], grid);
+    const [next] = applyRoomEmotionEffects([v], makeLookup(grid));
 
     expect(next.happiness).toBe(12); // matches mapping (+2)
     expect(next.fear).toBe(0);
@@ -37,7 +43,7 @@ describe('applyRoomEmotionEffects', () => {
   it('Hallway is neutral on entry', () => {
     const grid = makeGrid('hallway');
     const v = makeVisitor({ happiness: 10, fear: 5 });
-    const [next] = applyRoomEmotionEffects([v], grid);
+    const [next] = applyRoomEmotionEffects([v], makeLookup(grid));
 
     expect(next.happiness).toBe(10);
     expect(next.fear).toBe(5);
@@ -46,7 +52,7 @@ describe('applyRoomEmotionEffects', () => {
   it('Scare increases fear and does not affect happiness on entry', () => {
     const grid = makeGrid('scare');
     const v = makeVisitor({ happiness: 10, fear: 5 });
-    const [next] = applyRoomEmotionEffects([v], grid);
+    const [next] = applyRoomEmotionEffects([v], makeLookup(grid));
 
     expect(next.fear).toBe(13); // +8
     expect(next.happiness).toBe(10);
@@ -60,7 +66,7 @@ describe('applyRoomEmotionEffects', () => {
       happiness: 10,
       fear: 5,
     });
-    const [next] = applyRoomEmotionEffects([v], grid);
+    const [next] = applyRoomEmotionEffects([v], makeLookup(grid));
 
     expect(next.fear).toBe(5);
     expect(next.happiness).toBe(10);
@@ -72,7 +78,7 @@ describe('applyRoomEmotionEffects', () => {
       fear: EMOTION_BOUNDS.fear.max,
       happiness: EMOTION_BOUNDS.happiness.min,
     });
-    const [next] = applyRoomEmotionEffects([v], grid);
+    const [next] = applyRoomEmotionEffects([v], makeLookup(grid));
 
     expect(next.fear).toBe(EMOTION_BOUNDS.fear.max);
     expect(next.happiness).toBe(EMOTION_BOUNDS.happiness.min);
