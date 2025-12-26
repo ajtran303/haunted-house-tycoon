@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { GameState, Grid, Vector, Visitor } from '../types';
+import type { BlockingState, GameState, Grid, Vector, Visitor } from '../types';
 import { chooseStepForVisitor } from './chooseStepForVisitor';
 import { randomWalkStep } from './randomWalkStep';
 
@@ -64,6 +64,7 @@ export const moveVisitorsMultiGrid = (
     const gridH = grid.length;
 
     const getCell = (p: Vector) => grid[p.y]?.[p.x] ?? null;
+    const getMidwayCell = (p: Vector) => state.midwayGrid[p.y]?.[p.x] ?? null;
     const currentRoomType = getCell(v.position)?.roomType;
 
     // Check if an attraction has both entry and exit tiles placed
@@ -78,28 +79,41 @@ export const moveVisitorsMultiGrid = (
     };
 
     // Check if stepping on a portal (midway only)
-    const checkPortalTransition = (pos: Vector): Visitor | null => {
-      if (v.location.type !== 'midway') return null;
+    // Returns: { visitor, blocked } where blocked indicates why entry failed
+    const checkPortalTransition = (
+      pos: Vector,
+    ): { visitor: Visitor | null; blocked: BlockingState | null } => {
+      if (v.location.type !== 'midway') return { visitor: null, blocked: null };
 
       const cell = getCell(pos);
       if (cell?.roomType === 'attractionPortal' && cell.portalTo) {
         const attraction = state.attractions[cell.portalTo];
-        if (!attraction) return null;
+        if (!attraction) return { visitor: null, blocked: null };
 
         // Only allow entry if attraction has both entry AND exit placed
-        if (!isAttractionReady(cell.portalTo)) return null;
+        if (!isAttractionReady(cell.portalTo)) return { visitor: null, blocked: null };
+
+        // Check if entry point is occupied by another visitor
+        const entryLoc = { type: 'attraction' as const, attractionId: cell.portalTo };
+        if (isOccupied(entryLoc, attraction.entryPoint)) {
+          return { visitor: null, blocked: 'queued-to-enter' };
+        }
 
         return {
-          ...v,
-          prevPos: v.position,
-          position: attraction.entryPoint,
-          location: { type: 'attraction', attractionId: cell.portalTo },
-          returnPortalPos: pos, // Remember where they entered from
-          intent: 'explore', // Reset to explore when entering attraction
-          exploreStartTick: tick,
+          visitor: {
+            ...v,
+            prevPos: v.position,
+            position: attraction.entryPoint,
+            location: { type: 'attraction', attractionId: cell.portalTo },
+            returnPortalPos: pos, // Remember where they entered from
+            intent: 'explore', // Reset to explore when entering attraction
+            exploreStartTick: tick,
+            blockingState: null, // Clear any blocking state on successful entry
+          },
+          blocked: null,
         };
       }
-      return null;
+      return { visitor: null, blocked: null };
     };
 
     // Find a valid return position near the portal (up to 2 tiles away)
@@ -114,9 +128,16 @@ export const moveVisitorsMultiGrid = (
         const cell = midway[p.y]?.[p.x];
         if (!cell) return false;
         if (cell.type !== 'floor') return false;
-        // Can return to portal tile itself, or adjacent floor/parkEntry/parkExit tiles
+        // Cannot return to attraction-only tiles or portals (would re-enter immediately)
         const rt = cell.roomType;
-        if (rt === 'hallway' || rt === 'scare' || rt === 'entry' || rt === 'exit') return false;
+        if (
+          rt === 'hallway' ||
+          rt === 'scare' ||
+          rt === 'entry' ||
+          rt === 'exit' ||
+          rt === 'attractionPortal'
+        )
+          return false;
         // Check if occupied by another visitor
         if (isOccupied({ type: 'midway' }, p)) return false;
         return true;
@@ -140,10 +161,7 @@ export const moveVisitorsMultiGrid = (
         { x: -1, y: -1 },
       ];
 
-      // First try the portal position itself
-      if (isValidReturn(portalPos)) return portalPos;
-
-      // Then try adjacent tiles
+      // Try adjacent tiles first
       for (const off of offsets1) {
         const p = { x: portalPos.x + off.x, y: portalPos.y + off.y };
         if (isValidReturn(p)) return p;
@@ -159,29 +177,39 @@ export const moveVisitorsMultiGrid = (
     };
 
     // Check if exiting attraction
-    const checkAttractionExit = (pos: Vector): Visitor | null => {
-      if (v.location.type !== 'attraction') return null;
+    // Returns: { visitor, blocked } where blocked indicates why exit failed
+    const checkAttractionExit = (
+      pos: Vector,
+    ): { visitor: Visitor | null; blocked: BlockingState | null } => {
+      if (v.location.type !== 'attraction') return { visitor: null, blocked: null };
 
       const attraction = state.attractions[v.location.attractionId];
-      if (!attraction) return null;
+      if (!attraction) return { visitor: null, blocked: null };
 
       // Check if at exit point
       if (pos.x === attraction.exitPoint.x && pos.y === attraction.exitPoint.y) {
-        if (!v.returnPortalPos) return null; // Safety check
+        if (!v.returnPortalPos) return { visitor: null, blocked: null }; // Safety check
 
         const returnPos = findReturnPosition(v.returnPortalPos);
-        if (!returnPos) return null; // No valid position, stay in attraction
+        if (!returnPos) {
+          // At exit but can't return to midway - queued to return
+          return { visitor: null, blocked: 'queued-to-return' };
+        }
 
         return {
-          ...v,
-          prevPos: v.position,
-          position: returnPos,
-          location: { type: 'midway' },
-          returnPortalPos: null,
-          intent: v.intent, // Keep current intent
+          visitor: {
+            ...v,
+            prevPos: v.position,
+            position: returnPos,
+            location: { type: 'midway' },
+            returnPortalPos: null,
+            intent: v.intent, // Keep current intent
+            blockingState: null, // Clear blocking state on successful exit
+          },
+          blocked: null,
         };
       }
-      return null;
+      return { visitor: null, blocked: null };
     };
 
     // Determine walkability based on location
@@ -202,6 +230,43 @@ export const moveVisitorsMultiGrid = (
         return true;
       }
     };
+
+    // Re-check blocking state transitions before computing movement
+    // If visitor was blocked, try again this tick
+    if (v.blockingState === 'queued-to-enter') {
+      // Visitor is on a portal tile, try to enter attraction again
+      const portalResult = checkPortalTransition(v.position);
+      if (portalResult.visitor) {
+        moved.set(v.id, portalResult.visitor);
+        const newLocKey = 'attraction:' + (portalResult.visitor.location as any).attractionId;
+        if (!occupied.has(newLocKey)) {
+          occupied.set(newLocKey, new Set());
+        }
+        occupied.get(newLocKey)!.add(key(portalResult.visitor.position));
+        continue;
+      }
+      // Still blocked - stay in queued state
+      occupied.get(locKey)!.add(key(v.position));
+      moved.set(v.id, { ...v, prevPos: v.position });
+      continue;
+    }
+
+    if (v.blockingState === 'queued-to-return') {
+      // Visitor is at attraction exit, try to return to midway again
+      const exitResult = checkAttractionExit(v.position);
+      if (exitResult.visitor) {
+        moved.set(v.id, exitResult.visitor);
+        if (!occupied.has('midway')) {
+          occupied.set('midway', new Set());
+        }
+        occupied.get('midway')!.add(key(exitResult.visitor.position));
+        continue;
+      }
+      // Still blocked - stay in queued state
+      occupied.get(locKey)!.add(key(v.position));
+      moved.set(v.id, { ...v, prevPos: v.position });
+      continue;
+    }
 
     // Choose next position based on location
     const nextPos =
@@ -244,29 +309,59 @@ export const moveVisitorsMultiGrid = (
           });
 
     // Check for portal transition first
-    const portalTransition = checkPortalTransition(nextPos);
-    if (portalTransition) {
-      moved.set(v.id, portalTransition);
+    const portalResult = checkPortalTransition(nextPos);
+    if (portalResult.visitor) {
+      moved.set(v.id, portalResult.visitor);
       // Update occupation for new location
-      const newLocKey = 'attraction:' + (portalTransition.location as any).attractionId;
+      const newLocKey = 'attraction:' + (portalResult.visitor.location as any).attractionId;
       if (!occupied.has(newLocKey)) {
         occupied.set(newLocKey, new Set());
       }
-      occupied.get(newLocKey)!.add(key(portalTransition.position));
+      occupied.get(newLocKey)!.add(key(portalResult.visitor.position));
+      continue;
+    }
+
+    // If portal entry was blocked, mark visitor as queued-to-enter
+    if (portalResult.blocked === 'queued-to-enter') {
+      occupied.get(locKey)!.add(key(nextPos));
+      moved.set(v.id, {
+        ...v,
+        prevPos: v.position,
+        position: nextPos,
+        blockingState: 'queued-to-enter',
+      });
       continue;
     }
 
     // Check for attraction exit
-    const exitTransition = checkAttractionExit(nextPos);
-    if (exitTransition) {
-      moved.set(v.id, exitTransition);
+    const exitResult = checkAttractionExit(nextPos);
+    if (exitResult.visitor) {
+      moved.set(v.id, exitResult.visitor);
       // Update occupation for midway
       if (!occupied.has('midway')) {
         occupied.set('midway', new Set());
       }
-      occupied.get('midway')!.add(key(exitTransition.position));
+      occupied.get('midway')!.add(key(exitResult.visitor.position));
       continue;
     }
+
+    // If exit return was blocked, mark visitor as queued-to-return
+    if (exitResult.blocked === 'queued-to-return') {
+      occupied.get(locKey)!.add(key(nextPos));
+      moved.set(v.id, {
+        ...v,
+        prevPos: v.position,
+        position: nextPos,
+        blockingState: 'queued-to-return',
+      });
+      continue;
+    }
+
+    // Check for trapped state (in attraction, couldn't move)
+    const isTrapped =
+      v.location.type === 'attraction' &&
+      nextPos.x === v.position.x &&
+      nextPos.y === v.position.y;
 
     // Normal movement (no transition)
     occupied.get(locKey)!.add(key(nextPos));
@@ -275,6 +370,7 @@ export const moveVisitorsMultiGrid = (
       ...v,
       prevPos: v.position,
       position: nextPos,
+      blockingState: isTrapped ? 'trapped' : null,
     });
   }
 

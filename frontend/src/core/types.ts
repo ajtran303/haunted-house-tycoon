@@ -27,6 +27,12 @@ export type VisitorIntent = 'explore' | 'exit';
 
 export type VisitorLocation = { type: 'midway' } | { type: 'attraction'; attractionId: string };
 
+// Internal states for spatial constraints (not visible in UI, does not affect intent)
+export type BlockingState =
+  | 'queued-to-enter' // On midway, attempting to enter attraction but entry blocked
+  | 'queued-to-return' // In attraction at exit, attempting to return to midway but blocked
+  | 'trapped'; // In attraction with no possible path to exit
+
 export type Visitor = {
   id: number;
   position: Vector;
@@ -38,6 +44,7 @@ export type Visitor = {
   intent: VisitorIntent;
   spawnTick: number;
   exploreStartTick: number;
+  blockingState: BlockingState | null; // Spatial constraint state (null = free to move)
 };
 
 export type GameSpeed = 1 | 4;
