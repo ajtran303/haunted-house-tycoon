@@ -144,8 +144,9 @@ npm run lint
 - [Game Design](./docs/GAME_DESIGN.md) - Design philosophy
 - [Balance](./docs/BALANCE.md) - Economy tuning
 - [Contributing](./docs/CONTRIBUTING.md) - Dev setup and conventions
-- [Staff](./docs/STAFF.md) - Staff feature spec
-- [Demolition](./docs/DEMOLITION.md) - Demolition feature spec
+- [Movement](./docs/MOVEMENT.md) - Visitor movement system
+- [Staff](./docs/STAFF.md) - Staff feature spec (planned)
+- [Demolition](./docs/DEMOLITION.md) - Demolition feature spec (planned)
 
 ## License
 
