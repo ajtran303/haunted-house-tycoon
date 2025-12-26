@@ -137,11 +137,12 @@ export const Warnings = () => {
         const count = warning.getCount?.(criticalData);
         const isCritical = warning.severity === 'critical';
 
+        // Colorblind-friendly: orange for critical, sky blue for warning
         return (
           <button
             key={warning.flag}
             onClick={() => handleDismiss(warning.flag)}
-            className={`flex items-center justify-between rounded px-3 py-1.5 font-mono text-sm text-white transition-colors ${isCritical ? 'bg-red-600 hover:bg-red-700' : 'bg-yellow-600 hover:bg-yellow-700'}`}
+            className={`flex items-center justify-between rounded px-3 py-1.5 font-mono text-sm text-white transition-colors ${isCritical ? 'bg-orange-600 hover:bg-orange-700' : 'bg-sky-600 hover:bg-sky-700'}`}
           >
             <span>
               {warning.label}
