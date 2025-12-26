@@ -97,7 +97,7 @@ This document tracks all tunable constants and their intended effects. Update th
 | Constant | Value | Purpose |
 |----------|-------|---------|
 | `HAPPINESS_DECAY_PER_TICK` | 1 | Baseline happiness loss on midway |
-| `FEAR_RECOVERY_PER_TICK` | TBD | Fear reduction on midway (when implemented) |
+| `FEAR_RECOVERY_PER_TICK` | 2 | Fear reduction on midway |
 
 **Design intent:** Happiness decays everywhere creates pressure. Fear recovery on midway only makes it the safe zone.
 
@@ -159,9 +159,9 @@ When visitor doesn't move inside attraction:
 
 ```
 Scare room fear: +8 per entry
-Fear recovery: ~1-2 per tick (TBD)
+Fear recovery: 2 per tick (midway only)
 
-Ratio goal: One scare room takes 4-8 ticks to recover from
+Ratio: One scare room takes 4 ticks to recover from
 ```
 
 **Why:** Attractions should feel risky. Recovery should feel like relief, not instant reset.

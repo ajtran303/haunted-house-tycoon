@@ -20,7 +20,7 @@ import type {
 import { applyIntentRules } from '../core/visitors/applyIntentRules';
 import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
-import { decayHappiness } from '../core/visitors/emotions';
+import { decayHappiness, recoverFear } from '../core/visitors/emotions';
 import { moveVisitorsMultiGrid } from '../core/visitors/moveVisitorsMultiGrid';
 import { totalSpendingPerTick } from '../core/visitors/spending';
 import { tileIsStructurallyBlocked } from '../core/visitors/tileIsStructurallyBlocked';
@@ -175,11 +175,14 @@ export const useGameStore = create(
         // TODO: Make this location-aware when room effects are differentiated
         const withRoomEffects = applyRoomEmotionEffects(moved, s.midwayGrid);
 
-        // Decay happiness
+        // Decay happiness (midway only, handled inside decayHappiness)
         const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));
 
+        // Recover fear (midway only, handled inside recoverFear)
+        const recovered = decayed.map((v) => (existingIds.has(v.id) ? recoverFear(v) : v));
+
         // Emotional exits ie. deaths
-        const exitResult = removeVisitorsByEmotionalExit(decayed, nextTick, s.nextExitEventId);
+        const exitResult = removeVisitorsByEmotionalExit(recovered, nextTick, s.nextExitEventId);
 
         const afterEmotionalExit = exitResult.remaining;
         const exitEvents = [...s.exitEvents, ...exitResult.events].slice(-50);
