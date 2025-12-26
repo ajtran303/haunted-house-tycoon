@@ -44,7 +44,6 @@ describe('getVisitorGrid', () => {
     id: 1,
     position: { x: 0, y: 0 },
     prevPos: null,
-    inAttraction: location.type === 'attraction',
     location,
     returnPortalPos: null,
     fear: 0,

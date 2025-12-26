@@ -7,14 +7,13 @@ const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   id: 1,
   position: { x: 1, y: 1 },
   prevPos: { x: 0, y: 1 }, // default: "entered"
-  inAttraction: false,
+  location: { type: 'midway' },
+  returnPortalPos: null,
   fear: 0,
   happiness: 50,
   intent: 'explore',
   spawnTick: 0,
   exploreStartTick: 0,
-  location: { type: 'midway' },
-  returnPortalPos: null,
   ...overrides,
 });
 

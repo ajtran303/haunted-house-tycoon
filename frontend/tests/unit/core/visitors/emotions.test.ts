@@ -11,14 +11,13 @@ const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   id: 1,
   position: { x: 0, y: 0 },
   prevPos: null,
-  inAttraction: false,
+  location: { type: 'midway' },
+  returnPortalPos: null,
   fear: 0,
   happiness: 50,
   intent: 'explore',
   spawnTick: 0,
   exploreStartTick: 0,
-  location: { type: 'midway' },
-  returnPortalPos: null,
   ...overrides,
 });
 
@@ -112,7 +111,7 @@ describe('applyEmotionDelta', () => {
       id: 42,
       position: { x: 3, y: 4 },
       prevPos: { x: 2, y: 4 },
-      inAttraction: true,
+      location: { type: 'attraction', attractionId: 'haunt1' },
       fear: 5,
       happiness: 5,
     });
@@ -122,7 +121,7 @@ describe('applyEmotionDelta', () => {
     expect(next.id).toBe(42);
     expect(next.position).toEqual({ x: 3, y: 4 });
     expect(next.prevPos).toEqual({ x: 2, y: 4 });
-    expect(next.inAttraction).toBe(true);
+    expect(next.location).toEqual({ type: 'attraction', attractionId: 'haunt1' });
   });
 });
 
