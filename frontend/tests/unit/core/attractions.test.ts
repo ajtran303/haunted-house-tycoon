@@ -1,10 +1,17 @@
 import { createAttraction, getVisitorGrid } from '../../../src/core/attractions';
-import { createAttractionGrid, createGrid } from '../../../src/core/grid';
-import type { GameState, Visitor } from '../../../src/core/types';
+import type { Visitor } from '../../../src/core/types';
+import { createAttractionGrid, createGrid, makeState, makeVisitor } from '../../helpers/factories';
 
 describe('createAttraction', () => {
   it('creates an attraction with correct id and name', () => {
-    const attraction = createAttraction('haunt1', 'Spooky Manor', 8, 8, { x: 0, y: 0 }, { x: 7, y: 7 });
+    const attraction = createAttraction(
+      'haunt1',
+      'Spooky Manor',
+      8,
+      8,
+      { x: 0, y: 0 },
+      { x: 7, y: 7 },
+    );
 
     expect(attraction.id).toBe('haunt1');
     expect(attraction.name).toBe('Spooky Manor');
@@ -40,52 +47,23 @@ describe('createAttraction', () => {
 });
 
 describe('getVisitorGrid', () => {
-  const createTestVisitor = (location: Visitor['location']): Visitor => ({
-    id: 1,
-    position: { x: 0, y: 0 },
-    prevPos: null,
-    location,
-    returnPortalPos: null,
-    fear: 0,
-    happiness: 50,
-    intent: 'explore',
-    spawnTick: 0,
-    exploreStartTick: 0,
-  });
+  const createTestVisitor = (location: Visitor['location']) => makeVisitor({ location });
 
-  const createTestState = (): GameState => ({
-    lifecycle: 'running',
-    speed: 1,
-    day: 1,
-    tick: 0,
-    money: 1000,
-    midwayGrid: createGrid(10, 10),
-    attractions: {
-      haunt1: {
-        id: 'haunt1',
-        name: 'Spooky Manor',
-        grid: createAttractionGrid(8, 8),
-        entryPoint: { x: 0, y: 0 },
-        exitPoint: { x: 7, y: 7 },
+  const createTestState = () =>
+    makeState({
+      midwayGrid: createGrid(10, 10),
+      attractions: {
+        haunt1: {
+          id: 'haunt1',
+          name: 'Spooky Manor',
+          grid: createAttractionGrid(8, 8),
+          entryPoint: { x: 0, y: 0 },
+          exitPoint: { x: 7, y: 7 },
+        },
       },
-    },
-    currentView: { type: 'midway' },
-    visitors: [],
-    nextVisitorId: 1,
-    entrance: null,
-    exit: null,
-    nextRoomId: 1,
-    selectedRoomType: null,
-    staffEnabled: false,
-    exitEvents: [],
-    nextExitEventId: 1,
-    parkExitEvents: [],
-    nextParkExitEventId: 1,
-    placementEvents: [],
-    nextPlacementEventId: 1,
-    highlightedCell: null,
-    targetAttractionId: null,
-  });
+      entrance: null,
+      exit: null,
+    });
 
   it('returns midway grid for visitor on midway', () => {
     const state = createTestState();

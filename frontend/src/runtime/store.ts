@@ -156,6 +156,7 @@ export const useGameStore = create(
               intent: 'explore',
               spawnTick: nextTick,
               exploreStartTick: nextTick,
+              blockingState: null,
             };
 
             visitors = [...visitors, v];
