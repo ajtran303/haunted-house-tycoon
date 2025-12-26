@@ -74,7 +74,7 @@ describe('Hud', () => {
     expect(screen.getByText('Haunted House Tycoon')).toBeInTheDocument();
     expect(screen.getByText(/Status:/)).toHaveTextContent('Status: paused');
 
-    fireEvent.click(screen.getByRole('button', { name: /new game/i }));
+    fireEvent.click(screen.getByRole('button', { name: /reset game/i }));
     expect(screen.getByRole('status')).toHaveTextContent('New Game Started');
     expect(newGame).toHaveBeenCalledTimes(1);
   });

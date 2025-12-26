@@ -1,5 +1,6 @@
 import { createAttractionGrid, createGrid } from '../../src/core/grid';
-import type { Cell, GameState, Grid, Visitor } from '../../src/core/types';
+import { getRoomCells } from '../../src/core/placement';
+import type { Cell, GameState, Grid, RoomType, Visitor } from '../../src/core/types';
 
 /**
  * Creates a visitor with sensible defaults. Override any field as needed.
@@ -51,11 +52,15 @@ export const makeState = (overrides?: Partial<GameState>): GameState => ({
 
 /**
  * Places a room on a grid at the given position.
+ * Supports multi-cell rooms (trominoes, portals) by using getRoomCells.
  */
-export const placeRoom = (grid: Grid, x: number, y: number, roomType: Cell['roomType']): Grid => {
+export const placeRoom = (grid: Grid, x: number, y: number, roomType: RoomType): Grid => {
+  const cells = getRoomCells(roomType);
+  const cellSet = new Set(cells.map((c) => `${x + c.x},${y + c.y}`));
+
   return grid.map((row, rowY) =>
     row.map((cell, cellX) => {
-      if (cellX === x && rowY === y) {
+      if (cellSet.has(`${cellX},${rowY}`)) {
         return {
           ...cell,
           type: 'floor' as const,

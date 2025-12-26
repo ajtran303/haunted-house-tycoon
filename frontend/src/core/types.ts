@@ -102,7 +102,12 @@ export type RoomType =
   | 'parkEntry'
   | 'parkExit'
   | 'attractionPortal'
-  | 'foodStall';
+  | 'foodStall'
+  | 'giftShop'
+  | 'restroom'
+  | 'photoBooth'
+  | 'arcade'
+  | 'firstAid';
 
 // NOTE: These are actually reasons for "deaths"
 export type ExitReason = 'panic' | 'misery';

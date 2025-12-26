@@ -2,7 +2,14 @@ import { AMENITY_BASE_PURCHASE } from '../constants';
 import type { Grid, RoomType, Visitor } from '../types';
 import { spendingPerTick } from './spending';
 
-const AMENITY_ROOM_TYPES: RoomType[] = ['foodStall'];
+const AMENITY_ROOM_TYPES: RoomType[] = [
+  'foodStall',
+  'giftShop',
+  'restroom',
+  'photoBooth',
+  'arcade',
+  'firstAid',
+];
 
 const isAmenity = (roomType: RoomType | null): boolean =>
   roomType !== null && AMENITY_ROOM_TYPES.includes(roomType);

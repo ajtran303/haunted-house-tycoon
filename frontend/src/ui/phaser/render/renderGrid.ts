@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ROOM_COST } from '../../../core/constants';
-import { getRoomSize } from '../../../core/placement';
+import { getRoomCells } from '../../../core/placement';
 import type { Cell, Grid } from '../../../core/types';
 import { useGameStore } from '../../../runtime/store';
 
@@ -56,6 +56,16 @@ const fillForCell = (cell: Cell) => {
       return COLOR_PORTAL;
     case 'foodStall':
       return COLOR_FOOD_STALL;
+    case 'giftShop':
+      return COLOR_GIFT_SHOP;
+    case 'restroom':
+      return COLOR_RESTROOM;
+    case 'photoBooth':
+      return COLOR_PHOTO_BOOTH;
+    case 'arcade':
+      return COLOR_ARCADE;
+    case 'firstAid':
+      return COLOR_FIRST_AID;
     default:
       // fallback if older saves/tests don't set roomType yet
       return 0x666666;
@@ -106,24 +116,28 @@ export const createGridRenderer = (
     const selectedRoomType = useGameStore.getState().selectedRoomType;
     if (!selectedRoomType) return;
 
-    const { width: rw, height: rh } = getRoomSize(selectedRoomType);
+    const cells = getRoomCells(selectedRoomType);
 
-    // Check if placement would be valid (within bounds)
+    // Check if any cell would be out of bounds
+    const isOutOfBounds = cells.some((c) => {
+      const cx = cellX + c.x;
+      const cy = cellY + c.y;
+      return cx < 0 || cx >= width || cy < 0 || cy >= height;
+    });
+
     // Using colorblind-friendly colors: blue for valid, orange for invalid
-    if (cellX + rw > width || cellY + rh > height) {
-      // Draw orange outline for invalid placement (vermillion - high visibility)
+    if (isOutOfBounds) {
       placementPreview.lineStyle(2, 0xd55e00, 0.9);
     } else {
-      // Draw blue outline for valid placement area (sky blue - distinct from orange)
       placementPreview.lineStyle(2, 0x56b4e9, 0.9);
     }
 
-    const px = ORIGIN_X + cellX * CELL_SIZE;
-    const py = ORIGIN_Y + cellY * CELL_SIZE;
-    const pw = rw * CELL_SIZE - 1;
-    const ph = rh * CELL_SIZE - 1;
-
-    placementPreview.strokeRect(px, py, pw, ph);
+    // Draw each cell of the shape
+    for (const c of cells) {
+      const px = ORIGIN_X + (cellX + c.x) * CELL_SIZE;
+      const py = ORIGIN_Y + (cellY + c.y) * CELL_SIZE;
+      placementPreview.strokeRect(px, py, CELL_SIZE - 1, CELL_SIZE - 1);
+    }
   };
 
   const hidePlacementPreview = () => {
