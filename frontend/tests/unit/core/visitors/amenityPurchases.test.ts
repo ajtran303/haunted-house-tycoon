@@ -164,23 +164,20 @@ describe('calculateAmenityPurchases', () => {
       { type: 'firstAid', entryCell: { x: 0, y: 1 } }, // L-down-left
     ] as const;
 
-    it.each(amenityTypes)(
-      'triggers purchase when visitor enters $type',
-      ({ type, entryCell }) => {
-        const grid = createGrid(8, 8);
-        const gridWithAmenity = placeRoom(grid, 2, 2, type);
+    it.each(amenityTypes)('triggers purchase when visitor enters $type', ({ type, entryCell }) => {
+      const grid = createGrid(8, 8);
+      const gridWithAmenity = placeRoom(grid, 2, 2, type);
 
-        // Visitor entering any cell of the amenity
-        const v = makeVisitor({
-          position: { x: 2 + entryCell.x, y: 2 + entryCell.y },
-          prevPos: { x: 1, y: 2 + entryCell.y },
-          fear: 0,
-          happiness: 50,
-        });
+      // Visitor entering any cell of the amenity
+      const v = makeVisitor({
+        position: { x: 2 + entryCell.x, y: 2 + entryCell.y },
+        prevPos: { x: 1, y: 2 + entryCell.y },
+        fear: 0,
+        happiness: 50,
+      });
 
-        const purchase = calculateAmenityPurchases([v], gridWithAmenity);
-        expect(purchase).toBeGreaterThan(0);
-      },
-    );
+      const purchase = calculateAmenityPurchases([v], gridWithAmenity);
+      expect(purchase).toBeGreaterThan(0);
+    });
   });
 });

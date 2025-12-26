@@ -1,6 +1,6 @@
 import { createAttractionGrid, createGrid } from '../../src/core/grid';
 import { getRoomCells } from '../../src/core/placement';
-import type { Cell, GameState, Grid, RoomType, Visitor } from '../../src/core/types';
+import type { GameState, Grid, RoomType, Visitor } from '../../src/core/types';
 
 /**
  * Creates a visitor with sensible defaults. Override any field as needed.
