@@ -133,9 +133,9 @@ describe('happiness decay', () => {
     expect(next.happiness).toBe(50 - HAPPINESS_DECAY_PER_TICK);
   });
 
-  it('applies to every visitor not inAttraction', () => {
-    const a = makeVisitor({ id: 1, inAttraction: false, happiness: 10 });
-    const b = makeVisitor({ id: 2, inAttraction: false, happiness: 10 });
+  it('applies to every visitor on midway', () => {
+    const a = makeVisitor({ id: 1, location: { type: 'midway' }, happiness: 10 });
+    const b = makeVisitor({ id: 2, location: { type: 'midway' }, happiness: 10 });
     const next = decayHappinessForVisitors([a, b]);
     expect(next[0].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
     expect(next[1].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
@@ -161,8 +161,12 @@ describe('happiness decay', () => {
   });
 
   it('does not decay happiness while a visitor is in an attraction', () => {
-    const a = makeVisitor({ id: 1, inAttraction: false, happiness: 10 });
-    const b = makeVisitor({ id: 2, inAttraction: true, happiness: 10 });
+    const a = makeVisitor({ id: 1, location: { type: 'midway' }, happiness: 10 });
+    const b = makeVisitor({
+      id: 2,
+      location: { type: 'attraction', attractionId: 'haunt1' },
+      happiness: 10,
+    });
 
     const next = decayHappinessForVisitors([a, b]);
 
