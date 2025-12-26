@@ -77,7 +77,7 @@ export class BootScene {
 
     const TILE = 24;
     const GRID_X = 20;
-    const GRID_Y = 100; // Must match ORIGIN_Y in renderGrid.ts and visitorsRenderer.ts
+    const GRID_Y = 120; // Must match ORIGIN_Y in renderGrid.ts and visitorsRenderer.ts
 
     // Expose scene for direct view rebuilds from React (dev only)
     if (DEV_MODE) {
