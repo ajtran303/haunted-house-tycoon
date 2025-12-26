@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
-import { upkeepPerTick } from '../core/economy';
+import { totalUpkeepPerTick } from '../core/economy';
 import { createAttractionGrid, createGrid } from '../core/grid';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
@@ -188,8 +188,8 @@ export const useGameStore = create(
         const spenders = afterEmotionalExit.filter((v) => existingIds.has(v.id));
         money += totalSpendingPerTick(spenders);
 
-        // upkeep (midway only for now)
-        money -= upkeepPerTick(s.midwayGrid);
+        // upkeep (midway + all attractions)
+        money -= totalUpkeepPerTick(s);
 
         // despawn visitors that reach the exit
         const exit = s.exit;
