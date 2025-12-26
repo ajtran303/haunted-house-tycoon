@@ -323,8 +323,19 @@ export const useGameStore = create(
         }
 
         // Determine if we should clear selection after placement
+        // Clear for one-time placements (entry/exit/portal) and amenities
+        const isAmenity =
+          roomType === 'foodStall' ||
+          roomType === 'giftShop' ||
+          roomType === 'restroom' ||
+          roomType === 'photoBooth' ||
+          roomType === 'arcade' ||
+          roomType === 'firstAid';
         const clearSelection =
-          roomType === 'parkEntry' || roomType === 'parkExit' || roomType === 'attractionPortal';
+          roomType === 'parkEntry' ||
+          roomType === 'parkExit' ||
+          roomType === 'attractionPortal' ||
+          isAmenity;
 
         set({
           midwayGrid: gridToSet,
