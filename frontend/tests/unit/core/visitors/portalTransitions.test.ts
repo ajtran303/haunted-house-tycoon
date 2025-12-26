@@ -374,4 +374,191 @@ describe('Portal Transitions', () => {
       expect(moved[0].returnPortalPos).toBeNull();
     });
   });
+
+  describe('structural enforcement', () => {
+    it('visitor inside attraction can only walk on attraction tiles', () => {
+      // 3x3 grid: entry at (0,0), hallway at (1,0), exit at (2,0)
+      // Empty tiles at (0,1), (1,1), (2,1) should not be walkable
+      let attractionGrid = createAttractionGrid(3, 2);
+      attractionGrid = placeRoom(attractionGrid, 0, 0, 'entry');
+      attractionGrid = placeRoom(attractionGrid, 1, 0, 'hallway');
+      attractionGrid = placeRoom(attractionGrid, 2, 0, 'exit');
+      // Row 1 remains empty (unwalkable)
+
+      let midwayGrid = createGrid(5, 5);
+      midwayGrid = placePortal(midwayGrid, 2, 2, 'haunt1');
+
+      const state = makeState({
+        midwayGrid,
+        attractions: {
+          haunt1: {
+            id: 'haunt1',
+            name: 'Test',
+            grid: attractionGrid,
+            entryPoint: { x: 0, y: 0 },
+            exitPoint: { x: 2, y: 0 },
+          },
+        },
+      });
+
+      // Visitor at entry (0,0) - can only move to hallway (1,0), not down to empty (0,1)
+      const visitor = makeVisitor({
+        position: { x: 0, y: 0 },
+        location: { type: 'attraction', attractionId: 'haunt1' },
+        returnPortalPos: { x: 2, y: 2 },
+      });
+
+      const moved = moveVisitorsMultiGrid([visitor], state, 100);
+
+      // Should have moved along the path, not to empty tile
+      expect(moved[0].position.y).toBe(0); // Stayed on row 0 (the path)
+    });
+
+    it('visitor on midway cannot walk onto hallway/scare tiles directly', () => {
+      // Midway with hallway tile placed (shouldn't happen in practice, but tests the rule)
+      let midwayGrid = createGrid(3, 1);
+      midwayGrid = placeRoom(midwayGrid, 1, 0, 'hallway');
+      midwayGrid = placeRoom(midwayGrid, 2, 0, 'parkExit');
+
+      const state = makeState({
+        midwayGrid,
+        entrance: { x: 0, y: 0 },
+        exit: { x: 2, y: 0 },
+      });
+
+      // Visitor at (0,0), hallway at (1,0), exit at (2,0)
+      // Should not be able to step onto hallway
+      const visitor = makeVisitor({
+        position: { x: 0, y: 0 },
+        location: { type: 'midway' },
+        intent: 'exit',
+      });
+
+      const moved = moveVisitorsMultiGrid([visitor], state, 100);
+
+      // Visitor should stay put (hallway blocks path to exit)
+      expect(moved[0].position).toEqual({ x: 0, y: 0 });
+    });
+
+    it('location state is always explicit - never undefined', () => {
+      let attractionGrid = createAttractionGrid(2, 1);
+      attractionGrid = placeRoom(attractionGrid, 0, 0, 'entry');
+      attractionGrid = placeRoom(attractionGrid, 1, 0, 'exit');
+
+      let midwayGrid = createGrid(3, 1);
+      midwayGrid = placePortal(midwayGrid, 1, 0, 'haunt1');
+
+      const state = makeState({
+        midwayGrid,
+        entrance: { x: 0, y: 0 },
+        exit: { x: 2, y: 0 },
+        attractions: {
+          haunt1: {
+            id: 'haunt1',
+            name: 'Test',
+            grid: attractionGrid,
+            entryPoint: { x: 0, y: 0 },
+            exitPoint: { x: 1, y: 0 },
+          },
+        },
+      });
+
+      const visitor = makeVisitor({
+        position: { x: 0, y: 0 },
+        location: { type: 'midway' },
+      });
+
+      // Move multiple times
+      let visitors = [visitor];
+      for (let i = 0; i < 10; i++) {
+        visitors = moveVisitorsMultiGrid(visitors, state, 100 + i);
+        // Location should always be defined and have a valid type
+        expect(visitors[0].location).toBeDefined();
+        expect(['midway', 'attraction']).toContain(visitors[0].location.type);
+      }
+    });
+
+    it('visitor cannot enter attraction without stepping on portal', () => {
+      let attractionGrid = createAttractionGrid(2, 1);
+      attractionGrid = placeRoom(attractionGrid, 0, 0, 'entry');
+      attractionGrid = placeRoom(attractionGrid, 1, 0, 'exit');
+
+      // 2x1 midway: visitor at (0,0), portal at (1,0)
+      // This forces deterministic movement onto portal
+      let midwayGrid = createGrid(2, 1);
+      midwayGrid = placePortal(midwayGrid, 1, 0, 'haunt1');
+
+      const state = makeState({
+        midwayGrid,
+        entrance: { x: 0, y: 0 },
+        exit: null,
+        attractions: {
+          haunt1: {
+            id: 'haunt1',
+            name: 'Test',
+            grid: attractionGrid,
+            entryPoint: { x: 0, y: 0 },
+            exitPoint: { x: 1, y: 0 },
+          },
+        },
+      });
+
+      // Visitor starts at (0,0), not on portal yet
+      const visitor = makeVisitor({
+        position: { x: 0, y: 0 },
+        location: { type: 'midway' },
+      });
+
+      // Verify starting state - on midway, not in attraction
+      expect(visitor.location).toEqual({ type: 'midway' });
+
+      // Move: (0,0) -> (1,0) portal - enters attraction
+      const moved = moveVisitorsMultiGrid([visitor], state, 100);
+
+      // Now in attraction (had to step on portal to enter)
+      expect(moved[0].location).toEqual({ type: 'attraction', attractionId: 'haunt1' });
+      // Position is now at attraction entry point
+      expect(moved[0].position).toEqual({ x: 0, y: 0 });
+    });
+
+    it('visitor cannot exit attraction without reaching exit point', () => {
+      // 3x1 attraction: entry -> hallway -> exit
+      let attractionGrid = createAttractionGrid(3, 1);
+      attractionGrid = placeRoom(attractionGrid, 0, 0, 'entry');
+      attractionGrid = placeRoom(attractionGrid, 1, 0, 'hallway');
+      attractionGrid = placeRoom(attractionGrid, 2, 0, 'exit');
+
+      let midwayGrid = createGrid(5, 5);
+      midwayGrid = placePortal(midwayGrid, 2, 2, 'haunt1');
+
+      const state = makeState({
+        midwayGrid,
+        attractions: {
+          haunt1: {
+            id: 'haunt1',
+            name: 'Test',
+            grid: attractionGrid,
+            entryPoint: { x: 0, y: 0 },
+            exitPoint: { x: 2, y: 0 },
+          },
+        },
+      });
+
+      // Visitor at entry (0,0)
+      const visitor = makeVisitor({
+        position: { x: 0, y: 0 },
+        location: { type: 'attraction', attractionId: 'haunt1' },
+        returnPortalPos: { x: 2, y: 2 },
+      });
+
+      // First move: entry -> hallway (still in attraction)
+      let moved = moveVisitorsMultiGrid([visitor], state, 100);
+      expect(moved[0].location).toEqual({ type: 'attraction', attractionId: 'haunt1' });
+      expect(moved[0].position).toEqual({ x: 1, y: 0 }); // On hallway
+
+      // Second move: hallway -> exit (exits to midway)
+      moved = moveVisitorsMultiGrid(moved, state, 101);
+      expect(moved[0].location).toEqual({ type: 'midway' });
+    });
+  });
 });
