@@ -7,7 +7,8 @@ const v = (overrides: Partial<Visitor> = {}): Visitor =>
     id: 1,
     position: { x: 0, y: 0 },
     prevPos: null,
-    inAttraction: false,
+    location: { type: 'midway' },
+    returnPortalPos: null,
     fear: 0,
     happiness: 60,
     intent: 'explore',
@@ -99,8 +100,14 @@ describe('applyIntentRules', () => {
     expect(out.find((vv) => vv.id === 2)!.intent).toBe('explore'); // age 10
   });
 
-  it('does not change intent while inAttraction (timer paused)', () => {
-    const visitors = [v({ inAttraction: true, intent: 'explore', exploreStartTick: 0 })];
+  it('does not change intent while in attraction (timer paused)', () => {
+    const visitors = [
+      v({
+        location: { type: 'attraction', attractionId: 'haunt1' },
+        intent: 'explore',
+        exploreStartTick: 0,
+      }),
+    ];
 
     const tick = 0 + DEFAULT_EXPLORE_TICKS_BEFORE_EXIT;
     const out = applyIntentRules(visitors, tick, { x: 1, y: 1 });

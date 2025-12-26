@@ -21,7 +21,7 @@ export const applyEmotionDelta = (v: Visitor, delta: EmotionDelta): Visitor => (
 
 export const decayHappiness = (v: Visitor, amount = HAPPINESS_DECAY_PER_TICK): Visitor => {
   // Visitors do not passively lose happiness while actively in an attraction.
-  if (v.inAttraction) return v;
+  if (v.location.type === 'attraction') return v;
 
   const nextHappiness = clampEmotion('happiness', v.happiness - amount);
 

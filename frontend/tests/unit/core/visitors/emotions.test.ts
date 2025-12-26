@@ -11,14 +11,13 @@ const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   id: 1,
   position: { x: 0, y: 0 },
   prevPos: null,
-  inAttraction: false,
+  location: { type: 'midway' },
+  returnPortalPos: null,
   fear: 0,
   happiness: 50,
   intent: 'explore',
   spawnTick: 0,
   exploreStartTick: 0,
-  location: { type: 'midway' },
-  returnPortalPos: null,
   ...overrides,
 });
 
@@ -112,7 +111,7 @@ describe('applyEmotionDelta', () => {
       id: 42,
       position: { x: 3, y: 4 },
       prevPos: { x: 2, y: 4 },
-      inAttraction: true,
+      location: { type: 'attraction', attractionId: 'haunt1' },
       fear: 5,
       happiness: 5,
     });
@@ -122,7 +121,7 @@ describe('applyEmotionDelta', () => {
     expect(next.id).toBe(42);
     expect(next.position).toEqual({ x: 3, y: 4 });
     expect(next.prevPos).toEqual({ x: 2, y: 4 });
-    expect(next.inAttraction).toBe(true);
+    expect(next.location).toEqual({ type: 'attraction', attractionId: 'haunt1' });
   });
 });
 
@@ -133,9 +132,9 @@ describe('happiness decay', () => {
     expect(next.happiness).toBe(50 - HAPPINESS_DECAY_PER_TICK);
   });
 
-  it('applies to every visitor not inAttraction', () => {
-    const a = makeVisitor({ id: 1, inAttraction: false, happiness: 10 });
-    const b = makeVisitor({ id: 2, inAttraction: false, happiness: 10 });
+  it('applies to every visitor on midway', () => {
+    const a = makeVisitor({ id: 1, location: { type: 'midway' }, happiness: 10 });
+    const b = makeVisitor({ id: 2, location: { type: 'midway' }, happiness: 10 });
     const next = decayHappinessForVisitors([a, b]);
     expect(next[0].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
     expect(next[1].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
@@ -161,8 +160,12 @@ describe('happiness decay', () => {
   });
 
   it('does not decay happiness while a visitor is in an attraction', () => {
-    const a = makeVisitor({ id: 1, inAttraction: false, happiness: 10 });
-    const b = makeVisitor({ id: 2, inAttraction: true, happiness: 10 });
+    const a = makeVisitor({ id: 1, location: { type: 'midway' }, happiness: 10 });
+    const b = makeVisitor({
+      id: 2,
+      location: { type: 'attraction', attractionId: 'haunt1' },
+      happiness: 10,
+    });
 
     const next = decayHappinessForVisitors([a, b]);
 

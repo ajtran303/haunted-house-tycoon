@@ -31,7 +31,6 @@ export type Visitor = {
   id: number;
   position: Vector;
   prevPos: Vector | null;
-  inAttraction: boolean; // DEPRECATED: will be removed, use location instead
   location: VisitorLocation;
   returnPortalPos: Vector | null; // Portal position visitor entered from (for returning to midway)
   fear: number;

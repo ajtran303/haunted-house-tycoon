@@ -23,7 +23,7 @@ export const applyRoomEmotionEffects = (visitors: Visitor[], grid: Grid): Visito
     }
 
     // 2) Per-tick misery pressure when stuck in a room tile (no movement this tick)
-    if (v.inAttraction && !didEnterNewTile(v)) {
+    if (v.location.type === 'attraction' && !didEnterNewTile(v)) {
       if (v.prevPos == null) return v;
 
       if (roomType === 'hallway') return applyEmotionDelta(v, { happiness: -1 });

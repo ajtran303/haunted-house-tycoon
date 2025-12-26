@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { upkeepPerTick } from '../core/economy';
-import { createGrid } from '../core/grid';
+import { createAttractionGrid, createGrid } from '../core/grid';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
@@ -21,7 +21,6 @@ import { applyIntentRules } from '../core/visitors/applyIntentRules';
 import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness } from '../core/visitors/emotions';
-// import { moveVisitors } from '../core/visitors/moveVisitors';
 import { moveVisitorsMultiGrid } from '../core/visitors/moveVisitorsMultiGrid';
 import { totalSpendingPerTick } from '../core/visitors/spending';
 import { tileIsStructurallyBlocked } from '../core/visitors/tileIsStructurallyBlocked';
@@ -150,7 +149,6 @@ export const useGameStore = create(
               id: nextVisitorId,
               position: ex,
               prevPos: null,
-              inAttraction: false, // DEPRECATED but kept for compatibility
               location: { type: 'midway' },
               returnPortalPos: null,
               fear: VISITOR_START_FEAR,
@@ -355,7 +353,7 @@ export const useGameStore = create(
       const attraction: AttractionGrid = {
         id,
         name,
-        grid: createGrid(width, height),
+        grid: createAttractionGrid(width, height),
         entryPoint: { x: 0, y: 0 }, // Default entry at top-left
         exitPoint: { x: width - 1, y: height - 1 }, // Default exit at bottom-right
       };

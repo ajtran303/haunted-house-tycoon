@@ -1,4 +1,4 @@
-import { createGrid } from './grid';
+import { createAttractionGrid } from './grid';
 import { AttractionGrid, GameState, Grid, Vector, Visitor } from './types';
 
 export const createAttraction = (
@@ -11,7 +11,7 @@ export const createAttraction = (
 ): AttractionGrid => ({
   id,
   name,
-  grid: createGrid(width, height),
+  grid: createAttractionGrid(width, height),
   entryPoint,
   exitPoint,
 });
