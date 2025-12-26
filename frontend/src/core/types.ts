@@ -15,6 +15,7 @@ export type Grid = Cell[][];
 
 export type AttractionGrid = {
   id: string;
+  name: string;
   grid: Grid;
   entryPoint: Vector;
   exitPoint: Vector;
@@ -54,6 +55,9 @@ export type GameState = {
   midwayGrid: Grid;
   attractions: Record<string, AttractionGrid>;
 
+  // UI view state
+  currentView: { type: 'midway' } | { type: 'attraction'; attractionId: string };
+
   visitors: Visitor[];
   nextVisitorId: number;
 
@@ -76,6 +80,12 @@ export type GameState = {
 
   placementEvents: PlacementEvent[];
   nextPlacementEventId: number;
+
+  // UI highlight state (for portal transitions)
+  highlightedCell: Vector | null;
+
+  // Portal placement target
+  targetAttractionId: string | null;
 };
 
 export type RoomType =
