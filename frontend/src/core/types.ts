@@ -130,7 +130,8 @@ export type PlacementFailReason =
   | 'invalid_entrance_placement'
   | 'invalid_exit_placement'
   | 'entrance_already_exists'
-  | 'exit_already_exists';
+  | 'exit_already_exists'
+  | 'not_enough_space';
 
 export type PlacementEvent = {
   id: number;

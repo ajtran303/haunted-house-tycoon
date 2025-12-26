@@ -1,5 +1,5 @@
-import type { Cell, GameState, Grid, Visitor } from '../../src/core/types';
 import { createAttractionGrid, createGrid } from '../../src/core/grid';
+import type { Cell, GameState, Grid, Visitor } from '../../src/core/types';
 
 /**
  * Creates a visitor with sensible defaults. Override any field as needed.
@@ -52,12 +52,7 @@ export const makeState = (overrides?: Partial<GameState>): GameState => ({
 /**
  * Places a room on a grid at the given position.
  */
-export const placeRoom = (
-  grid: Grid,
-  x: number,
-  y: number,
-  roomType: Cell['roomType'],
-): Grid => {
+export const placeRoom = (grid: Grid, x: number, y: number, roomType: Cell['roomType']): Grid => {
   return grid.map((row, rowY) =>
     row.map((cell, cellX) => {
       if (cellX === x && rowY === y) {

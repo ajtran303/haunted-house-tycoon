@@ -359,9 +359,7 @@ export const moveVisitorsMultiGrid = (
 
     // Check for trapped state (in attraction, couldn't move)
     const isTrapped =
-      v.location.type === 'attraction' &&
-      nextPos.x === v.position.x &&
-      nextPos.y === v.position.y;
+      v.location.type === 'attraction' && nextPos.x === v.position.x && nextPos.y === v.position.y;
 
     // Normal movement (no transition)
     occupied.get(locKey)!.add(key(nextPos));
