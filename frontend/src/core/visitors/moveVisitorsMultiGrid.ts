@@ -66,15 +66,28 @@ export const moveVisitorsMultiGrid = (
     const getCell = (p: Vector) => grid[p.y]?.[p.x] ?? null;
     const currentRoomType = getCell(v.position)?.roomType;
 
+    // Check if an attraction has both entry and exit tiles placed
+    const isAttractionReady = (attractionId: string): boolean => {
+      const attraction = state.attractions[attractionId];
+      if (!attraction) return false;
+
+      const entryCell = attraction.grid[attraction.entryPoint.y]?.[attraction.entryPoint.x];
+      const exitCell = attraction.grid[attraction.exitPoint.y]?.[attraction.exitPoint.x];
+
+      return entryCell?.roomType === 'entry' && exitCell?.roomType === 'exit';
+    };
+
     // Check if stepping on a portal (midway only)
     const checkPortalTransition = (pos: Vector): Visitor | null => {
       if (v.location.type !== 'midway') return null;
 
       const cell = getCell(pos);
       if (cell?.roomType === 'attractionPortal' && cell.portalTo) {
-        // Transition to attraction!
         const attraction = state.attractions[cell.portalTo];
         if (!attraction) return null;
+
+        // Only allow entry if attraction has both entry AND exit placed
+        if (!isAttractionReady(cell.portalTo)) return null;
 
         return {
           ...v,
@@ -89,6 +102,62 @@ export const moveVisitorsMultiGrid = (
       return null;
     };
 
+    // Find a valid return position near the portal (up to 2 tiles away)
+    const findReturnPosition = (portalPos: Vector): Vector | null => {
+      const midway = state.midwayGrid;
+      const midwayW = midway[0]?.length ?? 0;
+      const midwayH = midway.length;
+
+      // Check if a position is valid for returning to midway
+      const isValidReturn = (p: Vector): boolean => {
+        if (p.x < 0 || p.x >= midwayW || p.y < 0 || p.y >= midwayH) return false;
+        const cell = midway[p.y]?.[p.x];
+        if (!cell) return false;
+        if (cell.type !== 'floor') return false;
+        // Can return to portal tile itself, or adjacent floor/parkEntry/parkExit tiles
+        const rt = cell.roomType;
+        if (rt === 'hallway' || rt === 'scare' || rt === 'entry' || rt === 'exit') return false;
+        // Check if occupied by another visitor
+        if (isOccupied({ type: 'midway' }, p)) return false;
+        return true;
+      };
+
+      // Try positions at distance 1 first, then distance 2
+      const offsets1 = [
+        { x: 0, y: -1 },
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: -1, y: 0 },
+      ];
+      const offsets2 = [
+        { x: 0, y: -2 },
+        { x: 1, y: -1 },
+        { x: 2, y: 0 },
+        { x: 1, y: 1 },
+        { x: 0, y: 2 },
+        { x: -1, y: 1 },
+        { x: -2, y: 0 },
+        { x: -1, y: -1 },
+      ];
+
+      // First try the portal position itself
+      if (isValidReturn(portalPos)) return portalPos;
+
+      // Then try adjacent tiles
+      for (const off of offsets1) {
+        const p = { x: portalPos.x + off.x, y: portalPos.y + off.y };
+        if (isValidReturn(p)) return p;
+      }
+
+      // Then try 2 tiles away
+      for (const off of offsets2) {
+        const p = { x: portalPos.x + off.x, y: portalPos.y + off.y };
+        if (isValidReturn(p)) return p;
+      }
+
+      return null; // No valid position found
+    };
+
     // Check if exiting attraction
     const checkAttractionExit = (pos: Vector): Visitor | null => {
       if (v.location.type !== 'attraction') return null;
@@ -98,11 +167,10 @@ export const moveVisitorsMultiGrid = (
 
       // Check if at exit point
       if (pos.x === attraction.exitPoint.x && pos.y === attraction.exitPoint.y) {
-        // Try to return to midway adjacent to portal
         if (!v.returnPortalPos) return null; // Safety check
 
-        const returnPos = v.returnPortalPos; // For now, return to exact portal position
-        // TODO: In queue pressure cards, check if returnPos is available
+        const returnPos = findReturnPosition(v.returnPortalPos);
+        if (!returnPos) return null; // No valid position, stay in attraction
 
         return {
           ...v,
