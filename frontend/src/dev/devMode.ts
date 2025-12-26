@@ -7,15 +7,6 @@ export const DEV_MODE = true;
 export const devConfig = {
   // Debug overlays
   showVisitorIntent: true,
-
-  // Quick setup
-  autoPlaceParkEntryExit: false,
-  startingMoney: 5000, // Override default 1000
-
-  // Logging
-  logEmotionChanges: false,
-  logPurchases: false,
-  logExits: false,
 };
 
 // Runtime toggle for dev config (allows changing without reload)
