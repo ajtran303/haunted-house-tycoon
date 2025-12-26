@@ -47,7 +47,7 @@ export type Visitor = {
   blockingState: BlockingState | null; // Spatial constraint state (null = free to move)
 };
 
-export type GameSpeed = 1 | 4;
+export type GameSpeed = 1 | 4 | 10;
 
 export type GameState = {
   lifecycle: Lifecycle;
