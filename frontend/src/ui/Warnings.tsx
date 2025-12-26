@@ -47,7 +47,7 @@ const WARNING_CONFIG: WarningConfig[] = [
 ];
 
 // Grid rendering constants (must match Phaser render files)
-const GRID_ORIGIN_Y = 80;
+const GRID_ORIGIN_Y = 100;
 const CELL_SIZE = 24;
 
 export const Warnings = () => {

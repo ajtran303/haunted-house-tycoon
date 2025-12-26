@@ -254,9 +254,6 @@ export const RoomSelector = () => {
           </button>
         )}
       </div>
-      <div className="text-xs text-gray-600">
-        View: {currentView.type === 'midway' ? 'Midway' : `Attraction ${currentView.attractionId}`}
-      </div>
     </div>
   );
 };
