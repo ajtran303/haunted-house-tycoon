@@ -164,6 +164,9 @@ export class BootScene {
   private buildRenderer(grid: any) {
     const self = this.sceneRef;
 
+    // Safety check: ensure scene is active before creating game objects
+    if (!self?.sys?.displayList) return;
+
     this.gridRenderer?.destroy();
     this.gridRenderer = createGridRenderer(self, grid, (x, y) => {
       useGameStore.getState().dispatchInput({ type: 'clickCell', x, y });
