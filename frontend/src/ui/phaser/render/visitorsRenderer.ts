@@ -3,7 +3,7 @@ import { getVisitorMood, VisitorMood } from '../../visitorMood';
 
 const CELL_SIZE = 24;
 const ORIGIN_X = 20;
-const ORIGIN_Y = 80; // Account for React top bar
+const ORIGIN_Y = 100; // Account for React top bar (3 rows: header, stats, emotions)
 
 type VisitorsRenderer = {
   draw: (visitors: Visitor[]) => void;
