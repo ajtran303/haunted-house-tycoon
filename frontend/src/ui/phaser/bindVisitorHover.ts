@@ -62,8 +62,8 @@ export const bindVisitorHover = (
 
     // If pointer is outside the grid, hide
     const st = useGameStore.getState();
-    const h = st.grid.length;
-    const w = st.grid[0]?.length ?? 0;
+    const h = st.midwayGrid.length;
+    const w = st.midwayGrid[0]?.length ?? 0;
     if (gx < 0 || gy < 0 || gx >= w || gy >= h) {
       if (tip.visible) tip.setVisible(false);
       lastKey = '';

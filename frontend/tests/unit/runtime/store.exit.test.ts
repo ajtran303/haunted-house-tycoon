@@ -18,7 +18,7 @@ describe('Exit placement + exit removal', () => {
 
     expect(after.lifecycle).toBe('paused');
     expect((after as any).exit).toBeNull();
-    expect(after.grid).toEqual(before.grid);
+    expect(after.midwayGrid).toEqual(before.midwayGrid);
   });
 
   it('rejects exit placement when not on an edge', () => {
@@ -31,7 +31,7 @@ describe('Exit placement + exit removal', () => {
     const after = useGameStore.getState();
 
     expect((after as any).exit).toBeNull();
-    expect(after.grid).toEqual(before.grid);
+    expect(after.midwayGrid).toEqual(before.midwayGrid);
     expect(after.money).toBe(before.money);
     expect(after.nextRoomId).toBe(before.nextRoomId);
   });
@@ -44,8 +44,8 @@ describe('Exit placement + exit removal', () => {
 
     const after = useGameStore.getState();
     expect((after as any).exit).toEqual({ x: 0, y: 0 });
-    expect((after.grid[0][0] as any).roomType).toBe('parkExit');
-    expect(after.grid[0][0].occupied).toBe(true);
+    expect((after.midwayGrid[0][0] as any).roomType).toBe('parkExit');
+    expect(after.midwayGrid[0][0].occupied).toBe(true);
   });
 
   it('blocks placing a second exit (no-op)', () => {
@@ -63,13 +63,13 @@ describe('Exit placement + exit removal', () => {
     expect((after as any).exit).toEqual({ x: 0, y: 0 });
     expect(after.money).toBe(beforeSecond.money);
     expect(after.nextRoomId).toBe(beforeSecond.nextRoomId);
-    expect(after.grid).toEqual(beforeSecond.grid);
+    expect(after.midwayGrid).toEqual(beforeSecond.midwayGrid);
   });
 
   it('removes a visitor on the exit tile during tickOnce (main tick loop)', () => {
     useGameStore.setState({
       lifecycle: 'running',
-      grid: [[{ type: 'empty', occupied: false, roomId: null, roomType: null }]],
+      midwayGrid: [[{ type: 'empty', occupied: false, roomId: null, roomType: null }]],
       visitors: [{ id: 1, position: { x: 0, y: 0 }, prevPos: null, inAttraction: false }],
       nextVisitorId: 2,
       exit: { x: 0, y: 0 },

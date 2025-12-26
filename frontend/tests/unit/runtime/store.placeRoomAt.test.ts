@@ -20,7 +20,7 @@ describe('store.placeRoomAt', () => {
     expect(after.nextRoomId).toBe(beforeNextRoomId + 1);
     expect(after.money).toBe(beforeMoney - ROOM_COST.hallway);
 
-    const placed = after.grid[3][2];
+    const placed = after.midwayGrid[3][2];
     expect(placed.occupied).toBe(true);
     expect(placed.roomId).toBe(`hallway-${beforeNextRoomId}`);
   });
@@ -34,7 +34,7 @@ describe('store.placeRoomAt', () => {
     const mid = useGameStore.getState();
     const moneyAfterFirst = mid.money;
     const nextRoomIdAfterFirst = mid.nextRoomId;
-    const roomIdAfterFirst = mid.grid[1][1].roomId;
+    const roomIdAfterFirst = mid.midwayGrid[1][1].roomId;
 
     // Second placement on same cell should no-op
     useGameStore.getState().placeRoomAt(1, 1);
@@ -42,7 +42,7 @@ describe('store.placeRoomAt', () => {
     const after = useGameStore.getState();
     expect(after.money).toBe(moneyAfterFirst);
     expect(after.nextRoomId).toBe(nextRoomIdAfterFirst);
-    expect(after.grid[1][1].roomId).toBe(roomIdAfterFirst);
+    expect(after.midwayGrid[1][1].roomId).toBe(roomIdAfterFirst);
   });
 
   it('does nothing if out of bounds', () => {
@@ -57,7 +57,7 @@ describe('store.placeRoomAt', () => {
     const after = useGameStore.getState();
     expect(after.money).toBe(beforeMoney);
     expect(after.nextRoomId).toBe(beforeNextRoomId);
-    expect(after.grid).toEqual(before.grid);
+    expect(after.midwayGrid).toEqual(before.midwayGrid);
   });
 
   it('does nothing if insufficient funds', () => {
@@ -73,8 +73,8 @@ describe('store.placeRoomAt', () => {
     const after = useGameStore.getState();
     expect(after.money).toBe(0);
     expect(after.nextRoomId).toBe(beforeNextRoomId);
-    expect(after.grid[0][0].occupied).toBe(false);
-    expect(after.grid[0][0].roomId).toBeNull();
+    expect(after.midwayGrid[0][0].occupied).toBe(false);
+    expect(after.midwayGrid[0][0].roomId).toBeNull();
   });
 
   it('uses the currently selectedRoomType', () => {
@@ -85,7 +85,7 @@ describe('store.placeRoomAt', () => {
     useGameStore.getState().placeRoomAt(4, 4);
 
     const after = useGameStore.getState();
-    expect(after.grid[4][4].roomId).toBe(`entry-${roomId}`);
+    expect(after.midwayGrid[4][4].roomId).toBe(`entry-${roomId}`);
     expect(after.money).toBe(STARTING_MONEY - ROOM_COST.entry);
   });
 });

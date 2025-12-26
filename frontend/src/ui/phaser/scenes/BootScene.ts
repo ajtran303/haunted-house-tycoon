@@ -20,6 +20,11 @@ export class BootScene {
   private unsubscribeExitToasts?: () => void;
   private unsubscribePlacementFeedback?: () => void;
   private unsubHover?: () => void;
+  private unsubscribeView?: () => void;
+  private unsubscribeHighlight?: () => void;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private highlightGraphic?: any;
 
   private gridRenderer?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,6 +81,10 @@ export class BootScene {
     const GRID_X = 20;
     const GRID_Y = 60;
 
+    // Expose scene for direct view rebuilds from React
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__bootScene = this;
+
     this.unsubHud = bindHudOverlay(self, TILE, GRID_X, GRID_Y);
 
     self.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -85,14 +94,34 @@ export class BootScene {
 
     const initial = useGameStore.getState();
 
-    this.buildRenderer(initial.grid);
+    const initialGrid = this.getGridForView(initial);
+    this.buildRenderer(initialGrid);
     this.gridRenderer?.setEnabled(initial.lifecycle === 'running');
 
     this.visitorsRenderer = createVisitorsRenderer(self);
-    this.visitorsRenderer.draw(initial.visitors);
+    this.visitorsRenderer.draw(this.getVisitorsForView(initial));
 
+    // Subscribe to view changes - rebuild grid when switching views
+    let lastViewKey =
+      initial.currentView.type === 'midway'
+        ? 'midway'
+        : `attraction:${initial.currentView.attractionId}`;
+
+    this.unsubscribeView = useGameStore.subscribe((state) => {
+      const viewKey =
+        state.currentView.type === 'midway'
+          ? 'midway'
+          : `attraction:${state.currentView.attractionId}`;
+
+      if (viewKey !== lastViewKey) {
+        lastViewKey = viewKey;
+        this.rebuildForCurrentView();
+      }
+    });
+
+    // Subscribe to the appropriate grid based on current view
     this.unsubscribeGrid = useGameStore.subscribe(
-      (s) => s.grid,
+      (s) => this.getGridForView(s),
       (grid, prevGrid) => {
         const needsRebuild = grid !== prevGrid;
         this.queueGridWork(grid, needsRebuild);
@@ -108,12 +137,20 @@ export class BootScene {
     );
 
     this.unsubscribeVisitors = useGameStore.subscribe(
-      (s) => s.visitors,
+      (s) => this.getVisitorsForView(s),
       (visitors) => this.queueVisitorsWork(visitors),
     );
 
     this.unsubscribeExitToasts = bindExitToasts(this.sceneRef, TILE, 0, 0);
     this.unsubscribePlacementFeedback = bindPlacementFeedback(this.sceneRef, TILE, GRID_X, GRID_Y);
+
+    // Subscribe to cell highlight changes
+    this.unsubscribeHighlight = useGameStore.subscribe(
+      (s) => s.highlightedCell,
+      (cell) => {
+        this.drawHighlight(cell, TILE, GRID_X, GRID_Y);
+      },
+    );
 
     this.unsubHover = bindVisitorHover(self, TILE, GRID_X, GRID_Y);
 
@@ -131,6 +168,61 @@ export class BootScene {
     this.gridRenderer = createGridRenderer(self, grid, (x, y) => {
       useGameStore.getState().dispatchInput({ type: 'clickCell', x, y });
     });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getGridForView(state: any) {
+    if (state.currentView.type === 'midway') {
+      return state.midwayGrid;
+    }
+    return state.attractions[state.currentView.attractionId]?.grid ?? state.midwayGrid;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getVisitorsForView(state: any) {
+    const view = state.currentView;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return state.visitors.filter((v: any) => {
+      if (view.type === 'midway') {
+        return v.location.type === 'midway';
+      }
+      return v.location.type === 'attraction' && v.location.attractionId === view.attractionId;
+    });
+  }
+
+  private rebuildForCurrentView() {
+    const state = useGameStore.getState();
+    const grid = this.getGridForView(state);
+    this.buildRenderer(grid);
+    this.gridRenderer?.setEnabled(state.lifecycle === 'running');
+    this.visitorsRenderer?.draw(this.getVisitorsForView(state));
+  }
+
+  public forceViewRebuild() {
+    this.rebuildForCurrentView();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private drawHighlight(cell: { x: number; y: number } | null, tile: number, gridX: number, gridY: number) {
+    // Clear existing highlight
+    if (this.highlightGraphic) {
+      this.highlightGraphic.destroy();
+      this.highlightGraphic = undefined;
+    }
+
+    if (!cell) return;
+
+    const self = this.sceneRef;
+    if (!self) return;
+
+    // Draw a colored outline around the highlighted cell
+    const x = gridX + cell.x * tile;
+    const y = gridY + cell.y * tile;
+
+    this.highlightGraphic = self.add.graphics();
+    this.highlightGraphic.lineStyle(3, 0x00ff00, 1); // Green outline
+    this.highlightGraphic.strokeRect(x, y, tile, tile);
+    this.highlightGraphic.setDepth(100); // Above grid but below UI
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -209,9 +301,12 @@ export class BootScene {
     this.unsubscribePlacementFeedback?.();
     this.unsubHover?.();
     this.unsubHud?.();
+    this.unsubscribeView?.();
+    this.unsubscribeHighlight?.();
 
     this.gridRenderer?.destroy();
     this.visitorsRenderer?.destroy();
+    this.highlightGraphic?.destroy();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.sceneRef as any)?.__cleanupVisibility?.();

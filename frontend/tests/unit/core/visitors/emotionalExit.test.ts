@@ -12,6 +12,8 @@ const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   intent: 'explore',
   spawnTick: 0,
   exploreStartTick: 0,
+  location: { type: 'midway' },
+  returnPortalPos: null,
   ...overrides,
 });
 

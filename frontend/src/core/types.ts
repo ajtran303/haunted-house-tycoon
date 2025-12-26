@@ -8,19 +8,32 @@ export type Cell = {
   occupied: boolean;
   roomId: string | null;
   roomType: RoomType | null;
+  portalTo?: string; // attractionId if this is a portal tile
 };
 
 export type Grid = Cell[][];
+
+export type AttractionGrid = {
+  id: string;
+  name: string;
+  grid: Grid;
+  entryPoint: Vector;
+  exitPoint: Vector;
+};
 
 export type Vector = { x: number; y: number };
 
 export type VisitorIntent = 'explore' | 'exit';
 
+export type VisitorLocation = { type: 'midway' } | { type: 'attraction'; attractionId: string };
+
 export type Visitor = {
   id: number;
   position: Vector;
   prevPos: Vector | null;
-  inAttraction: boolean;
+  inAttraction: boolean; // DEPRECATED: will be removed, use location instead
+  location: VisitorLocation;
+  returnPortalPos: Vector | null; // Portal position visitor entered from (for returning to midway)
   fear: number;
   happiness: number;
   intent: VisitorIntent;
@@ -39,7 +52,11 @@ export type GameState = {
 
   money: number;
 
-  grid: Grid;
+  midwayGrid: Grid;
+  attractions: Record<string, AttractionGrid>;
+
+  // UI view state
+  currentView: { type: 'midway' } | { type: 'attraction'; attractionId: string };
 
   visitors: Visitor[];
   nextVisitorId: number;
@@ -48,7 +65,7 @@ export type GameState = {
   exit: Vector | null;
 
   nextRoomId: number;
-  selectedRoomType: RoomType;
+  selectedRoomType: RoomType | null;
 
   // for MVP
   staffEnabled: false;
@@ -63,9 +80,22 @@ export type GameState = {
 
   placementEvents: PlacementEvent[];
   nextPlacementEventId: number;
+
+  // UI highlight state (for portal transitions)
+  highlightedCell: Vector | null;
+
+  // Portal placement target
+  targetAttractionId: string | null;
 };
 
-export type RoomType = 'entry' | 'exit' | 'hallway' | 'scare' | 'parkEntry' | 'parkExit';
+export type RoomType =
+  | 'entry'
+  | 'exit'
+  | 'hallway'
+  | 'scare'
+  | 'parkEntry'
+  | 'parkExit'
+  | 'attractionPortal';
 
 // NOTE: These are actually reasons for "deaths"
 export type ExitReason = 'panic' | 'misery';

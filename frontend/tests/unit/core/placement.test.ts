@@ -1,5 +1,5 @@
 import { placeRoom } from '../../../src/core/placement';
-import type { Grid } from '../../../src/core/types';
+import type { Grid, RoomType } from '../../../src/core/types';
 
 const makeGrid = (w: number, h: number): Grid =>
   Array.from({ length: h }, () =>
@@ -12,14 +12,15 @@ const makeGrid = (w: number, h: number): Grid =>
   );
 
 describe('placeRoom', () => {
-  const costs = {
+  const costs: Record<RoomType, number> = {
     entry: 50,
     exit: 50,
     hallway: 100,
     scare: 200,
     parkEntry: 0,
     parkExit: 0,
-  } as const;
+    attractionPortal: 0,
+  };
 
   it('places a room, deducts money, returns deterministic roomId', () => {
     const grid = makeGrid(3, 3);

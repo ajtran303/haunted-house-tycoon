@@ -4,16 +4,25 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { upkeepPerTick } from '../core/economy';
+import { createGrid } from '../core/grid';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
 import { applyTimeTick } from '../core/time';
-import type { GameState, Lifecycle, ParkExitEvent, RoomType, Visitor } from '../core/types';
+import type {
+  AttractionGrid,
+  GameState,
+  Lifecycle,
+  ParkExitEvent,
+  RoomType,
+  Visitor,
+} from '../core/types';
 import { applyIntentRules } from '../core/visitors/applyIntentRules';
 import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness } from '../core/visitors/emotions';
-import { moveVisitors } from '../core/visitors/moveVisitors';
+// import { moveVisitors } from '../core/visitors/moveVisitors';
+import { moveVisitorsMultiGrid } from '../core/visitors/moveVisitorsMultiGrid';
 import { totalSpendingPerTick } from '../core/visitors/spending';
 import { tileIsStructurallyBlocked } from '../core/visitors/tileIsStructurallyBlocked';
 
@@ -38,6 +47,20 @@ type Actions = {
 
   // placement
   placeRoomAt: (x: number, y: number) => void;
+
+  // view switching
+  viewMidway: () => void;
+  viewAttraction: (attractionId: string) => void;
+
+  // attraction management
+  createAttraction: (id: string, name: string, width: number, height: number) => void;
+
+  // UI highlight
+  highlightCell: (pos: { x: number; y: number }) => void;
+  clearHighlight: () => void;
+
+  // Portal targeting
+  setTargetAttraction: (attractionId: string | null) => void;
 
   // input
   dispatchInput: (input: Input) => void;
@@ -78,13 +101,13 @@ export const useGameStore = create(
         const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
         const nextTick = nextTime.tick;
 
-        // movement bounds
-        const gridH = s.grid.length;
-        const gridW = s.grid[0]?.length ?? 0;
+        // movement bounds (midway grid for entrance/exit checks)
+        const gridH = s.midwayGrid.length;
+        const gridW = s.midwayGrid[0]?.length ?? 0;
 
         // Immediate fail: entrance structurally blocked by player construction
         if (s.entrance && gridW > 0 && gridH > 0) {
-          if (tileIsStructurallyBlocked(s.grid, s.entrance)) {
+          if (tileIsStructurallyBlocked(s.midwayGrid, s.entrance)) {
             return {
               ...s,
               ...nextTime,
@@ -98,7 +121,7 @@ export const useGameStore = create(
 
         // Immediate fail: exit structurally blocked by player construction
         if (s.exit && gridW > 0 && gridH > 0) {
-          if (tileIsStructurallyBlocked(s.grid, s.exit)) {
+          if (tileIsStructurallyBlocked(s.midwayGrid, s.exit)) {
             return {
               ...s,
               ...nextTime,
@@ -127,7 +150,9 @@ export const useGameStore = create(
               id: nextVisitorId,
               position: ex,
               prevPos: null,
-              inAttraction: false,
+              inAttraction: false, // DEPRECATED but kept for compatibility
+              location: { type: 'midway' },
+              returnPortalPos: null,
               fear: VISITOR_START_FEAR,
               happiness: VISITOR_START_HAPPINESS,
               intent: 'explore',
@@ -144,13 +169,12 @@ export const useGameStore = create(
         // set intent rules
         const withIntent = applyIntentRules(visitors, nextTick, s.exit);
 
-        const moved =
-          gridW > 0 && gridH > 0
-            ? moveVisitors(withIntent, gridW, gridH, s.grid, nextTick, s.exit)
-            : withIntent;
+        // NEW: Multi-grid movement with portal transitions
+        const moved = moveVisitorsMultiGrid(withIntent, s, nextTick);
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
-        const withRoomEffects = applyRoomEmotionEffects(moved, s.grid);
+        // TODO: Make this location-aware when room effects are differentiated
+        const withRoomEffects = applyRoomEmotionEffects(moved, s.midwayGrid);
 
         // Decay happiness
         const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));
@@ -166,8 +190,8 @@ export const useGameStore = create(
         const spenders = afterEmotionalExit.filter((v) => existingIds.has(v.id));
         money += totalSpendingPerTick(spenders);
 
-        // upkeep
-        money -= upkeepPerTick(s.grid);
+        // upkeep (midway only for now)
+        money -= upkeepPerTick(s.midwayGrid);
 
         // despawn visitors that reach the exit
         const exit = s.exit;
@@ -233,12 +257,21 @@ export const useGameStore = create(
       if (s.lifecycle !== 'running') return;
 
       const roomType = s.selectedRoomType;
+      if (!roomType) return; // Nothing selected
+
+      // Get the grid we're currently viewing/placing on
+      const currentGrid =
+        s.currentView.type === 'midway'
+          ? s.midwayGrid
+          : s.attractions[s.currentView.attractionId]?.grid;
+
+      if (!currentGrid) return; // Safety check
 
       const applied = placeRoom({
-        grid: s.grid,
+        grid: currentGrid,
         x,
         y,
-        roomType: s.selectedRoomType,
+        roomType,
         money: s.money,
         costByType: ROOM_COST,
         nextRoomId: s.nextRoomId,
@@ -262,14 +295,86 @@ export const useGameStore = create(
         return; // non-blocking: game keeps running
       }
 
-      set({
-        grid: applied.grid,
-        money: applied.money,
-        nextRoomId: applied.nextRoomId,
-        ...(roomType === 'parkEntry' ? { entrance: { x, y } } : null),
-        ...(roomType === 'parkExit' ? { exit: { x, y } } : null),
-      });
+      // Update the appropriate grid
+      if (s.currentView.type === 'midway') {
+        // If placing a portal, set the portalTo field
+        let gridToSet = applied.grid;
+        if (roomType === 'attractionPortal' && s.targetAttractionId) {
+          gridToSet = gridToSet.map((row, rowY) =>
+            row.map((cell, cellX) => {
+              if (cellX === x && rowY === y) {
+                return { ...cell, portalTo: s.targetAttractionId! };
+              }
+              return cell;
+            }),
+          );
+        }
+
+        // Determine if we should clear selection after placement
+        const clearSelection =
+          roomType === 'parkEntry' || roomType === 'parkExit' || roomType === 'attractionPortal';
+
+        set({
+          midwayGrid: gridToSet,
+          money: applied.money,
+          nextRoomId: applied.nextRoomId,
+          ...(roomType === 'parkEntry' ? { entrance: { x, y } } : null),
+          ...(roomType === 'parkExit' ? { exit: { x, y } } : null),
+          ...(roomType === 'attractionPortal' ? { targetAttractionId: null } : null),
+          ...(clearSelection ? { selectedRoomType: null } : null),
+        });
+      } else {
+        // Update attraction grid
+        const attractionId = s.currentView.attractionId;
+        set((st) => ({
+          ...st,
+          attractions: {
+            ...st.attractions,
+            [attractionId]: {
+              ...st.attractions[attractionId],
+              grid: applied.grid,
+            },
+          },
+          money: applied.money,
+          nextRoomId: applied.nextRoomId,
+        }));
+      }
     },
+
+    // View switching
+    viewMidway: () => set({ currentView: { type: 'midway' } }),
+
+    viewAttraction: (attractionId: string) =>
+      set({ currentView: { type: 'attraction', attractionId } }),
+
+    // Attraction management
+    createAttraction: (id: string, name: string, width: number, height: number) => {
+      const s = get();
+      if (s.attractions[id]) return; // Already exists
+
+      const attraction: AttractionGrid = {
+        id,
+        name,
+        grid: createGrid(width, height),
+        entryPoint: { x: 0, y: 0 }, // Default entry at top-left
+        exitPoint: { x: width - 1, y: height - 1 }, // Default exit at bottom-right
+      };
+
+      set((st) => ({
+        ...st,
+        attractions: {
+          ...st.attractions,
+          [id]: attraction,
+        },
+      }));
+    },
+
+    // UI highlight
+    highlightCell: (pos) => set({ highlightedCell: pos }),
+    clearHighlight: () => set({ highlightedCell: null }),
+
+    // Portal targeting
+    setTargetAttraction: (attractionId) => set({ targetAttractionId: attractionId }),
 
     // input reducer
     dispatchInput: (input: Input) => {

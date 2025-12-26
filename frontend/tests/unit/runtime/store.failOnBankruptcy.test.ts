@@ -13,9 +13,9 @@ describe('failure on bankruptcy', () => {
 
     // Ensure there is upkeep: place one hallway tile directly (or via placement)
     const s = useGameStore.getState();
-    const g = s.grid.map((row) => row.slice());
+    const g = s.midwayGrid.map((row) => row.slice());
     g[0][0] = { ...g[0][0], occupied: true, roomType: 'hallway', roomId: 'h-1' };
-    useGameStore.setState({ grid: g });
+    useGameStore.setState({ midwayGrid: g });
 
     useGameStore.getState().tickOnce();
 

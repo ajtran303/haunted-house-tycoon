@@ -12,8 +12,12 @@ export const Hud = () => {
   const money = useGameStore((s) => s.money);
   const visitorCount = useGameStore((s) => s.visitors.length);
   const timeOfDay = getTimeOfDay(tick);
+  const currentView = useGameStore((s) => s.currentView);
+  const attractions = useGameStore((s) => s.attractions);
 
   const newGame = useGameStore((s) => s.newGame);
+  const viewMidway = useGameStore((s) => s.viewMidway);
+  const viewAttraction = useGameStore((s) => s.viewAttraction);
 
   const [showBanner, setShowBanner] = useState(false);
 
@@ -22,6 +26,12 @@ export const Hud = () => {
     setShowBanner(true);
   };
 
+  const handleAttractionClick = (attractionId: string) => {
+    viewAttraction(attractionId);
+  };
+
+  const isRunning = lifecycle === 'running';
+
   const resume = useGameStore((s) => s.resume);
 
   const pause = useGameStore((s) => s.pause);
@@ -29,7 +39,7 @@ export const Hud = () => {
   const buttonStyle =
     'mt-2 border px-2 py-1 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md';
 
-  const hudStyle = 'fixed top-0 right-0 h-full w-64 border-l bg-white p-3 text-sm';
+  const hudStyle = 'fixed top-0 right-0 h-full w-64 border-l bg-white p-3 text-sm overflow-y-auto';
 
   return (
     <div className={hudStyle}>
@@ -57,9 +67,36 @@ export const Hud = () => {
       </button>
       <br />
       <br />
-      <SpeedControls />
+      {isRunning && <SpeedControls />}
       <br />
-      <RoomSelector />
+
+      {/* View Switcher - only shown when running */}
+      {isRunning && (
+        <div className="mb-2 border-t pt-2">
+          <div className="mb-1 font-bold">View</div>
+          <button
+            className={`${buttonStyle} ${currentView.type === 'midway' ? 'bg-gray-200' : ''}`}
+            onClick={viewMidway}
+          >
+            Midway
+          </button>
+
+          {/* List of attractions */}
+          {Object.values(attractions).map((attraction) => (
+            <button
+              key={attraction.id}
+              className={`${buttonStyle} ${currentView.type === 'attraction' && currentView.attractionId === attraction.id ? 'bg-gray-200' : ''}`}
+              onClick={() => handleAttractionClick(attraction.id)}
+            >
+              {attraction.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <br />
+      {/* Room Selector - only shown when running */}
+      {isRunning && <RoomSelector />}
     </div>
   );
 };

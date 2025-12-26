@@ -32,6 +32,8 @@ const V = (overrides: Partial<Visitor>): Visitor => ({
   intent: 'exit', // start as exit to prove it gets overridden
   spawnTick: 0,
   exploreStartTick: 0,
+  location: { type: 'midway' },
+  returnPortalPos: null,
   ...overrides,
 });
 

@@ -9,6 +9,7 @@ const costs = {
   scare: 200,
   parkEntry: 0,
   parkExit: 0,
+  attractionPortal: 0,
 } satisfies Record<RoomType, number>;
 
 describe('placeRoom - parkEntry rules', () => {

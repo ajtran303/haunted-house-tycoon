@@ -12,7 +12,10 @@ const newGameState: GameState = {
 
   money: STARTING_MONEY,
 
-  grid: createGrid(GRID_WIDTH, GRID_HEIGHT),
+  midwayGrid: createGrid(GRID_WIDTH, GRID_HEIGHT),
+  attractions: {},
+
+  currentView: { type: 'midway' },
 
   visitors: [],
   nextVisitorId: 1,
@@ -33,6 +36,10 @@ const newGameState: GameState = {
 
   placementEvents: [],
   nextPlacementEventId: 1,
+
+  highlightedCell: null,
+
+  targetAttractionId: null,
 };
 
 export const newGame = (): GameState => {

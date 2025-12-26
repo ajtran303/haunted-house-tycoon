@@ -34,6 +34,8 @@ describe('moveVisitors - attraction gating', () => {
       intent: 'explore',
       spawnTick: 0,
       exploreStartTick: 0,
+      location: { type: 'midway' },
+      returnPortalPos: null,
     };
 
     // Right is hallway
@@ -69,6 +71,8 @@ describe('moveVisitors - attraction gating', () => {
       intent: 'explore',
       spawnTick: 0,
       exploreStartTick: 0,
+      location: { type: 'midway' },
+      returnPortalPos: null,
     };
 
     // Make entry the only walkable neighbor (in real movement).
@@ -103,6 +107,8 @@ describe('moveVisitors - attraction gating', () => {
       intent: 'explore',
       spawnTick: 0,
       exploreStartTick: 0,
+      location: { type: 'midway' },
+      returnPortalPos: null,
     };
     setCell(grid, 2, 2, { type: 'floor', occupied: true, roomType: 'entry', roomId: 'entry-0' });
 

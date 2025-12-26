@@ -5,7 +5,7 @@ import { createGridRenderer } from '../../../src/ui/phaser/render/renderGrid';
 describe('createGridRenderer', () => {
   it('draws one rectangle per cell', () => {
     useGameStore.getState().newGame();
-    const { grid } = useGameStore.getState();
+    const { midwayGrid } = useGameStore.getState();
 
     const rectApi = () => ({
       setOrigin: jest.fn().mockReturnThis(),
@@ -45,11 +45,11 @@ describe('createGridRenderer', () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const renderer = createGridRenderer(fakeScene as any, grid, () => {});
+    const renderer = createGridRenderer(fakeScene as any, midwayGrid, () => {});
     renderer.destroy();
 
     // +1 for the hover highlight rectangle
-    const expected = grid.length * grid[0].length + 1;
+    const expected = midwayGrid.length * midwayGrid[0].length + 1;
     expect(addRectangle).toHaveBeenCalledTimes(expected);
 
     // 1 tooltip text object
