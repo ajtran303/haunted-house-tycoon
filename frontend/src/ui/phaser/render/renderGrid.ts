@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ROOM_COST } from '../../../core/constants';
+import { getRoomSize } from '../../../core/placement';
 import type { Cell, Grid } from '../../../core/types';
+import { useGameStore } from '../../../runtime/store';
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
@@ -15,14 +17,16 @@ type GridRenderer = {
   setEnabled: (enabled: boolean) => void;
 };
 
-const COLOR_EMPTY = 0x222222;
-const COLOR_ENTRY = 0x2ecc71;
-const COLOR_EXIT = 0xf417e3;
-const COLOR_HALLWAY = 0x95a5a6;
-const COLOR_SCARE = 0x9b59b6;
-const COLOR_PARK_ENTRY = 0x0000ff;
-const COLOR_PARK_EXIT = 0xe74c3c;
-const COLOR_PORTAL = 0xff8800; // Orange for portals
+// Colorblind-friendly palette (Wong palette + adjustments)
+// Avoids red/green confusion, uses distinct hues
+const COLOR_EMPTY = 0x333333; // Dark gray
+const COLOR_ENTRY = 0x009e73; // Bluish green (attraction entry)
+const COLOR_EXIT = 0xcc79a7; // Reddish purple (attraction exit)
+const COLOR_HALLWAY = 0x999999; // Medium gray
+const COLOR_SCARE = 0xe69f00; // Orange (high visibility)
+const COLOR_PARK_ENTRY = 0x56b4e9; // Sky blue (park entry)
+const COLOR_PARK_EXIT = 0xd55e00; // Vermillion/burnt orange (park exit)
+const COLOR_PORTAL = 0xf0e442; // Yellow (portals - high contrast)
 
 const fillForCell = (cell: Cell) => {
   if (!cell.occupied) return COLOR_EMPTY;
@@ -82,6 +86,40 @@ export const createGridRenderer = (
     .setDepth(10)
     .setVisible(false);
 
+  // Placement preview (shows where room will be placed)
+  const placementPreview = scene.add.graphics();
+  placementPreview.setDepth(5);
+
+  const drawPlacementPreview = (cellX: number, cellY: number) => {
+    placementPreview.clear();
+
+    const selectedRoomType = useGameStore.getState().selectedRoomType;
+    if (!selectedRoomType) return;
+
+    const { width: rw, height: rh } = getRoomSize(selectedRoomType);
+
+    // Check if placement would be valid (within bounds)
+    // Using colorblind-friendly colors: blue for valid, orange for invalid
+    if (cellX + rw > width || cellY + rh > height) {
+      // Draw orange outline for invalid placement (vermillion - high visibility)
+      placementPreview.lineStyle(2, 0xd55e00, 0.9);
+    } else {
+      // Draw blue outline for valid placement area (sky blue - distinct from orange)
+      placementPreview.lineStyle(2, 0x56b4e9, 0.9);
+    }
+
+    const px = ORIGIN_X + cellX * CELL_SIZE;
+    const py = ORIGIN_Y + cellY * CELL_SIZE;
+    const pw = rw * CELL_SIZE - 1;
+    const ph = rh * CELL_SIZE - 1;
+
+    placementPreview.strokeRect(px, py, pw, ph);
+  };
+
+  const hidePlacementPreview = () => {
+    placementPreview.clear();
+  };
+
   const formatHoverInfo = (cell: Cell) => {
     const roomType = cell.occupied ? (cell.roomType ?? 'unknown') : 'empty';
     const roomId = cell.occupied ? (cell.roomId ?? '—') : '—';
@@ -134,6 +172,10 @@ export const createGridRenderer = (
       });
 
       r.on('pointerover', (pointer: any) => {
+        // Always show placement preview when a room is selected
+        drawPlacementPreview(x, y);
+
+        // Show info tooltip only for occupied cells
         const cell = currentGrid[y]?.[x];
         if (!cell || !cell.occupied) return;
 
@@ -152,6 +194,7 @@ export const createGridRenderer = (
       r.on('pointerout', () => {
         highlight.setVisible(false);
         infoText.setVisible(false);
+        hidePlacementPreview();
       });
 
       row.push(r);
@@ -180,6 +223,7 @@ export const createGridRenderer = (
   const destroy = () => {
     highlight.destroy();
     infoText.destroy();
+    placementPreview.destroy();
     for (const row of rects) for (const r of row) r.destroy();
   };
 

@@ -63,9 +63,13 @@ const SPECIAL_RULES: Partial<Record<RoomType, SpecialRule>> = {
 };
 
 // Room types that require 2x2 placement
-const MULTI_CELL_ROOMS: Partial<Record<RoomType, { width: number; height: number }>> = {
+export const MULTI_CELL_ROOMS: Partial<Record<RoomType, { width: number; height: number }>> = {
   attractionPortal: { width: 2, height: 2 },
 };
+
+/** Get the size of a room type (defaults to 1x1) */
+export const getRoomSize = (roomType: RoomType): { width: number; height: number } =>
+  MULTI_CELL_ROOMS[roomType] ?? { width: 1, height: 1 };
 
 export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
   const { grid, x, y, roomType, money, costByType, nextRoomId } = args;

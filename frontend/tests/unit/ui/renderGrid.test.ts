@@ -32,13 +32,23 @@ describe('createGridRenderer', () => {
       visible: false,
     });
 
+    const graphicsApi = () => ({
+      setDepth: jest.fn().mockReturnThis(),
+      clear: jest.fn().mockReturnThis(),
+      lineStyle: jest.fn().mockReturnThis(),
+      strokeRect: jest.fn().mockReturnThis(),
+      destroy: jest.fn(),
+    });
+
     const addRectangle = jest.fn(() => rectApi());
     const addText = jest.fn(() => textApi());
+    const addGraphics = jest.fn(() => graphicsApi());
 
     const fakeScene = {
       add: {
         rectangle: addRectangle,
         text: addText,
+        graphics: addGraphics,
       },
       scale: { width: 800, height: 600 },
       sys: { game: { config: { width: 800, height: 600 } } },

@@ -13,13 +13,15 @@ type VisitorsRenderer = {
 // Dev only
 const SHOW_INTENT = true;
 
+// Colorblind-friendly mood colors (Wong palette based)
+// Emphasizes luminance differences and avoids red-green confusion
 const MOOD_COLOR: Record<VisitorMood, number> = {
-  happy: 0x7cff6b, // bright lime green (distinct from entry green)
-  neutral: 0xffd966, // warm gold (strong contrast on dark + gray)
-  unhappy: 0x4fc3ff, // cyan-blue (clearly not park-entry blue)
-  miserable: 0x2b6cb0, // deep desaturated blue (distinct from park entry)
-  anxious: 0xe0b3ff, // light lavender (contrasts with scare purple)
-  scared: 0xb23aee, // hot purple-magenta (distinct from scare tile)
+  happy: 0xf0e442, // bright yellow - positive, high visibility
+  neutral: 0x999999, // gray - baseline state
+  unhappy: 0xcc79a7, // reddish purple - happiness declining
+  miserable: 0x0072b2, // deep blue - very low happiness (cold/sad)
+  anxious: 0xe69f00, // orange - fear rising (warning)
+  scared: 0xd55e00, // vermillion - high fear (danger!)
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

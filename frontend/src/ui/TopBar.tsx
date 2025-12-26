@@ -46,8 +46,8 @@ export const TopBar = () => {
         <Stat label="VISITORS" value={visitorCount} />
       </div>
       <div className="flex items-center gap-6">
-        <StatBar label="HAPPINESS" value={avgHappiness} color="green" />
-        <StatBar label="FEAR" value={avgFear} color="red" />
+        <StatBar label="HAPPINESS" value={avgHappiness} color="happiness" />
+        <StatBar label="FEAR" value={avgFear} color="fear" />
       </div>
     </div>
   );
@@ -60,6 +60,8 @@ const Stat = ({ label, value }: { label: string; value: string | number }) => (
   </div>
 );
 
+// Colorblind-friendly stat bar colors
+// Uses blue/orange instead of green/red for accessibility
 const StatBar = ({
   label,
   value,
@@ -67,10 +69,11 @@ const StatBar = ({
 }: {
   label: string;
   value: number;
-  color: 'green' | 'red';
+  color: 'happiness' | 'fear';
 }) => {
-  const barColor = color === 'green' ? 'bg-green-500' : 'bg-red-500';
-  const bgColor = color === 'green' ? 'bg-green-900' : 'bg-red-900';
+  // Happiness: sky blue (calm/positive), Fear: orange (warning/danger)
+  const barColor = color === 'happiness' ? 'bg-sky-400' : 'bg-orange-500';
+  const bgColor = color === 'happiness' ? 'bg-sky-900' : 'bg-orange-900';
 
   return (
     <div className="flex items-center gap-2">
