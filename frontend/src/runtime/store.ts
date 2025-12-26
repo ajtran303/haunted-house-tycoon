@@ -296,12 +296,13 @@ export const useGameStore = create(
 
       // Update the appropriate grid
       if (s.currentView.type === 'midway') {
-        // If placing a portal, set the portalTo field
+        // If placing a portal, set the portalTo field on all cells of the 2x2 portal
         let gridToSet = applied.grid;
         if (roomType === 'attractionPortal' && s.targetAttractionId) {
           gridToSet = gridToSet.map((row, rowY) =>
             row.map((cell, cellX) => {
-              if (cellX === x && rowY === y) {
+              // Portal is 2x2, so set portalTo on cells (x,y), (x+1,y), (x,y+1), (x+1,y+1)
+              if (cellX >= x && cellX <= x + 1 && rowY >= y && rowY <= y + 1) {
                 return { ...cell, portalTo: s.targetAttractionId! };
               }
               return cell;

@@ -1,4 +1,3 @@
-// tests/unit/runtime/store.speedEquivalence.test.ts
 import { selectSnapshot } from '../../../src/runtime/snapshot';
 import { useGameStore } from '../../../src/runtime/store';
 

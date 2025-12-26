@@ -15,7 +15,8 @@ export type PlaceRoomFail = {
     | 'invalid_entrance_placement'
     | 'invalid_exit_placement'
     | 'entrance_already_exists'
-    | 'exit_already_exists';
+    | 'exit_already_exists'
+    | 'not_enough_space';
 };
 
 export type PlaceRoomResult = PlaceRoomOk | PlaceRoomFail;
@@ -61,14 +62,29 @@ const SPECIAL_RULES: Partial<Record<RoomType, SpecialRule>> = {
   },
 };
 
+// Room types that require 2x2 placement
+const MULTI_CELL_ROOMS: Partial<Record<RoomType, { width: number; height: number }>> = {
+  attractionPortal: { width: 2, height: 2 },
+};
+
 export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
   const { grid, x, y, roomType, money, costByType, nextRoomId } = args;
 
   const h = grid.length;
   const w = grid[0]?.length ?? 0;
 
-  if (y < 0 || y >= h || x < 0 || x >= w) {
-    return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
+  const multiCellSize = MULTI_CELL_ROOMS[roomType];
+
+  // Check bounds for multi-cell or single-cell rooms
+  if (multiCellSize) {
+    const { width: rw, height: rh } = multiCellSize;
+    if (y < 0 || y + rh > h || x < 0 || x + rw > w) {
+      return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
+    }
+  } else {
+    if (y < 0 || y >= h || x < 0 || x >= w) {
+      return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
+    }
   }
 
   const rule = SPECIAL_RULES[roomType];
@@ -86,23 +102,50 @@ export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
     return { grid, money, nextRoomId, result: { ok: false, reason: 'insufficient_funds' } };
   }
 
-  const baseGrid = grid;
-
-  const cell = baseGrid[y][x];
-  if (cell.occupied) {
-    return { grid, money, nextRoomId, result: { ok: false, reason: 'cell_occupied' } };
+  // Check if all required cells are available
+  if (multiCellSize) {
+    const { width: rw, height: rh } = multiCellSize;
+    for (let dy = 0; dy < rh; dy++) {
+      for (let dx = 0; dx < rw; dx++) {
+        const cell = grid[y + dy]?.[x + dx];
+        if (!cell || cell.occupied) {
+          return { grid, money, nextRoomId, result: { ok: false, reason: 'not_enough_space' } };
+        }
+      }
+    }
+  } else {
+    const cell = grid[y][x];
+    if (cell.occupied) {
+      return { grid, money, nextRoomId, result: { ok: false, reason: 'cell_occupied' } };
+    }
   }
 
-  const newGrid = cloneGrid(baseGrid);
+  const newGrid = cloneGrid(grid);
   const id = `${roomType}-${nextRoomId}`;
 
-  newGrid[y][x] = {
-    ...newGrid[y][x],
-    occupied: true,
-    roomId: id,
-    roomType,
-    type: 'floor',
-  } satisfies Cell;
+  // Place room in all required cells
+  if (multiCellSize) {
+    const { width: rw, height: rh } = multiCellSize;
+    for (let dy = 0; dy < rh; dy++) {
+      for (let dx = 0; dx < rw; dx++) {
+        newGrid[y + dy][x + dx] = {
+          ...newGrid[y + dy][x + dx],
+          occupied: true,
+          roomId: id,
+          roomType,
+          type: 'floor',
+        } satisfies Cell;
+      }
+    }
+  } else {
+    newGrid[y][x] = {
+      ...newGrid[y][x],
+      occupied: true,
+      roomId: id,
+      roomType,
+      type: 'floor',
+    } satisfies Cell;
+  }
 
   return {
     grid: newGrid,

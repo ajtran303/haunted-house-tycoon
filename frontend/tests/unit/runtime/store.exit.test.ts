@@ -70,7 +70,15 @@ describe('Exit placement + exit removal', () => {
     useGameStore.setState({
       lifecycle: 'running',
       midwayGrid: [[{ type: 'empty', occupied: false, roomId: null, roomType: null }]],
-      visitors: [{ id: 1, position: { x: 0, y: 0 }, prevPos: null, location: { type: 'midway' }, returnPortalPos: null }],
+      visitors: [
+        {
+          id: 1,
+          position: { x: 0, y: 0 },
+          prevPos: null,
+          location: { type: 'midway' },
+          returnPortalPos: null,
+        },
+      ],
       nextVisitorId: 2,
       exit: { x: 0, y: 0 },
     } as any);

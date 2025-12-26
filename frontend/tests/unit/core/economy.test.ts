@@ -47,7 +47,13 @@ describe('totalUpkeepPerTick', () => {
     // Create attraction with hallway and scare rooms
     const grid = createAttractionGrid(3, 3);
     grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'entry', roomId: 'e-1' };
-    grid[1][1] = { ...grid[1][1], type: 'floor', occupied: true, roomType: 'hallway', roomId: 'h-1' };
+    grid[1][1] = {
+      ...grid[1][1],
+      type: 'floor',
+      occupied: true,
+      roomType: 'hallway',
+      roomId: 'h-1',
+    };
     grid[2][2] = { ...grid[2][2], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
 
     s.attractions['haunt1'] = {
@@ -67,7 +73,13 @@ describe('totalUpkeepPerTick', () => {
 
     // First attraction: 1 hallway
     const grid1 = createAttractionGrid(2, 2);
-    grid1[0][0] = { ...grid1[0][0], type: 'floor', occupied: true, roomType: 'hallway', roomId: 'h-1' };
+    grid1[0][0] = {
+      ...grid1[0][0],
+      type: 'floor',
+      occupied: true,
+      roomType: 'hallway',
+      roomId: 'h-1',
+    };
     s.attractions['haunt1'] = {
       id: 'haunt1',
       name: 'Haunt 1',
@@ -78,8 +90,20 @@ describe('totalUpkeepPerTick', () => {
 
     // Second attraction: 2 scare rooms
     const grid2 = createAttractionGrid(2, 2);
-    grid2[0][0] = { ...grid2[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
-    grid2[0][1] = { ...grid2[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
+    grid2[0][0] = {
+      ...grid2[0][0],
+      type: 'floor',
+      occupied: true,
+      roomType: 'scare',
+      roomId: 's-1',
+    };
+    grid2[0][1] = {
+      ...grid2[0][1],
+      type: 'floor',
+      occupied: true,
+      roomType: 'scare',
+      roomId: 's-2',
+    };
     s.attractions['haunt2'] = {
       id: 'haunt2',
       name: 'Haunt 2',

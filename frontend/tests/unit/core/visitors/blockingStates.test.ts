@@ -317,7 +317,7 @@ describe('Visitor Blocking States', () => {
 
   describe('default state', () => {
     it('blockingState is null when visitor can move freely', () => {
-      let midwayGrid = createGrid(3, 3);
+      const midwayGrid = createGrid(3, 3);
 
       const state = makeState({
         midwayGrid,

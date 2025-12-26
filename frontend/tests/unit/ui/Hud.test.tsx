@@ -70,11 +70,9 @@ describe('Hud', () => {
 
     render(<Hud />);
 
-    expect(screen.getByText(/Lifecycle:/)).toHaveTextContent('Lifecycle: paused');
-    expect(screen.getByText(/Day:/)).toHaveTextContent('Day: 1');
-    expect(screen.getByText(/Tick:/)).toHaveTextContent('Tick: 0');
-    expect(screen.getByText(/Money:/)).toHaveTextContent('Money: $1000');
-    expect(screen.getByText(/Visitors:/)).toHaveTextContent('Visitors: 2');
+    // Stats moved to TopBar, Hud now shows title and status
+    expect(screen.getByText('Haunted House Tycoon')).toBeInTheDocument();
+    expect(screen.getByText(/Status:/)).toHaveTextContent('Status: paused');
 
     fireEvent.click(screen.getByRole('button', { name: /new game/i }));
     expect(screen.getByRole('status')).toHaveTextContent('New Game Started');

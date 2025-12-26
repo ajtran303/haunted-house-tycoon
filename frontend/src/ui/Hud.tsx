@@ -1,17 +1,11 @@
 import { useState } from 'react';
 
-import { getTimeOfDay } from '../core/timeOfDay';
 import { useGameStore } from '../runtime/store';
 import { RoomSelector } from './RoomSelector';
 import { SpeedControls } from './SpeedControls';
 
 export const Hud = () => {
   const lifecycle = useGameStore((s) => s.lifecycle);
-  const day = useGameStore((s) => s.day);
-  const tick = useGameStore((s) => s.tick);
-  const money = useGameStore((s) => s.money);
-  const visitorCount = useGameStore((s) => s.visitors.length);
-  const timeOfDay = getTimeOfDay(tick);
   const currentView = useGameStore((s) => s.currentView);
   const attractions = useGameStore((s) => s.attractions);
 
@@ -48,27 +42,21 @@ export const Hud = () => {
           New Game Started
         </div>
       )}
-      <button onClick={handleNewGame} className={buttonStyle}>
-        New Game
-      </button>
       <div className="mb-1 font-bold">Haunted House Tycoon</div>
-      <div>Lifecycle: {lifecycle}</div>
-      <div>Day: {day}</div>
-      <div>Time: {timeOfDay}</div>
-      <div>Tick: {tick}</div>
-      <div>Money: ${money}</div>
-      <div>Visitors: {visitorCount}</div>
-      <br />
-      <button className={buttonStyle} onClick={resume}>
-        Start/Resume
-      </button>
-      <button className={buttonStyle} onClick={pause}>
-        Pause
-      </button>
-      <br />
+      <div className="text-gray-500">Status: {lifecycle}</div>
+      <div className="mt-2 flex gap-2">
+        <button onClick={handleNewGame} className={buttonStyle}>
+          New Game
+        </button>
+        <button className={buttonStyle} onClick={resume}>
+          Start/Resume
+        </button>
+        <button className={buttonStyle} onClick={pause}>
+          Pause
+        </button>
+      </div>
       <br />
       {isRunning && <SpeedControls />}
-      <br />
 
       {/* View Switcher - only shown when running */}
       {isRunning && (
