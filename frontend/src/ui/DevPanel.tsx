@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { MAX_VISITORS } from '../core/constants';
 import { DEV_MODE, devConfig, setDevConfig } from '../dev/devMode';
 import { useGameStore } from '../runtime/store';
 
+// Persist haunt counter across re-renders
+let globalHauntCounter = 1;
+
 export const DevPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const hauntCounterRef = useRef(globalHauntCounter);
 
   const money = useGameStore((s) => s.money);
   const visitors = useGameStore((s) => s.visitors);
@@ -83,37 +87,29 @@ export const DevPanel = () => {
 
   const handleTemplateAttraction = () => {
     const s = useGameStore.getState();
+    const num = globalHauntCounter;
+    globalHauntCounter += 1;
+    hauntCounterRef.current = globalHauntCounter;
 
-    // Create attraction
+    // Create attraction with pre-built layout
     const id = `attraction-${Date.now()}`;
-    s.createAttraction(id, 'Dev Haunt', 8, 8);
+    s.createAttraction(id, `Dev Haunt ${num}`, 8, 8);
 
     // Switch to attraction view to place rooms
     s.viewAttraction(id);
 
     // Place entry at (0, 3), hallway at (1, 3), scare at (2, 3), exit at (3, 3)
-    // Entry
     s.dispatchInput({ type: 'selectRoomType', roomType: 'entry' });
     s.placeRoomAt(0, 3);
-    // Hallway
     s.dispatchInput({ type: 'selectRoomType', roomType: 'hallway' });
     s.placeRoomAt(1, 3);
-    // Scare
     s.dispatchInput({ type: 'selectRoomType', roomType: 'scare' });
     s.placeRoomAt(2, 3);
-    // Exit
     s.dispatchInput({ type: 'selectRoomType', roomType: 'exit' });
     s.placeRoomAt(3, 3);
 
-    // Switch back to midway to place portal
-    s.viewMidway();
-
-    // Place portal at (2, 2) - needs to target the attraction first
-    s.setTargetAttraction(id);
-    s.dispatchInput({ type: 'selectRoomType', roomType: 'attractionPortal' });
-    s.placeRoomAt(2, 2);
-
     s.dispatchInput({ type: 'selectRoomType', roomType: null });
+    s.viewMidway(); // Return to midway so user can place portal
   };
 
   const toggleBtn =

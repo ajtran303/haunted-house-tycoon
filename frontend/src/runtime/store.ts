@@ -42,6 +42,7 @@ type Actions = {
   // speed
   setSpeed1x: () => void;
   setSpeed4x: () => void;
+  setSpeed10x: () => void;
 
   // time
   tickOnce: () => void;
@@ -92,6 +93,7 @@ export const useGameStore = create(
 
     setSpeed1x: () => set({ speed: 1 }),
     setSpeed4x: () => set({ speed: 4 }),
+    setSpeed10x: () => set({ speed: 10 }),
 
     // time tick (single source of truth)
     tickOnce: () => {
