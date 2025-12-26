@@ -13,9 +13,9 @@ import { applyIntentRules } from '../core/visitors/applyIntentRules';
 import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffects';
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness } from '../core/visitors/emotions';
-import { entranceIsStructurallyBlocked } from '../core/visitors/entranceBlocked';
 import { moveVisitors } from '../core/visitors/moveVisitors';
 import { totalSpendingPerTick } from '../core/visitors/spending';
+import { tileIsStructurallyBlocked } from '../core/visitors/tileIsStructurallyBlocked';
 
 type Input =
   | { type: 'selectRoomType'; roomType: RoomType }
@@ -84,7 +84,21 @@ export const useGameStore = create(
 
         // Immediate fail: entrance structurally blocked by player construction
         if (s.entrance && gridW > 0 && gridH > 0) {
-          if (entranceIsStructurallyBlocked(s.grid, s.entrance)) {
+          if (tileIsStructurallyBlocked(s.grid, s.entrance)) {
+            return {
+              ...s,
+              ...nextTime,
+              money: 0,
+              visitors: [],
+              lifecycle: 'failed',
+              // (optional later) add a failure reason/toast/event
+            };
+          }
+        }
+
+        // Immediate fail: exit structurally blocked by player construction
+        if (s.exit && gridW > 0 && gridH > 0) {
+          if (tileIsStructurallyBlocked(s.grid, s.exit)) {
             return {
               ...s,
               ...nextTime,

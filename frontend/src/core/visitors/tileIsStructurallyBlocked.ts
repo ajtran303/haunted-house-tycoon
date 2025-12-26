@@ -2,7 +2,7 @@ import type { Grid, Vector } from '../types';
 
 const inBounds = (w: number, h: number, p: Vector) => p.x >= 0 && p.x < w && p.y >= 0 && p.y < h;
 
-export const entranceIsStructurallyBlocked = (grid: Grid, entrance: Vector): boolean => {
+export const tileIsStructurallyBlocked = (grid: Grid, tile: Vector): boolean => {
   const h = grid.length;
   const w = grid[0]?.length ?? 0;
   if (w <= 0 || h <= 0) return false;
@@ -29,10 +29,10 @@ export const entranceIsStructurallyBlocked = (grid: Grid, entrance: Vector): boo
   };
 
   const neighbors: Vector[] = [
-    { x: entrance.x + 1, y: entrance.y },
-    { x: entrance.x - 1, y: entrance.y },
-    { x: entrance.x, y: entrance.y + 1 },
-    { x: entrance.x, y: entrance.y - 1 },
+    { x: tile.x + 1, y: tile.y },
+    { x: tile.x - 1, y: tile.y },
+    { x: tile.x, y: tile.y + 1 },
+    { x: tile.x, y: tile.y - 1 },
   ];
 
   // “Blocked” means: no legal first step exists.
