@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { upkeepPerTick } from '../core/economy';
-import { createGrid } from '../core/grid';
+import { createAttractionGrid, createGrid } from '../core/grid';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
 import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
@@ -355,7 +355,7 @@ export const useGameStore = create(
       const attraction: AttractionGrid = {
         id,
         name,
-        grid: createGrid(width, height),
+        grid: createAttractionGrid(width, height),
         entryPoint: { x: 0, y: 0 }, // Default entry at top-left
         exitPoint: { x: width - 1, y: height - 1 }, // Default exit at bottom-right
       };
