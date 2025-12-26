@@ -1,240 +1,122 @@
-<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+# Haunted House Tycoon
 
-- [Haunted House Tycoon (Frontend)](#haunted-house-tycoon-frontend)
-  - [Overview](#overview)
-  - [Core Design Principles](#core-design-principles)
-  - [Tech Stack](#tech-stack)
-  - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Install dependencies](#install-dependencies)
-    - [Run the game in development](#run-the-game-in-development)
-    - [Run tests](#run-tests)
-    - [Run determinism checks](#run-determinism-checks)
-  - [How the Game Works (High Level)](#how-the-game-works-high-level)
-  - [Project Structure](#project-structure)
-  - [Key Files to Read First](#key-files-to-read-first)
-  - [Contributing](#contributing)
-    - [Feature Dev Tips](#feature-dev-tips)
-    - [Adding Features (example)](#adding-features-example)
-  - [Current Limitations](#current-limitations)
-  - [Project Status](#project-status)
-  - [License](#license)
+A deterministic park management game where you balance fear and profit. Build haunted attractions that scare visitors for money, but push too hard and they'll panic, leave, or worse.
 
-<!-- TOC end -->
-
-<!-- TOC --><a name="haunted-house-tycoon-frontend"></a>
-
-# Haunted House Tycoon (Frontend)
-
-A deterministic management simulation game focused on system trustworthiness, explicit lifecycle control, and emergent failure through player decisions.
-
-This project prioritizes correctness and determinism over early polish or content. All outcomes are driven by transparent simulation rules rather than scripted events or hidden systems.
-
-<!-- TOC --><a name="overview"></a>
-
-## Overview
-
-Haunted House Tycoon is a tycoon-style simulation where the player builds and manages a haunted house while time advances and visitors move through the space.
-
-The core design goal is to ensure that:
-
-- All game outcomes are explainable
-- All state changes are deterministic
-- Failure emerges from systems interacting, not tutorials or safety nets
-
-There is no save/load system, onboarding tutorial, or difficulty scaling layer at this stage. The game can be started, played, and lost in a single uninterrupted session.
-
-<!-- TOC --><a name="core-design-principles"></a>
-
-## Core Design Principles
-
-- Deterministic simulation
-  - Given the same inputs, the game will always produce the same results.
-- Single source of truth
-  - All game state lives in a centralized store.
-- Tick-driven systems
-  - Time advances in discrete simulation ticks.
-- No “explanation-only” systems
-  - Every system must affect time, money, or visitors.
-- Failure is allowed
-  - The player can ignore problems and lose naturally.
-
-<!-- TOC --><a name="tech-stack"></a>
-
-## Tech Stack
-
-- React + TypeScript — UI and application structure
-- Vite — development and build tooling
-- Zustand — centralized game state and actions
-- Phaser — grid and visitor rendering
-- Jest — unit testing
-- Node.js — local development environment
-
-<!-- TOC --><a name="getting-started"></a>
-
-## Getting Started
-
-<!-- TOC --><a name="prerequisites"></a>
-
-### Prerequisites
-
-- Node.js (18+ recommended)
-- npm
-
-<!-- TOC --><a name="install-dependencies"></a>
-
-### Install dependencies
+## Play the Game
 
 ```bash
 npm install
-```
-
-<!-- TOC --><a name="run-the-game-in-development"></a>
-
-### Run the game in development
-
-```bash
 npm run dev
 ```
 
-<!-- TOC --><a name="run-tests"></a>
+Open http://localhost:5173 in your browser.
 
-### Run tests
+## How to Play
 
-```bash
-npm test
-```
+**The Loop:**
 
-<!-- TOC --><a name="run-determinism-checks"></a>
+1. Build a park entrance and exit on the midway
+2. Create haunted attractions with scare rooms
+3. Connect attractions to the midway via portals
+4. Visitors enter, get scared, and spend money
+5. Place amenities on the midway to keep visitors happy
+6. Hire staff to amplify fear (and risk)
+7. Don't go bankrupt
 
-### Run determinism checks
+**Two Zones:**
 
-```bash
-npm run determinism
-```
+- **Midway** - Safe zone. Visitors recover from fear and spend steady income. Happiness decays here but can be recovered by visiting amenities.
+- **Attractions** - Danger zone. Scare rooms generate fear. High fear = high spending, but too much = panic death.
 
-<!-- TOC --><a name="how-the-game-works-high-level"></a>
+**Win Condition:** Stay profitable.
 
-## How the Game Works (High Level)
+**Lose Condition:** Money hits zero.
 
-- **React** renders the HUD and hosts the Phaser canvas.
-- **Phaser** renders the grid and visitors and runs a frame loop.
-- **Zustand** holds all game state and exposes actions.
-- Simulation ticks advance time and apply rules.
-- UI and rendering react to state changes; they do not own logic.
-- All meaningful state changes occur through explicit actions or during a simulation tick.
+## Features
 
-<!-- TOC --><a name="project-structure"></a>
+- **Deterministic Simulation** - Same inputs = same outputs. Reproducible runs, testable logic.
+- **Two-Grid System** - Midway hub with multiple attraction sub-grids connected via portals.
+- **Visitor Emotions** - Fear and happiness drive spending and exits.
+- **Staff as Risk Amplifiers** - Hire scarers to boost fear output. More staff = more money, more deaths.
+- **Amenities** - Recovery rooms on the midway that counter happiness decay.
+- **Queue Pressure** - Congestion at portals creates visible queues and cascading failures.
+- **Save/Load** - Deterministic persistence. Quit and resume without state corruption.
+
+## Controls
+
+- **Click** - Place rooms, interact with UI
+- **Hover** - View room info, visitor emotions
+- **Speed Controls** - Pause, normal (1x), fast (4x)
+
+## Tech Stack
+
+- **Vite + React + TypeScript** - Frontend framework
+- **Phaser 3** - Game rendering
+- **Zustand** - State management
+- **Vitest** - Testing
 
 ## Project Structure
 
-```txt
+```
 src/
-├── core/           # Pure-ish simulation rules (economy, grid, visitors, time)
-├── runtime/        # Game state, lifecycle, and actions (Zustand store)
-├── ui/
-│   ├── phaser/     # Phaser scenes, renderers, and subscriptions
-│   └── react/      # HUD and React UI components
-├── dev/            # Development and verification scripts
-└── main.tsx        # Application entry point
-
-tests/
-└── unit/
-    └── core/      # Pure function unit tests
-    └── runtime/   # Store and lifecycle unit tests
+├── core/           # Pure game logic (no rendering)
+│   ├── visitors/   # Movement, emotions, spending
+│   ├── economy.ts  # Money calculations
+│   └── types.ts    # Type definitions
+├── runtime/        # State management (Zustand store)
+├── ui/             # React components, Phaser scenes
+└── tests/          # Unit tests
 ```
 
-<!-- TOC --><a name="key-files-to-read-first"></a>
+## Design Principles
 
-## Key Files to Read First
+- **Logic-first** - Core simulation is pure functions, testable without UI
+- **Determinism** - No hidden randomness. Seeded RNG where variation is needed.
+- **Cruelty is readable** - Failure is intentional, but never opaque
+- **No magic** - Visitors don't teleport. State changes are explicit.
 
-1. `src/runtime/store.ts`
-   - Defines all game state and actions.
-2. `src/ui/phaser/scenes/BootScene.ts`
-   - Drives the simulation tick loop and rendering subscriptions.
-3. `tests/unit/runtime/`
-   - Shows expected behavior for lifecycle, ticking, speed, and failure.
+## Roadmap
 
-<!-- TOC --><a name="contributing"></a>
+**Current: Beta**
 
-## Contributing
+- Core loop complete
+- Staff system
+- Amenities and fear recovery
+- Save/load
+- Tutorial
 
-1. Identify what state changes (money, time, visitors, grid).
-2. Add or extend core logic in src/core if it’s a rule.
-3. Wire behavior through store actions in runtime/store.ts.
-4. Update rendering or UI as needed.
-5. Add or update unit tests.
-6. Run determinism checks if simulation behavior changed.
+**Next: Hardcore Mode (Tombstones)**
 
-As a rule:
+- Visitors who die leave permanent tombstones
+- Tombstones block construction and movement
+- Attractions can become "grinders" (enter but can't exit)
+- Death spirals reshape the map
+- Optional toggle at game start
 
-- Rendering should never be the source of truth.
-- Simulation logic should be testable without Phaser.
+**Future:**
 
-<!-- TOC --><a name="feature-dev-tips"></a>
+- Advanced visitor types (thrill seekers, easily scared, impatient)
+- Scenario modes
+- Events and random incidents
+- Cloud save
+- Visual and audio polish
 
-### Feature Dev Tips
+## Development
 
-If a ticket says “add a new ability/system,” you’ll usually:
+```bash
+# Run tests
+npm test
 
-1. add state to GameState (in src/core/types)
-2. add an action here
-3. call that action from UI or from inside tickOnce
-4. add tests (can be done first or last)
+# Run tests in watch mode
+npm run test:watch
 
-If you add a new room type with special behavior, it likely needs:
+# Lint
+npm run lint
 
-1. placement validation rules in src/core/placement
-2. simulation effects in src/core/visitors/\* or tickOnce
-3. rendering behavior in Phaser
-4. and possibly special store fields (like entrance/exit)
-
-<!-- TOC --><a name="adding-features-example"></a>
-
-### Adding Features (example)
-
-> “Add a ‘Staff’ system that increases visitor fear but costs upkeep”
-
-1. Add state
-   - Add fields in GameState (in src/core/types), e.g. staffCount, staffWagesPerTick
-2. Add actions
-   - Add hireStaff() / fireStaff() actions in store.ts (guarded by lifecycle as needed)
-3. Hook into the tick
-   - In tickOnce, after upkeep (or before), subtract wages
-   - Or modify emotion decay / emotional exit thresholds using staffCount
-4. Render & UI
-   - Add HUD display + buttons
-   - Keep rules in core/store, not UI
-5. Test
-   - Add unit tests that assert:
-     - wages reduce money per tick
-     - staff affects emotional exits or fear gain deterministically
-
-<!-- TOC --><a name="current-limitations"></a>
-
-## Current Limitations
-
-- No save/load system
-- No tutorial or onboarding flow
-- No accessibility or input rebinding layer
-- Balance and content are intentionally minimal
-
-These are deliberate omissions during the current development phase.
-
-<!-- TOC --><a name="project-status"></a>
-
-## Project Status
-
-This project is in active development and is currently focused on:
-
-- Simulation correctness
-- Explicit lifecycle handling
-- Safe restarts
-- Deterministic behavior across speeds
-- Content expansion and polish are deferred until system trustworthiness is proven.
-
-<!-- TOC --><a name="license"></a>
+# Build for production
+npm run build
+```
 
 ## License
 
-MIT License
+MIT
