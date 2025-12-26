@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 
 import { getTimeOfDay } from '../core/timeOfDay';
+import { DEV_MODE } from '../dev/devMode';
+import { computeVisitorStats } from '../runtime/selectors';
 import { useGameStore } from '../runtime/store';
 
 export const TopBar = () => {
@@ -8,32 +10,16 @@ export const TopBar = () => {
   const day = useGameStore((s) => s.day);
   const tick = useGameStore((s) => s.tick);
   const money = useGameStore((s) => s.money);
-  const visitors = useGameStore((s) => s.visitors);
   const currentView = useGameStore((s) => s.currentView);
   const attractions = useGameStore((s) => s.attractions);
+  const visitors = useGameStore((s) => s.visitors);
+
+  const { visitorCount, avgHappiness, avgFear, scaredCount } = useMemo(
+    () => computeVisitorStats(visitors),
+    [visitors],
+  );
 
   const timeOfDay = getTimeOfDay(tick).toUpperCase();
-
-  // Compute averages from visitors array - memoized to avoid recomputing unless visitors change
-  const { visitorCount, avgHappiness, avgFear } = useMemo(() => {
-    const count = visitors.length;
-    if (count === 0) {
-      return { visitorCount: 0, avgHappiness: 0, avgFear: 0 };
-    }
-
-    let sumHappy = 0;
-    let sumFear = 0;
-    for (const v of visitors) {
-      sumHappy += v.happiness;
-      sumFear += v.fear;
-    }
-
-    return {
-      visitorCount: count,
-      avgHappiness: Math.round(sumHappy / count),
-      avgFear: Math.round(sumFear / count),
-    };
-  }, [visitors]);
 
   if (lifecycle !== 'running' && lifecycle !== 'paused') {
     return null;
@@ -62,7 +48,12 @@ export const TopBar = () => {
       </div>
       <div className="flex items-center gap-6">
         <StatBar label="HAPPINESS" value={avgHappiness} color="happiness" />
-        <StatBar label="FEAR" value={avgFear} color="fear" />
+        <StatBar
+          label="FEAR"
+          value={avgFear}
+          color="fear"
+          suffix={DEV_MODE ? `(${scaredCount})` : undefined}
+        />
       </div>
     </div>
   );
@@ -81,10 +72,12 @@ const StatBar = ({
   label,
   value,
   color,
+  suffix,
 }: {
   label: string;
   value: number;
   color: 'happiness' | 'fear';
+  suffix?: string;
 }) => {
   // Happiness: sky blue (calm/positive), Fear: orange (warning/danger)
   const barColor = color === 'happiness' ? 'bg-sky-400' : 'bg-orange-500';
@@ -99,6 +92,7 @@ const StatBar = ({
           style={{ width: `${Math.min(100, value)}%` }}
         />
       </div>
+      {suffix && <span className="text-xs text-gray-500">{suffix}</span>}
     </div>
   );
 };

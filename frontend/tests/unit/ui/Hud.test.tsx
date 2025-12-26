@@ -12,7 +12,12 @@ type MockState = {
   day: number;
   tick: number;
   money: number;
-  visitors: { id: string; x: number; y: number; location: { type: string; attractionId?: string } }[];
+  visitors: {
+    id: string;
+    x: number;
+    y: number;
+    location: { type: string; attractionId?: string };
+  }[];
   currentView: { type: 'midway' } | { type: 'attraction'; attractionId: string };
   attractions: Record<string, { id: string; name: string }>;
   midwayGrid: { roomType: string | null; portalTo?: string }[][];

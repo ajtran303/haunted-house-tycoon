@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { ADMISSION_FEE, MAX_VISITORS, ROOM_COST } from '../core/constants';
-import { DEV_MODE } from '../dev/devMode';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
 import { createAttractionGrid, createGrid } from '../core/grid';
@@ -26,6 +25,7 @@ import { decayHappiness, recoverFear } from '../core/visitors/emotions';
 import { moveVisitorsMultiGrid } from '../core/visitors/moveVisitorsMultiGrid';
 import { totalSpendingPerTick } from '../core/visitors/spending';
 import { tileIsStructurallyBlocked } from '../core/visitors/tileIsStructurallyBlocked';
+import { DEV_MODE } from '../dev/devMode';
 
 type Input =
   | { type: 'selectRoomType'; roomType: RoomType }
