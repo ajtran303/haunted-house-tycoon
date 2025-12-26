@@ -76,8 +76,8 @@ export const RoomSelector = () => {
         </div>
       )}
 
-      {/* Create Attraction - only show on midway */}
-      {inMidway && (
+      {/* Create Attraction - only show on midway after park entry/exit placed */}
+      {inMidway && entrance && exit && (
         <div className="mt-2">
           {!showCreateForm ? (
             <button className={btn(false)} onClick={() => setShowCreateForm(true)}>

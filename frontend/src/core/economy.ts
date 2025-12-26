@@ -1,5 +1,5 @@
 import { BASE_UPKEEP_PER_TICK, ROOM_UPKEEP_PER_TICK } from './constants';
-import type { Grid, RoomType } from './types';
+import type { GameState, Grid, RoomType } from './types';
 
 export const countRoomsByType = (grid: Grid): Record<RoomType, number> => {
   const out: Record<RoomType, number> = {
@@ -30,6 +30,16 @@ export const upkeepPerTick = (grid: Grid): number => {
     const rate = ROOM_UPKEEP_PER_TICK[rt] ?? 0;
     total += counts[rt] * rate;
   });
+
+  return total;
+};
+
+export const totalUpkeepPerTick = (state: GameState): number => {
+  let total = upkeepPerTick(state.midwayGrid);
+
+  for (const attraction of Object.values(state.attractions)) {
+    total += upkeepPerTick(attraction.grid);
+  }
 
   return total;
 };
