@@ -119,6 +119,7 @@ export type ExitEvent = {
   visitorId: number;
   reason: ExitReason;
   position: Vector;
+  location: VisitorLocation;
 };
 
 // This is actually the real exit event

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
+import { ADMISSION_FEE, MAX_VISITORS, ROOM_COST } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
 import { createAttractionGrid, createGrid } from '../core/grid';
@@ -25,6 +25,7 @@ import { decayHappiness, recoverFear } from '../core/visitors/emotions';
 import { moveVisitorsMultiGrid } from '../core/visitors/moveVisitorsMultiGrid';
 import { totalSpendingPerTick } from '../core/visitors/spending';
 import { tileIsStructurallyBlocked } from '../core/visitors/tileIsStructurallyBlocked';
+import { DEV_MODE } from '../dev/devMode';
 
 type Input =
   | { type: 'selectRoomType'; roomType: RoomType }
@@ -41,6 +42,7 @@ type Actions = {
   // speed
   setSpeed1x: () => void;
   setSpeed4x: () => void;
+  setSpeed10x: () => void;
 
   // time
   tickOnce: () => void;
@@ -91,6 +93,7 @@ export const useGameStore = create(
 
     setSpeed1x: () => set({ speed: 1 }),
     setSpeed4x: () => set({ speed: 4 }),
+    setSpeed10x: () => set({ speed: 10 }),
 
     // time tick (single source of truth)
     tickOnce: () => {
@@ -141,7 +144,7 @@ export const useGameStore = create(
         let nextVisitorId = s.nextVisitorId;
         let money = s.money;
 
-        if (s.entrance && shouldSpawnVisitor(nextTick)) {
+        if (s.entrance && shouldSpawnVisitor(nextTick) && visitors.length < MAX_VISITORS) {
           const ex = s.entrance;
 
           // Prevent spawning if entrance tile already has a visitor
@@ -320,8 +323,19 @@ export const useGameStore = create(
         }
 
         // Determine if we should clear selection after placement
+        // Clear for one-time placements (entry/exit/portal) and amenities
+        const isAmenity =
+          roomType === 'foodStall' ||
+          roomType === 'giftShop' ||
+          roomType === 'restroom' ||
+          roomType === 'photoBooth' ||
+          roomType === 'arcade' ||
+          roomType === 'firstAid';
         const clearSelection =
-          roomType === 'parkEntry' || roomType === 'parkExit' || roomType === 'attractionPortal';
+          roomType === 'parkEntry' ||
+          roomType === 'parkExit' ||
+          roomType === 'attractionPortal' ||
+          isAmenity;
 
         set({
           midwayGrid: gridToSet,
@@ -406,3 +420,11 @@ export const useGameStore = create(
     },
   })),
 );
+
+// Expose store for console access (dev only)
+if (DEV_MODE && typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).__gameState = useGameStore.getState;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).__tick = () => useGameStore.getState().tickOnce();
+}

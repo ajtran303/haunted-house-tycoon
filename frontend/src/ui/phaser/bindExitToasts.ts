@@ -33,6 +33,16 @@ export const bindExitToasts = (
     // If time isn't available (should be), fall back to immediate.
     const enqueue = () => {
       if (!isRenderableScene(scene)) return;
+
+      // Only show toast if event matches current view
+      const currentView = useGameStore.getState().currentView;
+      if (currentView.type === 'midway') {
+        if (e.location.type !== 'midway') return;
+      } else {
+        if (e.location.type !== 'attraction') return;
+        if (e.location.attractionId !== currentView.attractionId) return;
+      }
+
       showExitToast(scene, e, tileSize, gridOriginX, gridOriginY);
     };
 

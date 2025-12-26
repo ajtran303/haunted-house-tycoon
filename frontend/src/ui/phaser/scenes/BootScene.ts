@@ -1,3 +1,4 @@
+import { DEV_MODE } from '../../../dev/devMode';
 import { useGameStore } from '../../../runtime/store';
 import { bindExitToasts } from '../bindExitToasts';
 import { bindPlacementFeedback } from '../bindPlacementFeedback';
@@ -78,9 +79,11 @@ export class BootScene {
     const GRID_X = 20;
     const GRID_Y = 100; // Must match ORIGIN_Y in renderGrid.ts and visitorsRenderer.ts
 
-    // Expose scene for direct view rebuilds from React
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).__bootScene = this;
+    // Expose scene for direct view rebuilds from React (dev only)
+    if (DEV_MODE) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__bootScene = this;
+    }
 
     const initial = useGameStore.getState();
 

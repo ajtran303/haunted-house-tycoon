@@ -88,7 +88,7 @@ export const bindVisitorHover = (
     }
 
     const mood = getVisitorMood(v);
-    const text = `VISITOR ${v.id}\n${moodLabel(mood)}\nF:${v.fear} H:${v.happiness}`; // remove stats after dev
+    const text = `VISITOR ${v.id}\n${moodLabel(mood)}\nH:${v.happiness} F:${v.fear}`; // remove stats after dev or keep for player clarity
 
     tip.setText(text);
     tip.setPosition(pointer.x + 12, pointer.y + 12);

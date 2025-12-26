@@ -1,8 +1,10 @@
+import { DEV_MODE } from '../dev/devMode';
 import { useGameStore } from '../runtime/store';
 
 export const SpeedControls = () => {
   const setSpeed1x = useGameStore((s) => s.setSpeed1x);
   const setSpeed4x = useGameStore((s) => s.setSpeed4x);
+  const setSpeed10x = useGameStore((s) => s.setSpeed10x);
   const speed = useGameStore((s) => s.speed);
 
   const btn = (active: boolean) =>
@@ -19,6 +21,11 @@ export const SpeedControls = () => {
         <button className={btn(speed === 4)} onClick={setSpeed4x}>
           4x
         </button>
+        {DEV_MODE && (
+          <button className={btn(speed === 10)} onClick={setSpeed10x}>
+            10x
+          </button>
+        )}
       </div>
 
       <div className="mt-2">

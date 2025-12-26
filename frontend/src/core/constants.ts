@@ -34,6 +34,7 @@ export const ROOM_COST: Record<RoomType, number> = {
 };
 
 export const TICKS_PER_VISITOR_SPAWN = 5;
+export const MAX_VISITORS = 50;
 export const MONEY_PER_VISITOR_PER_TICK = 5; // for testing
 
 export const EMOTION_MIN = 0;

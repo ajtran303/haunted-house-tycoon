@@ -1,4 +1,5 @@
 import type { Visitor } from '../../../core/types';
+import { DEV_MODE, devConfig } from '../../../dev/devMode';
 import { getVisitorMood, VisitorMood } from '../../visitorMood';
 
 const CELL_SIZE = 24;
@@ -10,18 +11,15 @@ type VisitorsRenderer = {
   destroy: () => void;
 };
 
-// Dev only
-const SHOW_INTENT = true;
-
-// Colorblind-friendly mood colors (Wong palette based)
-// Emphasizes luminance differences and avoids red-green confusion
+// Colorblind-friendly mood colors
+// Distinct from room tile colors for visibility
 const MOOD_COLOR: Record<VisitorMood, number> = {
-  happy: 0xf0e442, // bright yellow - positive, high visibility
-  neutral: 0xffffff, // white - baseline state (visible on gray hallways)
-  unhappy: 0xcc79a7, // reddish purple - happiness declining
-  miserable: 0x0072b2, // deep blue - very low happiness (cold/sad)
-  anxious: 0xe69f00, // orange - fear rising (warning)
-  scared: 0xd55e00, // vermillion - high fear (danger!)
+  happy: 0x98fb98, // pale green - distinct from yellow portal
+  neutral: 0xffffff, // white - baseline
+  unhappy: 0xda70d6, // orchid - distinct from reddish purple exit
+  miserable: 0x4169e1, // royal blue - cold/sad, distinct from sky blues
+  anxious: 0xffc107, // amber - distinct from orange scare
+  scared: 0xff5252, // bright red - distinct from vermillion park exit
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,7 +54,7 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
       dot.setFillStyle(MOOD_COLOR[mood], 1);
 
       // --- intent label (dev-only) ---
-      if (SHOW_INTENT) {
+      if (DEV_MODE && devConfig.showVisitorIntent) {
         let label = intentLabels.get(v.id);
         if (!label) {
           label = scene.add.text(0, 0, '', {
@@ -84,13 +82,21 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
       }
     }
 
-    if (SHOW_INTENT) {
+    // Cleanup intent labels
+    if (DEV_MODE && devConfig.showVisitorIntent) {
+      // Remove labels for dead visitors
       for (const [id, label] of Array.from(intentLabels)) {
         if (!alive.has(id)) {
           label.destroy();
           intentLabels.delete(id);
         }
       }
+    } else {
+      // Clear all labels when intent display is disabled
+      for (const label of Array.from(intentLabels.values())) {
+        label.destroy();
+      }
+      intentLabels.clear();
     }
   };
 
