@@ -7,7 +7,7 @@ const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n
 
 const CELL_SIZE = 24;
 const ORIGIN_X = 20;
-const ORIGIN_Y = 60;
+const ORIGIN_Y = 80; // Account for React top bar
 
 type GridRenderer = {
   draw: (grid: Grid) => void;

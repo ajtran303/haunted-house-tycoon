@@ -1,6 +1,5 @@
 import { useGameStore } from '../../../runtime/store';
 import { bindExitToasts } from '../bindExitToasts';
-import { bindHudOverlay } from '../bindHudOverlay';
 import { bindPlacementFeedback } from '../bindPlacementFeedback';
 import { bindVisitorHover } from '../bindVisitorHover';
 import { createGridRenderer } from '../render/renderGrid';
@@ -50,8 +49,6 @@ export class BootScene {
   private pendingVisitors?: any;
   private pendingVisitorsFlush = false;
 
-  private unsubHud?: () => void;
-
   create() {
     // pause when browser tab/window loses focus or is hidden.
     // it causes react components (ie. HUD) to become stale.
@@ -79,18 +76,11 @@ export class BootScene {
 
     const TILE = 24;
     const GRID_X = 20;
-    const GRID_Y = 60;
+    const GRID_Y = 80; // Must match ORIGIN_Y in renderGrid.ts and visitorsRenderer.ts
 
     // Expose scene for direct view rebuilds from React
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).__bootScene = this;
-
-    this.unsubHud = bindHudOverlay(self, TILE, GRID_X, GRID_Y);
-
-    self.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.unsubHud?.();
-      this.unsubHud = undefined;
-    });
 
     const initial = useGameStore.getState();
 
@@ -141,7 +131,7 @@ export class BootScene {
       (visitors) => this.queueVisitorsWork(visitors),
     );
 
-    this.unsubscribeExitToasts = bindExitToasts(this.sceneRef, TILE, 0, 0);
+    this.unsubscribeExitToasts = bindExitToasts(this.sceneRef, TILE, GRID_X, GRID_Y);
     this.unsubscribePlacementFeedback = bindPlacementFeedback(this.sceneRef, TILE, GRID_X, GRID_Y);
 
     // Subscribe to cell highlight changes
@@ -205,8 +195,12 @@ export class BootScene {
     this.rebuildForCurrentView();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private drawHighlight(cell: { x: number; y: number } | null, tile: number, gridX: number, gridY: number) {
+  private drawHighlight(
+    cell: { x: number; y: number } | null,
+    tile: number,
+    gridX: number,
+    gridY: number,
+  ) {
     // Clear existing highlight
     if (this.highlightGraphic) {
       this.highlightGraphic.destroy();
@@ -303,7 +297,6 @@ export class BootScene {
     this.unsubscribeExitToasts?.();
     this.unsubscribePlacementFeedback?.();
     this.unsubHover?.();
-    this.unsubHud?.();
     this.unsubscribeView?.();
     this.unsubscribeHighlight?.();
 
