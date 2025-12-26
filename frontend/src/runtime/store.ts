@@ -45,7 +45,7 @@ type Actions = {
   setSpeed10x: () => void;
 
   // time
-  tickOnce: () => void;
+  tickOnce: (force?: boolean) => void;
 
   // placement
   placeRoomAt: (x: number, y: number) => void;
@@ -96,9 +96,9 @@ export const useGameStore = create(
     setSpeed10x: () => set({ speed: 10 }),
 
     // time tick (single source of truth)
-    tickOnce: () => {
+    tickOnce: (force?: boolean) => {
       set((s) => {
-        if (s.lifecycle !== 'running') return s;
+        if (s.lifecycle !== 'running' && !force) return s;
 
         // advance time first
         const nextTime = applyTimeTick({ tick: s.tick, day: s.day });
@@ -426,5 +426,5 @@ if (DEV_MODE && typeof window !== 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).__gameState = useGameStore.getState;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__tick = () => useGameStore.getState().tickOnce();
+  (window as any).__tick = () => useGameStore.getState().tickOnce(true);
 }
