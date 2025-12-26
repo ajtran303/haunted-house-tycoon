@@ -1,4 +1,4 @@
-import type { Cell, Grid, RoomType } from './types';
+import type { Cell, Grid, RoomType, Vector } from './types';
 
 export type PlaceRoomOk = {
   ok: true;
@@ -62,14 +62,74 @@ const SPECIAL_RULES: Partial<Record<RoomType, SpecialRule>> = {
   },
 };
 
-// Room types that require 2x2 placement
-export const MULTI_CELL_ROOMS: Partial<Record<RoomType, { width: number; height: number }>> = {
-  attractionPortal: { width: 2, height: 2 },
+// Multi-cell room shapes defined as cell offsets from placement origin
+export const MULTI_CELL_ROOMS: Partial<Record<RoomType, { cells: Vector[] }>> = {
+  // 2x2 portal
+  attractionPortal: {
+    cells: [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+    ],
+  },
+  // I-shapes (3 cells in a line)
+  giftShop: {
+    cells: [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+    ],
+  }, // 3x1 horizontal
+  restroom: {
+    cells: [
+      { x: 0, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: 2 },
+    ],
+  }, // 1x3 vertical
+  // L-shapes (3 cells in L pattern)
+  photoBooth: {
+    cells: [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+    ],
+  }, // L-up-right
+  arcade: {
+    cells: [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+    ],
+  }, // L-down-right
+  firstAid: {
+    cells: [
+      { x: 0, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+    ],
+  }, // L-down-left
+  foodStall: {
+    cells: [
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+    ],
+  }, // L-up-left
 };
 
-/** Get the size of a room type (defaults to 1x1) */
-export const getRoomSize = (roomType: RoomType): { width: number; height: number } =>
-  MULTI_CELL_ROOMS[roomType] ?? { width: 1, height: 1 };
+/** Get the cells for a room type (defaults to single cell at origin) */
+export const getRoomCells = (roomType: RoomType): Vector[] =>
+  MULTI_CELL_ROOMS[roomType]?.cells ?? [{ x: 0, y: 0 }];
+
+/** Get the bounding box size of a room type (for preview rendering) */
+export const getRoomSize = (roomType: RoomType): { width: number; height: number } => {
+  const cells = getRoomCells(roomType);
+  const maxX = Math.max(...cells.map((c) => c.x));
+  const maxY = Math.max(...cells.map((c) => c.y));
+  return { width: maxX + 1, height: maxY + 1 };
+};
 
 export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
   const { grid, x, y, roomType, money, costByType, nextRoomId } = args;
@@ -77,16 +137,14 @@ export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
   const h = grid.length;
   const w = grid[0]?.length ?? 0;
 
-  const multiCellSize = MULTI_CELL_ROOMS[roomType];
+  const cells = getRoomCells(roomType);
+  const isMultiCell = cells.length > 1;
 
-  // Check bounds for multi-cell or single-cell rooms
-  if (multiCellSize) {
-    const { width: rw, height: rh } = multiCellSize;
-    if (y < 0 || y + rh > h || x < 0 || x + rw > w) {
-      return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
-    }
-  } else {
-    if (y < 0 || y >= h || x < 0 || x >= w) {
+  // Check bounds for all cells
+  for (const cell of cells) {
+    const cx = x + cell.x;
+    const cy = y + cell.y;
+    if (cy < 0 || cy >= h || cx < 0 || cx >= w) {
       return { grid, money, nextRoomId, result: { ok: false, reason: 'out_of_bounds' } };
     }
   }
@@ -107,20 +165,15 @@ export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
   }
 
   // Check if all required cells are available
-  if (multiCellSize) {
-    const { width: rw, height: rh } = multiCellSize;
-    for (let dy = 0; dy < rh; dy++) {
-      for (let dx = 0; dx < rw; dx++) {
-        const cell = grid[y + dy]?.[x + dx];
-        if (!cell || cell.occupied) {
-          return { grid, money, nextRoomId, result: { ok: false, reason: 'not_enough_space' } };
-        }
-      }
-    }
-  } else {
-    const cell = grid[y][x];
-    if (cell.occupied) {
-      return { grid, money, nextRoomId, result: { ok: false, reason: 'cell_occupied' } };
+  for (const cell of cells) {
+    const gridCell = grid[y + cell.y]?.[x + cell.x];
+    if (!gridCell || gridCell.occupied) {
+      return {
+        grid,
+        money,
+        nextRoomId,
+        result: { ok: false, reason: isMultiCell ? 'not_enough_space' : 'cell_occupied' },
+      };
     }
   }
 
@@ -128,22 +181,9 @@ export const placeRoom = (args: PlaceRoomArgs): PlaceRoomApply => {
   const id = `${roomType}-${nextRoomId}`;
 
   // Place room in all required cells
-  if (multiCellSize) {
-    const { width: rw, height: rh } = multiCellSize;
-    for (let dy = 0; dy < rh; dy++) {
-      for (let dx = 0; dx < rw; dx++) {
-        newGrid[y + dy][x + dx] = {
-          ...newGrid[y + dy][x + dx],
-          occupied: true,
-          roomId: id,
-          roomType,
-          type: 'floor',
-        } satisfies Cell;
-      }
-    }
-  } else {
-    newGrid[y][x] = {
-      ...newGrid[y][x],
+  for (const cell of cells) {
+    newGrid[y + cell.y][x + cell.x] = {
+      ...newGrid[y + cell.y][x + cell.x],
       occupied: true,
       roomId: id,
       roomType,

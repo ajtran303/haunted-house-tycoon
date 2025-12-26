@@ -24,7 +24,13 @@ export const ROOM_COST: Record<RoomType, number> = {
   parkEntry: 0,
   parkExit: 0,
   attractionPortal: 0,
-  foodStall: 150,
+  // Amenities (all 3-cell trominoes)
+  foodStall: 150, // L-up-left
+  giftShop: 300, // I-horizontal
+  restroom: 250, // I-vertical
+  photoBooth: 275, // L-up-right
+  arcade: 350, // L-down-right
+  firstAid: 200, // L-down-left
 };
 
 export const TICKS_PER_VISITOR_SPAWN = 5;
@@ -70,7 +76,13 @@ export const ROOM_UPKEEP_PER_TICK: Partial<Record<RoomType, number>> = {
   exit: 0,
   parkEntry: 0,
   parkExit: 0,
+  // Amenities (all 0 for now, can tune later)
   foodStall: 0,
+  giftShop: 0,
+  restroom: 0,
+  photoBooth: 0,
+  arcade: 0,
+  firstAid: 0,
 };
 
 export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 30; // for dev

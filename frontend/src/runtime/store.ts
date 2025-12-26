@@ -353,11 +353,11 @@ export const useGameStore = create(
       }
     },
 
-    // View switching
-    viewMidway: () => set({ currentView: { type: 'midway' } }),
+    // View switching (reset selected room type to avoid stale placement preview)
+    viewMidway: () => set({ currentView: { type: 'midway' }, selectedRoomType: null }),
 
     viewAttraction: (attractionId: string) =>
-      set({ currentView: { type: 'attraction', attractionId } }),
+      set({ currentView: { type: 'attraction', attractionId }, selectedRoomType: null }),
 
     // Attraction management
     createAttraction: (id: string, name: string, width: number, height: number) => {

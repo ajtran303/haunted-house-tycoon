@@ -97,16 +97,48 @@ export const RoomSelector = () => {
         </div>
       )}
 
-      {/* Amenities - midway only */}
-      {inMidway && (
+      {/* Amenities - midway only, after park entry/exit placed */}
+      {inMidway && entrance && exit && (
         <div className="mt-2">
           <div className="text-xs text-gray-600">Amenities:</div>
-          <button
-            className={btn(selected === 'foodStall')}
-            onClick={() => dispatch({ type: 'selectRoomType', roomType: 'foodStall' })}
-          >
-            Food Stall (${ROOM_COST.foodStall})
-          </button>
+          <div className="flex flex-wrap gap-1">
+            <button
+              className={btn(selected === 'foodStall')}
+              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'foodStall' })}
+            >
+              Food Stall (${ROOM_COST.foodStall})
+            </button>
+            <button
+              className={btn(selected === 'giftShop')}
+              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'giftShop' })}
+            >
+              Gift Shop (${ROOM_COST.giftShop})
+            </button>
+            <button
+              className={btn(selected === 'restroom')}
+              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'restroom' })}
+            >
+              Restroom (${ROOM_COST.restroom})
+            </button>
+            <button
+              className={btn(selected === 'photoBooth')}
+              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'photoBooth' })}
+            >
+              Photo Booth (${ROOM_COST.photoBooth})
+            </button>
+            <button
+              className={btn(selected === 'arcade')}
+              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'arcade' })}
+            >
+              Arcade (${ROOM_COST.arcade})
+            </button>
+            <button
+              className={btn(selected === 'firstAid')}
+              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'firstAid' })}
+            >
+              First Aid (${ROOM_COST.firstAid})
+            </button>
+          </div>
         </div>
       )}
 
@@ -209,8 +241,18 @@ export const RoomSelector = () => {
         </>
       )}
 
-      <div className="mt-2">
-        Selected: <span className="font-mono">{selected}</span>
+      <div className="mt-2 flex items-center gap-2">
+        <span>
+          Selected: <span className="font-mono">{selected ?? 'none'}</span>
+        </span>
+        {selected && (
+          <button
+            className="border px-2 py-0.5 text-xs hover:bg-gray-100"
+            onClick={() => dispatch({ type: 'selectRoomType', roomType: null })}
+          >
+            ✕ Clear
+          </button>
+        )}
       </div>
       <div className="text-xs text-gray-600">
         View: {currentView.type === 'midway' ? 'Midway' : `Attraction ${currentView.attractionId}`}

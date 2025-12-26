@@ -20,6 +20,11 @@ export const ROOM_EMOTION_EFFECTS: Partial<Record<RoomType, EmotionDelta>> = {
     /* neutral */
   },
 
-  // Amenities - boost happiness, reduce fear
+  // Amenities - all share same stats (can tune individually later)
   foodStall: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
+  giftShop: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
+  restroom: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
+  photoBooth: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
+  arcade: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
+  firstAid: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
 };
