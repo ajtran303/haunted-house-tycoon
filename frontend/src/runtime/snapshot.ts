@@ -6,6 +6,6 @@ export const selectSnapshot = (s: GameState) => ({
   tick: s.tick,
   money: s.money,
   visitors: s.visitors,
-  grid: s.grid,
+  midwayGrid: s.midwayGrid,
   staffEnabled: s.staffEnabled,
 });

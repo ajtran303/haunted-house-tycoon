@@ -79,12 +79,12 @@ export const useGameStore = create(
         const nextTick = nextTime.tick;
 
         // movement bounds
-        const gridH = s.grid.length;
-        const gridW = s.grid[0]?.length ?? 0;
+        const gridH = s.midwayGrid.length;
+        const gridW = s.midwayGrid[0]?.length ?? 0;
 
         // Immediate fail: entrance structurally blocked by player construction
         if (s.entrance && gridW > 0 && gridH > 0) {
-          if (tileIsStructurallyBlocked(s.grid, s.entrance)) {
+          if (tileIsStructurallyBlocked(s.midwayGrid, s.entrance)) {
             return {
               ...s,
               ...nextTime,
@@ -98,7 +98,7 @@ export const useGameStore = create(
 
         // Immediate fail: exit structurally blocked by player construction
         if (s.exit && gridW > 0 && gridH > 0) {
-          if (tileIsStructurallyBlocked(s.grid, s.exit)) {
+          if (tileIsStructurallyBlocked(s.midwayGrid, s.exit)) {
             return {
               ...s,
               ...nextTime,
@@ -133,6 +133,8 @@ export const useGameStore = create(
               intent: 'explore',
               spawnTick: nextTick,
               exploreStartTick: nextTick,
+              location: { type: 'midway' },
+              returnPortalPos: null,
             };
 
             visitors = [...visitors, v];
@@ -146,11 +148,11 @@ export const useGameStore = create(
 
         const moved =
           gridW > 0 && gridH > 0
-            ? moveVisitors(withIntent, gridW, gridH, s.grid, nextTick, s.exit)
+            ? moveVisitors(withIntent, gridW, gridH, s.midwayGrid, nextTick, s.exit)
             : withIntent;
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
-        const withRoomEffects = applyRoomEmotionEffects(moved, s.grid);
+        const withRoomEffects = applyRoomEmotionEffects(moved, s.midwayGrid);
 
         // Decay happiness
         const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));
@@ -167,7 +169,7 @@ export const useGameStore = create(
         money += totalSpendingPerTick(spenders);
 
         // upkeep
-        money -= upkeepPerTick(s.grid);
+        money -= upkeepPerTick(s.midwayGrid);
 
         // despawn visitors that reach the exit
         const exit = s.exit;
@@ -235,7 +237,7 @@ export const useGameStore = create(
       const roomType = s.selectedRoomType;
 
       const applied = placeRoom({
-        grid: s.grid,
+        grid: s.midwayGrid,
         x,
         y,
         roomType: s.selectedRoomType,
@@ -263,7 +265,7 @@ export const useGameStore = create(
       }
 
       set({
-        grid: applied.grid,
+        midwayGrid: applied.grid,
         money: applied.money,
         nextRoomId: applied.nextRoomId,
         ...(roomType === 'parkEntry' ? { entrance: { x, y } } : null),

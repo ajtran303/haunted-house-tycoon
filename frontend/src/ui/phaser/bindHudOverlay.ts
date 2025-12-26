@@ -61,7 +61,7 @@ export const bindHudOverlay = (
     const st = useGameStore.getState();
 
     // Position warnings under current grid height (safe even if grid changes)
-    const gridH = st.grid.length;
+    const gridH = st.midwayGrid.length;
     const warnY = gridOriginY + gridH * tileSize + 8; // margin under grid
     warnLayer.setPosition(gridOriginX, warnY);
 
@@ -117,7 +117,7 @@ export const bindHudOverlay = (
       parkExitEventsLen: st.parkExitEvents.length,
       lifecycle: st.lifecycle,
       speed: st.speed,
-      gridH: st.grid.length,
+      gridH: st.midwayGrid.length,
     }),
     () => {
       const enqueue = () => {

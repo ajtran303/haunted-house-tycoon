@@ -12,6 +12,8 @@ const V = (id: number, x: number, y: number, prevPos: Vector | null = null): Vis
   intent: 'explore',
   spawnTick: 0,
   exploreStartTick: 0,
+  location: { type: 'midway' },
+  returnPortalPos: null,
 });
 
 describe('validateExitPlacement', () => {

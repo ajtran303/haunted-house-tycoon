@@ -12,7 +12,8 @@ const newGameState: GameState = {
 
   money: STARTING_MONEY,
 
-  grid: createGrid(GRID_WIDTH, GRID_HEIGHT),
+  midwayGrid: createGrid(GRID_WIDTH, GRID_HEIGHT),
+  attractions: {},
 
   visitors: [],
   nextVisitorId: 1,

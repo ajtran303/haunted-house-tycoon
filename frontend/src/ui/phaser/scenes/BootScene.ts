@@ -85,14 +85,14 @@ export class BootScene {
 
     const initial = useGameStore.getState();
 
-    this.buildRenderer(initial.grid);
+    this.buildRenderer(initial.midwayGrid);
     this.gridRenderer?.setEnabled(initial.lifecycle === 'running');
 
     this.visitorsRenderer = createVisitorsRenderer(self);
     this.visitorsRenderer.draw(initial.visitors);
 
     this.unsubscribeGrid = useGameStore.subscribe(
-      (s) => s.grid,
+      (s) => s.midwayGrid,
       (grid, prevGrid) => {
         const needsRebuild = grid !== prevGrid;
         this.queueGridWork(grid, needsRebuild);

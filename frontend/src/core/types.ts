@@ -26,6 +26,8 @@ export type Visitor = {
   intent: VisitorIntent;
   spawnTick: number;
   exploreStartTick: number;
+  location: VisitorLocation;
+  returnPortalPos: Vector | null; // which portal they entered from
 };
 
 export type GameSpeed = 1 | 4;
@@ -39,7 +41,8 @@ export type GameState = {
 
   money: number;
 
-  grid: Grid;
+  midwayGrid: Grid;
+  attractions: Record<string, AttractionGrid>; // keyed by id
 
   visitors: Visitor[];
   nextVisitorId: number;
@@ -103,3 +106,12 @@ export type PlacementEvent = {
   reason: PlacementFailReason;
   position: Vector;
 };
+
+type AttractionGrid = {
+  id: string;
+  grid: Grid;
+  entryPoint: Vector; // where visitors spawn when entering
+  exitPoint: Vector; // where visitors must reach to leave
+};
+
+type VisitorLocation = { type: 'midway' } | { type: 'attraction'; attractionId: string };

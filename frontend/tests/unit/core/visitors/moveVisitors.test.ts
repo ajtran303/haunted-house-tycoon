@@ -22,6 +22,8 @@ const V = (id: number, x: number, y: number): Visitor => ({
   intent: 'explore',
   spawnTick: 0,
   exploreStartTick: 0,
+  location: { type: 'midway' },
+  returnPortalPos: null,
 });
 
 const stepMock = randomWalkStep as unknown as jest.Mock<

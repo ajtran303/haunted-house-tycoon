@@ -10,7 +10,7 @@ const selectCore = () => {
     money: s.money,
     tick: s.tick,
     day: s.day,
-    grid: s.grid,
+    midwayGrid: s.midwayGrid,
     visitors: s.visitors,
     nextVisitorId: s.nextVisitorId,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,7 +31,7 @@ describe('Entrance placement + spawn gating', () => {
       useGameStore.getState().dispatchInput({ type: 'selectRoomType', roomType: 'parkEntry' });
 
       const before = selectCore();
-      const beforeCell = before.grid[0][0];
+      const beforeCell = before.midwayGrid[0][0];
 
       useGameStore.getState().dispatchInput({ type: 'clickCell', x: 0, y: 0 });
 
@@ -43,7 +43,7 @@ describe('Entrance placement + spawn gating', () => {
       expect(after.nextRoomId).toBe(before.nextRoomId);
 
       // grid unchanged at that cell (strong enough for no-op)
-      expect(after.grid[0][0]).toEqual(beforeCell);
+      expect(after.midwayGrid[0][0]).toEqual(beforeCell);
 
       // entrance should still be unset
       expect(after.entrance).toBeNull();
@@ -57,7 +57,7 @@ describe('Entrance placement + spawn gating', () => {
       const x = 2;
       const y = 2; // interior, assuming grid is at least 5x5
 
-      const beforeCell = before.grid[y][x];
+      const beforeCell = before.midwayGrid[y][x];
 
       useGameStore.getState().dispatchInput({ type: 'clickCell', x, y });
 
@@ -65,7 +65,7 @@ describe('Entrance placement + spawn gating', () => {
 
       expect(after.money).toBe(before.money); // no charge
       expect(after.nextRoomId).toBe(before.nextRoomId);
-      expect(after.grid[y][x]).toEqual(beforeCell);
+      expect(after.midwayGrid[y][x]).toEqual(beforeCell);
       expect(after.entrance).toBeNull();
     });
 
@@ -82,9 +82,9 @@ describe('Entrance placement + spawn gating', () => {
       const after = selectCore();
 
       // cell becomes occupied parkEntry
-      expect(after.grid[y][x].occupied).toBe(true);
+      expect(after.midwayGrid[y][x].occupied).toBe(true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((after.grid[y][x] as any).roomType).toBe('parkEntry');
+      expect((after.midwayGrid[y][x] as any).roomType).toBe('parkEntry');
 
       // entrance coord stored
       expect(after.entrance).toEqual({ x, y });
@@ -116,7 +116,7 @@ describe('Entrance placement + spawn gating', () => {
 
       // second cell should not become another entrance
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((after.grid[0][4] as any).roomType).not.toBe('parkEntry');
+      expect((after.midwayGrid[0][4] as any).roomType).not.toBe('parkEntry');
 
       // no money spent / ids unchanged on rejected attempt
       expect(after.money).toBe(beforeSecond.money);
