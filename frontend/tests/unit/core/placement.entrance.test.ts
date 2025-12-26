@@ -1,16 +1,6 @@
+import { ROOM_COST } from '../../../src/core/constants';
 import { createGrid } from '../../../src/core/grid';
 import { placeRoom } from '../../../src/core/placement';
-import type { RoomType } from '../../../src/core/types';
-
-const costs = {
-  entry: 50,
-  exit: 50,
-  hallway: 100,
-  scare: 200,
-  parkEntry: 0,
-  parkExit: 0,
-  attractionPortal: 0,
-} satisfies Record<RoomType, number>;
 
 describe('placeRoom - parkEntry rules', () => {
   it('allows first parkEntry on an edge', () => {
@@ -22,7 +12,7 @@ describe('placeRoom - parkEntry rules', () => {
       y: 2,
       roomType: 'parkEntry',
       money: 0,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: 1,
     });
 
@@ -40,7 +30,7 @@ describe('placeRoom - parkEntry rules', () => {
       y: 2,
       roomType: 'parkEntry',
       money: 0,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: 1,
     });
 
@@ -58,7 +48,7 @@ describe('placeRoom - parkEntry rules', () => {
       y: 0,
       roomType: 'parkEntry',
       money: 0,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: 1,
     });
 
@@ -70,7 +60,7 @@ describe('placeRoom - parkEntry rules', () => {
       y: 4,
       roomType: 'parkEntry',
       money: 0,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: first.nextRoomId,
     });
 

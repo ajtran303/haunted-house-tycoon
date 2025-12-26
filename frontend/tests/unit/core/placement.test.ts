@@ -1,5 +1,6 @@
+import { ROOM_COST } from '../../../src/core/constants';
 import { placeRoom } from '../../../src/core/placement';
-import type { Grid, RoomType } from '../../../src/core/types';
+import type { Grid } from '../../../src/core/types';
 
 const makeGrid = (w: number, h: number): Grid =>
   Array.from({ length: h }, () =>
@@ -12,15 +13,6 @@ const makeGrid = (w: number, h: number): Grid =>
   );
 
 describe('placeRoom', () => {
-  const costs: Record<RoomType, number> = {
-    entry: 50,
-    exit: 50,
-    hallway: 100,
-    scare: 200,
-    parkEntry: 0,
-    parkExit: 0,
-    attractionPortal: 0,
-  };
 
   it('places a room, deducts money, returns deterministic roomId', () => {
     const grid = makeGrid(3, 3);
@@ -30,7 +22,7 @@ describe('placeRoom', () => {
       y: 2,
       roomType: 'hallway',
       money: 1000,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: 1,
     });
 
@@ -51,7 +43,7 @@ describe('placeRoom', () => {
       y: 0,
       roomType: 'entry',
       money: 1000,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: 1,
     });
 
@@ -65,7 +57,7 @@ describe('placeRoom', () => {
       y: 0,
       roomType: 'entry',
       money: beforeMoney,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: beforeId,
     });
 
@@ -83,7 +75,7 @@ describe('placeRoom', () => {
       y: 1,
       roomType: 'scare',
       money: 10,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: 1,
     });
 
@@ -101,7 +93,7 @@ describe('placeRoom', () => {
       y: 9,
       roomType: 'hallway',
       money: 1000,
-      costByType: costs,
+      costByType: ROOM_COST,
       nextRoomId: 1,
     });
 

@@ -28,6 +28,14 @@ const COLOR_PARK_ENTRY = 0x56b4e9; // Sky blue (park entry)
 const COLOR_PARK_EXIT = 0xd55e00; // Vermillion/burnt orange (park exit)
 const COLOR_PORTAL = 0xf0e442; // Yellow (portals - high contrast)
 
+// Amenity colors (warm/inviting tones, colorblind-safe)
+const COLOR_FOOD_STALL = 0xf5deb3; // Wheat/tan (food)
+const COLOR_GIFT_SHOP = 0xdda0dd; // Plum (shopping) - reserved
+const COLOR_RESTROOM = 0x87ceeb; // Light sky blue (facilities) - reserved
+const COLOR_PHOTO_BOOTH = 0xdeb887; // Burlywood (vintage) - reserved
+const COLOR_ARCADE = 0xb19cd9; // Light purple (games) - reserved
+const COLOR_FIRST_AID = 0xf0f0f0; // Off-white (medical) - reserved
+
 const fillForCell = (cell: Cell) => {
   if (!cell.occupied) return COLOR_EMPTY;
 
@@ -46,8 +54,10 @@ const fillForCell = (cell: Cell) => {
       return COLOR_PARK_EXIT;
     case 'attractionPortal':
       return COLOR_PORTAL;
+    case 'foodStall':
+      return COLOR_FOOD_STALL;
     default:
-      // fallback if older saves/tests don’t set roomType yet
+      // fallback if older saves/tests don't set roomType yet
       return 0x666666;
   }
 };

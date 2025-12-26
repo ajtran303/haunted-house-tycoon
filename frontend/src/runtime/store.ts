@@ -22,6 +22,7 @@ import { applyRoomEmotionEffects } from '../core/visitors/applyRoomEmotionEffect
 import { removeVisitorsByEmotionalExit } from '../core/visitors/emotionalExit';
 import { decayHappiness, recoverFear } from '../core/visitors/emotions';
 import { moveVisitorsMultiGrid } from '../core/visitors/moveVisitorsMultiGrid';
+import { calculateAmenityPurchases } from '../core/visitors/amenityPurchases';
 import { totalSpendingPerTick } from '../core/visitors/spending';
 import { tileIsStructurallyBlocked } from '../core/visitors/tileIsStructurallyBlocked';
 
@@ -170,6 +171,9 @@ export const useGameStore = create(
 
         // NEW: Multi-grid movement with portal transitions
         const moved = moveVisitorsMultiGrid(withIntent, s, nextTick);
+
+        // Amenity purchases (one-time on entry, uses mood before amenity effect)
+        money += calculateAmenityPurchases(moved, s.midwayGrid);
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
         // TODO: Make this location-aware when room effects are differentiated

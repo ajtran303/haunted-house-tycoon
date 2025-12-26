@@ -10,6 +10,7 @@ export const countRoomsByType = (grid: Grid): Record<RoomType, number> => {
     parkEntry: 0,
     parkExit: 0,
     attractionPortal: 0,
+    foodStall: 0,
   };
 
   for (let y = 0; y < grid.length; y++) {

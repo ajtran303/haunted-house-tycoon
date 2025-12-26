@@ -101,7 +101,8 @@ export type RoomType =
   | 'scare'
   | 'parkEntry'
   | 'parkExit'
-  | 'attractionPortal';
+  | 'attractionPortal'
+  | 'foodStall';
 
 // NOTE: These are actually reasons for "deaths"
 export type ExitReason = 'panic' | 'misery';
