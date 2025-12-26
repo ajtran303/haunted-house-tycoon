@@ -12,7 +12,7 @@ type MockState = {
   day: number;
   tick: number;
   money: number;
-  visitors: { id: string; x: number; y: number }[];
+  visitors: { id: string; x: number; y: number; location: { type: string; attractionId?: string } }[];
   currentView: { type: 'midway' } | { type: 'attraction'; attractionId: string };
   attractions: Record<string, { id: string; name: string }>;
   midwayGrid: { roomType: string | null; portalTo?: string }[][];
@@ -42,8 +42,8 @@ describe('Hud', () => {
       tick: 0,
       money: 1000,
       visitors: [
-        { id: 'v1', x: 0, y: 0 },
-        { id: 'v2', x: 1, y: 0 },
+        { id: 'v1', x: 0, y: 0, location: { type: 'midway' } },
+        { id: 'v2', x: 1, y: 0, location: { type: 'midway' } },
       ],
       currentView: { type: 'midway' },
       attractions: {},

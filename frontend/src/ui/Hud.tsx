@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useGameStore } from '../runtime/store';
 import { RoomSelector } from './RoomSelector';
@@ -8,6 +8,28 @@ export const Hud = () => {
   const lifecycle = useGameStore((s) => s.lifecycle);
   const currentView = useGameStore((s) => s.currentView);
   const attractions = useGameStore((s) => s.attractions);
+  const visitors = useGameStore((s) => s.visitors);
+
+  // Count visitors per attraction
+  const visitorCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const v of visitors) {
+      if (v.location.type === 'attraction') {
+        counts[v.location.attractionId] = (counts[v.location.attractionId] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [visitors]);
+
+  // Check if attraction is active (has entry and exit placed)
+  const getAttractionStatus = (attraction: (typeof attractions)[string]) => {
+    const { entryPoint, exitPoint, grid } = attraction;
+    const entryCell = grid[entryPoint.y]?.[entryPoint.x];
+    const exitCell = grid[exitPoint.y]?.[exitPoint.x];
+    const hasEntry = entryCell?.roomType === 'entry';
+    const hasExit = exitCell?.roomType === 'exit';
+    return hasEntry && hasExit ? 'active' : 'inactive';
+  };
 
   const newGame = useGameStore((s) => s.newGame);
   const viewMidway = useGameStore((s) => s.viewMidway);
@@ -70,15 +92,29 @@ export const Hud = () => {
           </button>
 
           {/* List of attractions */}
-          {Object.values(attractions).map((attraction) => (
-            <button
-              key={attraction.id}
-              className={`${buttonStyle} ${currentView.type === 'attraction' && currentView.attractionId === attraction.id ? 'bg-gray-200' : ''}`}
-              onClick={() => handleAttractionClick(attraction.id)}
-            >
-              {attraction.name}
-            </button>
-          ))}
+          {Object.values(attractions).map((attraction) => {
+            const status = getAttractionStatus(attraction);
+            const count = visitorCounts[attraction.id] ?? 0;
+            const isActive =
+              currentView.type === 'attraction' && currentView.attractionId === attraction.id;
+
+            return (
+              <button
+                key={attraction.id}
+                className={`${buttonStyle} flex w-full items-center justify-between ${isActive ? 'bg-gray-200' : ''}`}
+                onClick={() => handleAttractionClick(attraction.id)}
+              >
+                <span className="flex items-center gap-2">
+                  <span
+                    className={`h-2 w-2 rounded-full ${status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}
+                    title={status}
+                  />
+                  {attraction.name}
+                </span>
+                <span className="text-xs text-gray-500">{count} Visitors</span>
+              </button>
+            );
+          })}
         </div>
       )}
 

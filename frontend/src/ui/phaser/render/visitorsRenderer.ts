@@ -17,7 +17,7 @@ const SHOW_INTENT = true;
 // Emphasizes luminance differences and avoids red-green confusion
 const MOOD_COLOR: Record<VisitorMood, number> = {
   happy: 0xf0e442, // bright yellow - positive, high visibility
-  neutral: 0x999999, // gray - baseline state
+  neutral: 0xffffff, // white - baseline state (visible on gray hallways)
   unhappy: 0xcc79a7, // reddish purple - happiness declining
   miserable: 0x0072b2, // deep blue - very low happiness (cold/sad)
   anxious: 0xe69f00, // orange - fear rising (warning)
