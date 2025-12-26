@@ -1,3 +1,4 @@
+import { DevPanel } from './ui/DevPanel';
 import { Hud } from './ui/Hud';
 import { PhaserHost } from './ui/phaser/PhaserHost';
 import { TopBar } from './ui/TopBar';
@@ -10,6 +11,7 @@ export default function App() {
       <Warnings />
       <Hud />
       <PhaserHost />
+      <DevPanel />
     </>
   );
 }

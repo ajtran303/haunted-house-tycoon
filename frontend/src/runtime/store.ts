@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { ADMISSION_FEE, ROOM_COST } from '../core/constants';
+import { ADMISSION_FEE, MAX_VISITORS, ROOM_COST } from '../core/constants';
+import { DEV_MODE } from '../dev/devMode';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
 import { createAttractionGrid, createGrid } from '../core/grid';
@@ -141,7 +142,7 @@ export const useGameStore = create(
         let nextVisitorId = s.nextVisitorId;
         let money = s.money;
 
-        if (s.entrance && shouldSpawnVisitor(nextTick)) {
+        if (s.entrance && shouldSpawnVisitor(nextTick) && visitors.length < MAX_VISITORS) {
           const ex = s.entrance;
 
           // Prevent spawning if entrance tile already has a visitor
@@ -406,3 +407,11 @@ export const useGameStore = create(
     },
   })),
 );
+
+// Expose store for console access (dev only)
+if (DEV_MODE && typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).__gameState = useGameStore.getState;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).__tick = () => useGameStore.getState().tickOnce();
+}

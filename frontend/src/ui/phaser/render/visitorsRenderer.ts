@@ -1,4 +1,5 @@
 import type { Visitor } from '../../../core/types';
+import { DEV_MODE, devConfig } from '../../../dev/devMode';
 import { getVisitorMood, VisitorMood } from '../../visitorMood';
 
 const CELL_SIZE = 24;
@@ -9,9 +10,6 @@ type VisitorsRenderer = {
   draw: (visitors: Visitor[]) => void;
   destroy: () => void;
 };
-
-// Dev only
-const SHOW_INTENT = true;
 
 // Colorblind-friendly mood colors (Wong palette based)
 // Emphasizes luminance differences and avoids red-green confusion
@@ -56,7 +54,7 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
       dot.setFillStyle(MOOD_COLOR[mood], 1);
 
       // --- intent label (dev-only) ---
-      if (SHOW_INTENT) {
+      if (DEV_MODE && devConfig.showVisitorIntent) {
         let label = intentLabels.get(v.id);
         if (!label) {
           label = scene.add.text(0, 0, '', {
@@ -84,13 +82,21 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
       }
     }
 
-    if (SHOW_INTENT) {
+    // Cleanup intent labels
+    if (DEV_MODE && devConfig.showVisitorIntent) {
+      // Remove labels for dead visitors
       for (const [id, label] of Array.from(intentLabels)) {
         if (!alive.has(id)) {
           label.destroy();
           intentLabels.delete(id);
         }
       }
+    } else {
+      // Clear all labels when intent display is disabled
+      for (const label of Array.from(intentLabels.values())) {
+        label.destroy();
+      }
+      intentLabels.clear();
     }
   };
 

@@ -65,7 +65,6 @@ export const Hud = () => {
         </div>
       )}
       <div className="mb-1 font-bold">Haunted House Tycoon</div>
-      <div className="text-gray-500">Status: {lifecycle}</div>
       <div className="mt-2 flex gap-2">
         <button className={buttonStyle} onClick={resume}>
           Start/Resume
