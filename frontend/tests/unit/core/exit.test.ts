@@ -1,19 +1,17 @@
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../../../src/core/constants';
 import type { Vector, Visitor } from '../../../src/core/types';
 import { removeVisitorsAtExit, validateExitPlacement } from '../../../src/core/visitors/exit';
+import { makeVisitor } from '../../helpers/factories';
 
-const V = (id: number, x: number, y: number, prevPos: Vector | null = null): Visitor => ({
-  id,
-  position: { x, y },
-  prevPos,
-  location: { type: 'midway' },
-  returnPortalPos: null,
-  fear: VISITOR_START_FEAR,
-  happiness: VISITOR_START_HAPPINESS,
-  intent: 'explore',
-  spawnTick: 0,
-  exploreStartTick: 0,
-});
+// Convenience wrapper for this test file
+const V = (id: number, x: number, y: number, prevPos: Vector | null = null): Visitor =>
+  makeVisitor({
+    id,
+    position: { x, y },
+    prevPos,
+    fear: VISITOR_START_FEAR,
+    happiness: VISITOR_START_HAPPINESS,
+  });
 
 describe('validateExitPlacement', () => {
   it('rejects non-edge placement', () => {

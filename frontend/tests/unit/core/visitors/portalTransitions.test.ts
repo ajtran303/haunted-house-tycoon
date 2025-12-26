@@ -1,84 +1,12 @@
-import { createAttractionGrid, createGrid } from '../../../../src/core/grid';
-import type { Cell, GameState, Grid, Visitor } from '../../../../src/core/types';
 import { moveVisitorsMultiGrid } from '../../../../src/core/visitors/moveVisitorsMultiGrid';
-
-const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
-  id: 1,
-  position: { x: 0, y: 0 },
-  prevPos: null,
-  location: { type: 'midway' },
-  returnPortalPos: null,
-  fear: 0,
-  happiness: 50,
-  intent: 'explore',
-  spawnTick: 0,
-  exploreStartTick: 0,
-  ...overrides,
-});
-
-const makeCell = (overrides?: Partial<Cell>): Cell => ({
-  type: 'floor',
-  occupied: false,
-  roomId: null,
-  roomType: null,
-  ...overrides,
-});
-
-const makeState = (overrides?: Partial<GameState>): GameState => ({
-  lifecycle: 'running',
-  speed: 1,
-  day: 1,
-  tick: 0,
-  money: 1000,
-  midwayGrid: createGrid(5, 5),
-  attractions: {},
-  currentView: { type: 'midway' },
-  visitors: [],
-  nextVisitorId: 1,
-  entrance: { x: 0, y: 0 },
-  exit: { x: 4, y: 4 },
-  nextRoomId: 1,
-  selectedRoomType: null,
-  staffEnabled: false,
-  exitEvents: [],
-  nextExitEventId: 1,
-  parkExitEvents: [],
-  nextParkExitEventId: 1,
-  placementEvents: [],
-  nextPlacementEventId: 1,
-  highlightedCell: null,
-  targetAttractionId: null,
-  ...overrides,
-});
-
-// Helper to place a room on a grid
-const placeRoom = (grid: Grid, x: number, y: number, roomType: string): Grid => {
-  return grid.map((row, rowY) =>
-    row.map((cell, cellX) => {
-      if (cellX === x && rowY === y) {
-        return { ...cell, type: 'floor' as const, roomType: roomType as Cell['roomType'] };
-      }
-      return cell;
-    }),
-  );
-};
-
-// Helper to place a portal with portalTo reference
-const placePortal = (grid: Grid, x: number, y: number, attractionId: string): Grid => {
-  return grid.map((row, rowY) =>
-    row.map((cell, cellX) => {
-      if (cellX === x && rowY === y) {
-        return {
-          ...cell,
-          type: 'floor' as const,
-          roomType: 'attractionPortal' as const,
-          portalTo: attractionId,
-        };
-      }
-      return cell;
-    }),
-  );
-};
+import {
+  createAttractionGrid,
+  createGrid,
+  makeState,
+  makeVisitor,
+  placePortal,
+  placeRoom,
+} from '../../../helpers/factories';
 
 describe('Portal Transitions', () => {
   describe('entering an attraction via portal', () => {

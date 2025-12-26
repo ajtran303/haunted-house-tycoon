@@ -45,6 +45,7 @@ describe('newGame', () => {
       intent: 'explore',
       spawnTick: 0,
       exploreStartTick: 0,
+      blockingState: null,
     });
     state1.midwayGrid[0][0] = { ...state1.midwayGrid[0][0], occupied: true };
 

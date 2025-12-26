@@ -1,21 +1,16 @@
 // src/core/visitors/applyRoomEmotionEffects.test.ts
 import { EMOTION_BOUNDS } from '../../../../src/core/constants';
-import type { Grid, Visitor } from '../../../../src/core/types';
+import type { Grid } from '../../../../src/core/types';
 import { applyRoomEmotionEffects } from '../../../../src/core/visitors/applyRoomEmotionEffects';
+import { makeVisitor as makeBaseVisitor } from '../../../helpers/factories';
 
-const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
-  id: 1,
-  position: { x: 1, y: 1 },
-  prevPos: { x: 0, y: 1 }, // default: "entered"
-  location: { type: 'midway' },
-  returnPortalPos: null,
-  fear: 0,
-  happiness: 50,
-  intent: 'explore',
-  spawnTick: 0,
-  exploreStartTick: 0,
-  ...overrides,
-});
+// Local wrapper with position defaults for this test
+const makeVisitor = (overrides?: Parameters<typeof makeBaseVisitor>[0]) =>
+  makeBaseVisitor({
+    position: { x: 1, y: 1 },
+    prevPos: { x: 0, y: 1 }, // default: "entered"
+    ...overrides,
+  });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const makeGrid = (roomTypeAtCenter: any): Grid => {

@@ -1,25 +1,11 @@
 import { EMOTION_BOUNDS, HAPPINESS_DECAY_PER_TICK } from '../../../../src/core/constants';
-import type { Visitor } from '../../../../src/core/types';
 import {
   applyEmotionDelta,
   clampEmotion,
   decayHappiness,
   decayHappinessForVisitors,
 } from '../../../../src/core/visitors/emotions';
-
-const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
-  id: 1,
-  position: { x: 0, y: 0 },
-  prevPos: null,
-  location: { type: 'midway' },
-  returnPortalPos: null,
-  fear: 0,
-  happiness: 50,
-  intent: 'explore',
-  spawnTick: 0,
-  exploreStartTick: 0,
-  ...overrides,
-});
+import { makeVisitor } from '../../../helpers/factories';
 
 describe('clampEmotion', () => {
   it('returns value unchanged when within bounds', () => {

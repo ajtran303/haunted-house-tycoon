@@ -1,21 +1,10 @@
 import { DEFAULT_EXPLORE_TICKS_BEFORE_EXIT } from '../../../src/core/constants';
 import type { Visitor } from '../../../src/core/types';
 import { applyIntentRules } from '../../../src/core/visitors/applyIntentRules';
+import { makeVisitor } from '../../helpers/factories';
 
 const v = (overrides: Partial<Visitor> = {}): Visitor =>
-  ({
-    id: 1,
-    position: { x: 0, y: 0 },
-    prevPos: null,
-    location: { type: 'midway' },
-    returnPortalPos: null,
-    fear: 0,
-    happiness: 60,
-    intent: 'explore',
-    spawnTick: 0,
-    exploreStartTick: 0,
-    ...overrides,
-  }) as Visitor;
+  makeVisitor({ happiness: 60, ...overrides });
 
 describe('applyIntentRules', () => {
   it('does nothing when no park exit exists', () => {
