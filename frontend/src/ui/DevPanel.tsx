@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { MAX_VISITORS } from '../core/constants';
 import { DEV_MODE, devConfig, setDevConfig } from '../dev/devMode';
@@ -9,7 +9,15 @@ let globalHauntCounter = 1;
 
 export const DevPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const hauntCounterRef = useRef(globalHauntCounter);
+
+  const attractions = useGameStore((s) => s.attractions);
+
+  // Reset haunt counter when game resets (attractions become empty)
+  useEffect(() => {
+    if (Object.keys(attractions).length === 0) {
+      globalHauntCounter = 1;
+    }
+  }, [attractions]);
 
   const money = useGameStore((s) => s.money);
   const visitors = useGameStore((s) => s.visitors);
@@ -89,7 +97,6 @@ export const DevPanel = () => {
     const s = useGameStore.getState();
     const num = globalHauntCounter;
     globalHauntCounter += 1;
-    hauntCounterRef.current = globalHauntCounter;
 
     // Create attraction with pre-built layout
     const id = `attraction-${Date.now()}`;
