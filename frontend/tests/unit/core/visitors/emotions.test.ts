@@ -1,9 +1,15 @@
-import { EMOTION_BOUNDS, HAPPINESS_DECAY_PER_TICK } from '../../../../src/core/constants';
+import {
+  EMOTION_BOUNDS,
+  FEAR_RECOVERY_PER_TICK,
+  HAPPINESS_DECAY_PER_TICK,
+} from '../../../../src/core/constants';
 import {
   applyEmotionDelta,
   clampEmotion,
   decayHappiness,
   decayHappinessForVisitors,
+  recoverFear,
+  recoverFearForVisitors,
 } from '../../../../src/core/visitors/emotions';
 import { makeVisitor } from '../../../helpers/factories';
 
@@ -157,5 +163,60 @@ describe('happiness decay', () => {
 
     expect(next[0].happiness).toBe(10 - HAPPINESS_DECAY_PER_TICK);
     expect(next[1].happiness).toBe(10); // unchanged
+  });
+});
+
+describe('fear recovery', () => {
+  it('recovers fear by the default constant per tick on midway', () => {
+    const v = makeVisitor({ fear: 50, location: { type: 'midway' } });
+    const next = recoverFear(v);
+    expect(next.fear).toBe(50 - FEAR_RECOVERY_PER_TICK);
+  });
+
+  it('applies to every visitor on midway', () => {
+    const a = makeVisitor({ id: 1, location: { type: 'midway' }, fear: 30 });
+    const b = makeVisitor({ id: 2, location: { type: 'midway' }, fear: 40 });
+    const next = recoverFearForVisitors([a, b]);
+    expect(next[0].fear).toBe(30 - FEAR_RECOVERY_PER_TICK);
+    expect(next[1].fear).toBe(40 - FEAR_RECOVERY_PER_TICK);
+  });
+
+  it('is tunable (supports overriding recovery amount)', () => {
+    const v = makeVisitor({ fear: 20, location: { type: 'midway' } });
+    expect(recoverFear(v, 5).fear).toBe(15);
+    expect(recoverFearForVisitors([v], 10)[0].fear).toBe(10);
+  });
+
+  it('cannot reduce fear below the minimum clamp', () => {
+    const v = makeVisitor({ fear: EMOTION_BOUNDS.fear.min, location: { type: 'midway' } });
+    const next = recoverFear(v, 999);
+    expect(next.fear).toBe(EMOTION_BOUNDS.fear.min);
+  });
+
+  it('does not mutate the input visitor', () => {
+    const v = makeVisitor({ fear: 30, location: { type: 'midway' } });
+    const next = recoverFear(v, 5);
+    expect(next).not.toBe(v);
+    expect(v.fear).toBe(30);
+  });
+
+  it('does not recover fear while a visitor is in an attraction', () => {
+    const a = makeVisitor({ id: 1, location: { type: 'midway' }, fear: 50 });
+    const b = makeVisitor({
+      id: 2,
+      location: { type: 'attraction', attractionId: 'haunt1' },
+      fear: 50,
+    });
+
+    const next = recoverFearForVisitors([a, b]);
+
+    expect(next[0].fear).toBe(50 - FEAR_RECOVERY_PER_TICK);
+    expect(next[1].fear).toBe(50); // unchanged - fear does not recover in attractions
+  });
+
+  it('returns same object when fear is already at minimum', () => {
+    const v = makeVisitor({ fear: 0, location: { type: 'midway' } });
+    const next = recoverFear(v);
+    expect(next).toBe(v); // optimization: same reference when no change
   });
 });

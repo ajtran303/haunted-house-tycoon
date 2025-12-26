@@ -1,4 +1,4 @@
-import { EMOTION_BOUNDS, HAPPINESS_DECAY_PER_TICK } from '../constants';
+import { EMOTION_BOUNDS, FEAR_RECOVERY_PER_TICK, HAPPINESS_DECAY_PER_TICK } from '../constants';
 import type { Visitor } from '../types';
 
 export type Emotion = 'fear' | 'happiness';
@@ -32,3 +32,21 @@ export const decayHappinessForVisitors = (
   visitors: Visitor[],
   amount = HAPPINESS_DECAY_PER_TICK,
 ): Visitor[] => visitors.map((v) => decayHappiness(v, amount));
+
+/**
+ * Recover fear for a visitor on the midway.
+ * Fear does not recover inside attractions.
+ */
+export const recoverFear = (v: Visitor, amount = FEAR_RECOVERY_PER_TICK): Visitor => {
+  // Fear only recovers on the midway, not in attractions
+  if (v.location.type === 'attraction') return v;
+
+  const nextFear = clampEmotion('fear', v.fear - amount);
+
+  return nextFear === v.fear ? v : { ...v, fear: nextFear };
+};
+
+export const recoverFearForVisitors = (
+  visitors: Visitor[],
+  amount = FEAR_RECOVERY_PER_TICK,
+): Visitor[] => visitors.map((v) => recoverFear(v, amount));
