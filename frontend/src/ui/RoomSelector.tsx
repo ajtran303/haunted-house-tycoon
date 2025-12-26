@@ -34,6 +34,26 @@ export const RoomSelector = () => {
   const inMidway = currentView.type === 'midway';
   const inAttraction = currentView.type === 'attraction';
 
+  // Check if current attraction has entry/exit placed
+  const currentAttraction =
+    inAttraction && currentView.type === 'attraction'
+      ? attractions[currentView.attractionId]
+      : null;
+
+  const hasAttractionEntry = (() => {
+    if (!currentAttraction) return false;
+    const { entryPoint, grid } = currentAttraction;
+    const cell = grid[entryPoint.y]?.[entryPoint.x];
+    return cell?.roomType === 'entry';
+  })();
+
+  const hasAttractionExit = (() => {
+    if (!currentAttraction) return false;
+    const { exitPoint, grid } = currentAttraction;
+    const cell = grid[exitPoint.y]?.[exitPoint.x];
+    return cell?.roomType === 'exit';
+  })();
+
   const handleCreateAttractionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAttractionName.trim()) return;
@@ -137,20 +157,27 @@ export const RoomSelector = () => {
       {/* Attraction tiles - only show in attraction view */}
       {inAttraction && (
         <>
-          <div className="flex gap-2">
-            <button
-              className={btn(selected === 'entry')}
-              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'entry' })}
-            >
-              Entry
-            </button>
-            <button
-              className={btn(selected === 'exit')}
-              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'exit' })}
-            >
-              Exit
-            </button>
-          </div>
+          {/* Entry/Exit buttons - hide after placed */}
+          {(!hasAttractionEntry || !hasAttractionExit) && (
+            <div className="flex gap-2">
+              {!hasAttractionEntry && (
+                <button
+                  className={btn(selected === 'entry')}
+                  onClick={() => dispatch({ type: 'selectRoomType', roomType: 'entry' })}
+                >
+                  Entry
+                </button>
+              )}
+              {!hasAttractionExit && (
+                <button
+                  className={btn(selected === 'exit')}
+                  onClick={() => dispatch({ type: 'selectRoomType', roomType: 'exit' })}
+                >
+                  Exit
+                </button>
+              )}
+            </div>
+          )}
           <div className="flex gap-2">
             <button
               className={btn(selected === 'hallway')}
