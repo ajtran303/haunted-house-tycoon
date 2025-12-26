@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { getTimeOfDay } from '../core/timeOfDay';
 import { DEV_MODE } from '../dev/devMode';
-import { computeVisitorStats } from '../runtime/selectors';
+import { computeDeathStats, computeVisitorStats } from '../runtime/selectors';
 import { useGameStore } from '../runtime/store';
 
 export const TopBar = () => {
@@ -13,10 +13,16 @@ export const TopBar = () => {
   const currentView = useGameStore((s) => s.currentView);
   const attractions = useGameStore((s) => s.attractions);
   const visitors = useGameStore((s) => s.visitors);
+  const exitEvents = useGameStore((s) => s.exitEvents);
 
   const { visitorCount, avgHappiness, avgFear, scaredCount } = useMemo(
     () => computeVisitorStats(visitors),
     [visitors],
+  );
+
+  const { panicCount, miseryCount, totalDeaths } = useMemo(
+    () => computeDeathStats(exitEvents),
+    [exitEvents],
   );
 
   const timeOfDay = getTimeOfDay(tick).toUpperCase();
@@ -55,6 +61,13 @@ export const TopBar = () => {
           suffix={DEV_MODE ? `(${scaredCount})` : undefined}
         />
       </div>
+      {totalDeaths > 0 && (
+        <div className="flex items-center gap-6">
+          <span className="text-red-400">DEATHS</span>
+          {miseryCount > 0 && <Stat label="MISERY" value={miseryCount} />}
+          {panicCount > 0 && <Stat label="PANIC" value={panicCount} />}
+        </div>
+      )}
     </div>
   );
 };
