@@ -68,9 +68,10 @@ export const bindVisitorHover = (scene: Phaser.Scene) => {
 
     const key = `${gx},${gy}`;
     if (key === lastKey) {
-      // Still hovering same cell; just keep tooltip near cursor
+      // Still hovering same cell; just keep tooltip near cursor (above)
       if (tip.visible) {
-        tip.setPosition(pointer.x + 12, pointer.y + 12);
+        const b = tip.getBounds();
+        tip.setPosition(pointer.x + 12, pointer.y - b.height - 8);
       }
       return;
     }
@@ -84,10 +85,11 @@ export const bindVisitorHover = (scene: Phaser.Scene) => {
     }
 
     const mood = getVisitorMood(v);
-    const text = `VISITOR ${v.id}\n${moodLabel(mood)}\nH:${v.happiness} F:${v.fear}`; // remove stats after dev or keep for player clarity
+    const text = `${moodLabel(mood)}\nHappiness: ${v.happiness}\nFear: ${v.fear}`;
 
     tip.setText(text);
-    tip.setPosition(pointer.x + 12, pointer.y + 12);
+    const b = tip.getBounds();
+    tip.setPosition(pointer.x + 12, pointer.y - b.height - 8);
     tip.setVisible(true);
   };
 

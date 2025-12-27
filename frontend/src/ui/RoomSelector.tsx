@@ -83,23 +83,28 @@ export const RoomSelector = () => {
 
       {/* Park Entry/Exit - only show on midway if not placed yet */}
       {inMidway && (!entrance || !exit) && (
-        <div className="flex gap-2">
-          {!entrance && (
-            <button
-              className={btn(selected === 'parkEntry')}
-              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'parkEntry' })}
-            >
-              Park Entry
-            </button>
-          )}
-          {!exit && (
-            <button
-              className={btn(selected === 'parkExit')}
-              onClick={() => dispatch({ type: 'selectRoomType', roomType: 'parkExit' })}
-            >
-              Park Exit
-            </button>
-          )}
+        <div>
+          <div className="mb-2 text-sm text-gray-400">
+            Place entry and exit on grid edges
+          </div>
+          <div className="flex gap-2">
+            {!entrance && (
+              <button
+                className={btn(selected === 'parkEntry')}
+                onClick={() => dispatch({ type: 'selectRoomType', roomType: 'parkEntry' })}
+              >
+                Park Entry
+              </button>
+            )}
+            {!exit && (
+              <button
+                className={btn(selected === 'parkExit')}
+                onClick={() => dispatch({ type: 'selectRoomType', roomType: 'parkExit' })}
+              >
+                Park Exit
+              </button>
+            )}
+          </div>
         </div>
       )}
 

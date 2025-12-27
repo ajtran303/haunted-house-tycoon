@@ -1,10 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ROOM_COST } from '../../../core/constants';
 import { getRoomCells } from '../../../core/placement';
-import type { Cell, Grid } from '../../../core/types';
+import type { Cell, Grid, RoomType } from '../../../core/types';
+import { upkeepPerTick } from '../../../core/economy';
 import { useGameStore } from '../../../runtime/store';
 import { getCellSizeForHeight, getCurrentOriginX, GRID_ORIGIN_Y } from '../gridSizing';
+
+// Format room type for display (e.g., 'parkEntry' -> 'Park Entry')
+const formatRoomType = (roomType: RoomType): string => {
+  const labels: Record<RoomType, string> = {
+    entry: 'Entry',
+    exit: 'Exit',
+    hallway: 'Hallway',
+    scare: 'Scare',
+    parkEntry: 'Park Entry',
+    parkExit: 'Park Exit',
+    attractionPortal: 'Portal',
+    foodStall: 'Food Stall',
+    giftShop: 'Gift Shop',
+    restroom: 'Restroom',
+    photoBooth: 'Photo Booth',
+    arcade: 'Arcade',
+    firstAid: 'First Aid',
+  };
+  return labels[roomType] ?? roomType;
+};
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
@@ -163,35 +183,42 @@ export const createGridRenderer = (
   };
 
   const formatHoverInfo = (cell: Cell) => {
-    const roomType = cell.occupied ? (cell.roomType ?? 'unknown') : 'empty';
-    const roomId = cell.occupied ? (cell.roomId ?? '—') : '—';
-    const cost = cell.occupied && cell.roomType ? ROOM_COST[cell.roomType] : undefined;
-    const costStr = cost === undefined ? '—' : String(cost);
-    const portalInfo = cell.portalTo ? `\nportal→ ${cell.portalTo}` : '';
-    // Show click hint for portals when no room is selected
-    const selectedRoomType = useGameStore.getState().selectedRoomType;
-    const clickHint =
-      cell.roomType === 'attractionPortal' && cell.portalTo && !selectedRoomType
-        ? '\n[click to enter]'
-        : '';
-    return `type: ${roomType}\ncost: ${costStr}\nid: ${roomId}${portalInfo}${clickHint}`;
+    if (!cell.occupied || !cell.roomType) return '';
+
+    const state = useGameStore.getState();
+    const selectedRoomType = state.selectedRoomType;
+
+    // Portal: show attraction name + upkeep + click hint
+    if (cell.roomType === 'attractionPortal' && cell.portalTo) {
+      const attraction = state.attractions[cell.portalTo];
+      if (attraction) {
+        const upkeep = upkeepPerTick(attraction.grid);
+        const clickHint = !selectedRoomType ? '\n[click to enter]' : '';
+        return `${attraction.name}\nUpkeep: $${upkeep}/tick${clickHint}`;
+      }
+    }
+
+    // All other rooms: just show the formatted type
+    return formatRoomType(cell.roomType);
   };
 
   const positionTooltip = (pointer: any) => {
     // Pointer coords are in screen space; with no camera movement these map to world.
     // If you later add camera scrolling/zoom, swap to pointer.worldX/worldY.
     const offsetX = 14;
-    const offsetY = 18;
+    const offsetY = 8; // Gap above cursor
 
+    // getBounds is safe after setText (Phaser recalculates size lazily)
+    const b = infoText.getBounds();
+
+    // Position above the cursor
     const rawX = pointer.x + offsetX;
-    const rawY = pointer.y + offsetY;
+    const rawY = pointer.y - b.height - offsetY;
 
     // Clamp to viewport so text doesn't go off-screen.
     const viewW = scene.scale?.width ?? scene.sys.game.config.width;
     const viewH = scene.scale?.height ?? scene.sys.game.config.height;
 
-    // getBounds is safe after setText (Phaser recalculates size lazily)
-    const b = infoText.getBounds();
     const x = clamp(rawX, 4, Math.max(4, viewW - b.width - 4));
     const y = clamp(rawY, 4, Math.max(4, viewH - b.height - 4));
 
