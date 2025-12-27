@@ -1,7 +1,7 @@
 import type { Visitor } from '../../../core/types';
 import { DEV_MODE, devConfig } from '../../../dev/devMode';
 import { getVisitorMood, VisitorMood } from '../../visitorMood';
-import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from '../gridSizing';
+import { getCurrentCellSize, getCurrentOriginX, GRID_ORIGIN_Y } from '../gridSizing';
 
 type VisitorsRenderer = {
   draw: (visitors: Visitor[]) => void;
@@ -30,6 +30,7 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
   const draw = (visitors: Visitor[]) => {
     const alive = new Set<number>();
     const CELL_SIZE = getCurrentCellSize();
+    const ORIGIN_X = getCurrentOriginX();
 
     for (const v of visitors) {
       alive.add(v.id);
@@ -42,7 +43,7 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
         dots.set(v.id, dot);
       }
 
-      const px = GRID_ORIGIN_X + v.position.x * CELL_SIZE + CELL_SIZE / 2;
+      const px = ORIGIN_X + v.position.x * CELL_SIZE + CELL_SIZE / 2;
       const py = GRID_ORIGIN_Y + v.position.y * CELL_SIZE + CELL_SIZE / 2;
 
       dot.setPosition(px, py);

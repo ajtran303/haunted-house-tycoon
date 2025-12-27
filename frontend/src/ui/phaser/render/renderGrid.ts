@@ -4,7 +4,7 @@ import { ROOM_COST } from '../../../core/constants';
 import { getRoomCells } from '../../../core/placement';
 import type { Cell, Grid } from '../../../core/types';
 import { useGameStore } from '../../../runtime/store';
-import { getCellSizeForHeight, GRID_ORIGIN_X, GRID_ORIGIN_Y } from '../gridSizing';
+import { getCellSizeForHeight, getCurrentOriginX, GRID_ORIGIN_Y } from '../gridSizing';
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
@@ -77,7 +77,7 @@ export const createGridRenderer = (
   const height = grid.length;
   const width = grid[0]?.length ?? 0;
   const CELL_SIZE = getCellSizeForHeight(height);
-  const ORIGIN_X = GRID_ORIGIN_X;
+  const ORIGIN_X = getCurrentOriginX();
   const ORIGIN_Y = GRID_ORIGIN_Y;
 
   // Renderer-local only (no store mutations)

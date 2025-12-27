@@ -3,7 +3,7 @@ import { useGameStore } from '../../../runtime/store';
 import { bindExitToasts } from '../bindExitToasts';
 import { bindPlacementFeedback } from '../bindPlacementFeedback';
 import { bindVisitorHover } from '../bindVisitorHover';
-import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from '../gridSizing';
+import { getCurrentCellSize, getCurrentOriginX, GRID_ORIGIN_Y } from '../gridSizing';
 import { createGridRenderer } from '../render/renderGrid';
 import { createVisitorsRenderer } from '../render/visitorsRenderer';
 
@@ -209,7 +209,7 @@ export class BootScene {
 
     // Draw a colored outline around the highlighted cell
     const tile = getCurrentCellSize();
-    const x = GRID_ORIGIN_X + cell.x * tile;
+    const x = getCurrentOriginX() + cell.x * tile;
     const y = GRID_ORIGIN_Y + cell.y * tile;
 
     this.highlightGraphic = self.add.graphics();

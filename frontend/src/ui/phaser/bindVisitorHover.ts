@@ -1,6 +1,6 @@
 import { useGameStore } from '../../runtime/store';
 import { getVisitorMood, VisitorMood } from '../../ui/visitorMood';
-import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from './gridSizing';
+import { getCurrentCellSize, getCurrentOriginX, GRID_ORIGIN_Y } from './gridSizing';
 
 // Tune these to match your actual constants later
 const moodLabel = (m: VisitorMood): string => {
@@ -22,10 +22,11 @@ const moodLabel = (m: VisitorMood): string => {
 
 const gridFromPointer = (scene: Phaser.Scene, pointer: Phaser.Input.Pointer) => {
   const tileSize = getCurrentCellSize();
+  const originX = getCurrentOriginX();
   const wx = pointer.worldX;
   const wy = pointer.worldY;
 
-  const gx = Math.floor((wx - GRID_ORIGIN_X) / tileSize);
+  const gx = Math.floor((wx - originX) / tileSize);
   const gy = Math.floor((wy - GRID_ORIGIN_Y) / tileSize);
 
   return { gx, gy };

@@ -43,7 +43,7 @@ export const TopBar = () => {
 
   return (
     <div
-      className={`fixed top-0 right-96 left-0 z-50 flex flex-col gap-2 px-6 py-3 font-mono text-base text-white ${bgColor} ${borderColor}`}
+      className={`flex flex-col gap-2 px-6 py-3 font-mono text-base text-white ${bgColor} ${borderColor}`}
     >
       <div className="text-2xl font-bold">{viewName}</div>
       <div className="flex items-center gap-8">

@@ -1,6 +1,6 @@
 import type { ExitEvent } from '../../core/types';
 import { useGameStore } from '../../runtime/store';
-import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from './gridSizing';
+import { getCurrentCellSize, getCurrentOriginX, GRID_ORIGIN_Y } from './gridSizing';
 
 const isRenderableScene = (scene: Phaser.Scene): boolean => {
   if (!scene?.sys) return false;
@@ -79,7 +79,8 @@ const showExitToast = (scene: Phaser.Scene, e: ExitEvent) => {
   if (!isRenderableScene(scene)) return;
 
   const tileSize = getCurrentCellSize();
-  const wx = GRID_ORIGIN_X + e.position.x * tileSize + tileSize / 2;
+  const originX = getCurrentOriginX();
+  const wx = originX + e.position.x * tileSize + tileSize / 2;
   const wy = GRID_ORIGIN_Y + e.position.y * tileSize + tileSize / 2;
 
   const label = e.reason === 'panic' ? 'PANIC!' : 'MISERABLE';

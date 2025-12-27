@@ -46,9 +46,8 @@ const WARNING_CONFIG: WarningConfig[] = [
   },
 ];
 
-// Grid rendering constants (must match Phaser render files)
-const GRID_ORIGIN_Y = 160;
-const CELL_SIZE = 36;
+// Position warnings well below the game canvas
+const WARNINGS_TOP = 785;
 
 export const Warnings = () => {
   const lifecycle = useGameStore((s) => s.lifecycle);
@@ -57,11 +56,9 @@ export const Warnings = () => {
   const visitors = useGameStore((s) => s.visitors);
   const exitEvents = useGameStore((s) => s.exitEvents);
   const parkExitEvents = useGameStore((s) => s.parkExitEvents);
-  const midwayGridHeight = useGameStore((s) => s.midwayGrid.length);
   const [dismissed, setDismissed] = useState<Set<CriticalFlag>>(new Set());
 
-  // Calculate position below the grid
-  const topPosition = GRID_ORIGIN_Y + midwayGridHeight * CELL_SIZE + 8;
+  const topPosition = WARNINGS_TOP;
 
   // Compute critical data from raw state
   const criticalData = useMemo((): CriticalData => {
@@ -130,7 +127,7 @@ export const Warnings = () => {
 
   return (
     <div
-      className="fixed right-96 left-0 z-40 flex flex-col gap-2 px-6"
+      className="absolute right-0 left-0 z-40 flex flex-col gap-2 px-6"
       style={{ top: topPosition }}
     >
       {activeWarnings.map((warning) => {

@@ -7,29 +7,25 @@ export const SpeedControls = () => {
   const setSpeed10x = useGameStore((s) => s.setSpeed10x);
   const speed = useGameStore((s) => s.speed);
 
-  const btn = (active: boolean) =>
-    `mt-3 border px-3 py-2 ${active ? 'bg-gray-200' : 'hover:bg-gray-100'}`;
+  const btnBase = 'rounded border px-3 py-2';
+  const btnInactive = `${btnBase} border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-white`;
+  const btnActive = `${btnBase} border-gray-500 bg-gray-700 text-white`;
 
   return (
-    <div className="top-3 right-3 border bg-white p-3 text-base">
-      <div className="mb-2 font-bold">Speed</div>
-
-      <div className="flex gap-3">
-        <button className={btn(speed === 1)} onClick={setSpeed1x}>
+    <div>
+      <div className="mb-2 text-sm font-bold text-gray-400">SPEED</div>
+      <div className="flex gap-2">
+        <button className={speed === 1 ? btnActive : btnInactive} onClick={setSpeed1x}>
           1x
         </button>
-        <button className={btn(speed === 4)} onClick={setSpeed4x}>
+        <button className={speed === 4 ? btnActive : btnInactive} onClick={setSpeed4x}>
           4x
         </button>
         {DEV_MODE && (
-          <button className={btn(speed === 10)} onClick={setSpeed10x}>
+          <button className={speed === 10 ? btnActive : btnInactive} onClick={setSpeed10x}>
             10x
           </button>
         )}
-      </div>
-
-      <div className="mt-3">
-        Selected: <span className="font-mono">{speed}</span>
       </div>
     </div>
   );

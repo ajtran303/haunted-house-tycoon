@@ -1,6 +1,6 @@
 import type { PlacementEvent, PlacementFailReason } from '../../core/types';
 import { useGameStore } from '../../runtime/store';
-import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from './gridSizing';
+import { getCurrentCellSize, getCurrentOriginX, GRID_ORIGIN_Y } from './gridSizing';
 
 const isRenderableScene = (scene: Phaser.Scene): boolean => {
   if (!scene?.sys) return false;
@@ -86,7 +86,8 @@ const showPlacementFeedbackToast = (scene: Phaser.Scene, e: PlacementEvent) => {
   if (!isRenderableScene(scene)) return;
 
   const tileSize = getCurrentCellSize();
-  const cellX = GRID_ORIGIN_X + e.position.x * tileSize;
+  const originX = getCurrentOriginX();
+  const cellX = originX + e.position.x * tileSize;
   const cellY = GRID_ORIGIN_Y + e.position.y * tileSize;
 
   const wx = cellX + tileSize / 2;

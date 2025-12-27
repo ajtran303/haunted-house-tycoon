@@ -49,23 +49,26 @@ export const Hud = () => {
   const isRunning = lifecycle === 'running';
 
   const resume = useGameStore((s) => s.resume);
-
   const pause = useGameStore((s) => s.pause);
 
   const buttonStyle =
-    'mt-3 border px-3 py-2 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md';
+    'mt-3 rounded border border-gray-600 px-3 py-2 text-gray-300 hover:bg-gray-700 hover:text-white active:translate-y-0.5';
 
-  const hudStyle = 'fixed top-0 right-0 h-full w-96 border-l bg-white p-4 text-base overflow-y-auto';
+  const buttonActiveStyle =
+    'mt-3 rounded border border-gray-500 bg-gray-700 px-3 py-2 text-white active:translate-y-0.5';
 
   return (
-    <div className={hudStyle}>
+    <div className="h-screen w-96 shrink-0 overflow-y-auto border-l border-gray-700 bg-gray-900 p-4 font-mono text-base text-white">
       {showBanner && (
-        <div role="status" className="mb-3 border border-black px-3 py-2">
+        <div
+          role="status"
+          className="mb-3 rounded border border-green-600 bg-green-900/30 px-3 py-2 text-green-400"
+        >
           New Game Started
         </div>
       )}
-      <div className="mb-2 text-lg font-bold">Haunted House Tycoon</div>
-      <div className="mt-3 flex gap-3">
+      <div className="mb-2 text-xl font-bold">Haunted House Tycoon</div>
+      <div className="mt-3 flex flex-wrap gap-2">
         <button className={buttonStyle} onClick={resume}>
           Start/Resume
         </button>
@@ -73,18 +76,22 @@ export const Hud = () => {
           Pause
         </button>
         <button onClick={handleNewGame} className={buttonStyle}>
-          Reset Game
+          Reset
         </button>
       </div>
-      <br />
-      {isRunning && <SpeedControls />}
+
+      {isRunning && (
+        <div className="mt-4">
+          <SpeedControls />
+        </div>
+      )}
 
       {/* View Switcher - only shown when running */}
       {isRunning && (
-        <div className="mb-3 border-t pt-3">
-          <div className="mb-2 font-bold">View</div>
+        <div className="mt-4 border-t border-gray-700 pt-4">
+          <div className="mb-2 text-sm font-bold text-gray-400">VIEW</div>
           <button
-            className={`${buttonStyle} ${currentView.type === 'midway' ? 'bg-gray-200' : ''}`}
+            className={currentView.type === 'midway' ? buttonActiveStyle : buttonStyle}
             onClick={viewMidway}
           >
             Midway
@@ -100,26 +107,29 @@ export const Hud = () => {
             return (
               <button
                 key={attraction.id}
-                className={`${buttonStyle} flex w-full items-center justify-between ${isActive ? 'bg-gray-200' : ''}`}
+                className={`${isActive ? buttonActiveStyle : buttonStyle} flex w-full items-center justify-between`}
                 onClick={() => handleAttractionClick(attraction.id)}
               >
                 <span className="flex items-center gap-2">
                   <span
-                    className={`h-2 w-2 rounded-full ${status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}
+                    className={`h-2 w-2 rounded-full ${status === 'active' ? 'bg-green-500' : 'bg-gray-500'}`}
                     title={status}
                   />
                   {attraction.name}
                 </span>
-                <span className="text-sm text-gray-500">{count} Visitors</span>
+                <span className="text-sm text-gray-500">{count}</span>
               </button>
             );
           })}
         </div>
       )}
 
-      <br />
       {/* Room Selector - only shown when running */}
-      {isRunning && <RoomSelector />}
+      {isRunning && (
+        <div className="mt-4 border-t border-gray-700 pt-4">
+          <RoomSelector />
+        </div>
+      )}
     </div>
   );
 };
