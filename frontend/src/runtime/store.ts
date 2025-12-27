@@ -417,6 +417,16 @@ export const useGameStore = create(
 
       if (input.type === 'clickCell') {
         if (s.lifecycle !== 'running') return;
+
+        // If no room selected and clicking on a portal, navigate to that attraction
+        if (!s.selectedRoomType && s.currentView.type === 'midway') {
+          const cell = s.midwayGrid[input.y]?.[input.x];
+          if (cell?.roomType === 'attractionPortal' && cell.portalTo) {
+            set({ currentView: { type: 'attraction', attractionId: cell.portalTo } });
+            return;
+          }
+        }
+
         get().placeRoomAt(input.x, input.y);
       }
     },

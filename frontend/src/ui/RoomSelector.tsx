@@ -14,6 +14,7 @@ export const RoomSelector = () => {
   const targetAttractionId = useGameStore((s) => s.targetAttractionId);
   const setTargetAttraction = useGameStore((s) => s.setTargetAttraction);
   const createAttraction = useGameStore((s) => s.createAttraction);
+  const viewAttraction = useGameStore((s) => s.viewAttraction);
 
   // Check which attractions already have portals placed
   const attractionsWithPortals = new Set<string>();
@@ -67,6 +68,8 @@ export const RoomSelector = () => {
     setNextAttractionId((prev) => prev + 1);
     setNewAttractionName('');
     setShowCreateForm(false);
+    // Navigate to the newly created attraction
+    viewAttraction(id);
   };
 
   const handlePortalSelect = (attractionId: string) => {
