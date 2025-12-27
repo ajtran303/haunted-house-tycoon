@@ -1,5 +1,6 @@
 import { useGameStore } from '../../runtime/store';
 import { getVisitorMood, VisitorMood } from '../../ui/visitorMood';
+import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from './gridSizing';
 
 // Tune these to match your actual constants later
 const moodLabel = (m: VisitorMood): string => {
@@ -19,28 +20,18 @@ const moodLabel = (m: VisitorMood): string => {
   }
 };
 
-const gridFromPointer = (
-  scene: Phaser.Scene,
-  pointer: Phaser.Input.Pointer,
-  tileSize: number,
-  gridOriginX: number,
-  gridOriginY: number,
-) => {
+const gridFromPointer = (scene: Phaser.Scene, pointer: Phaser.Input.Pointer) => {
+  const tileSize = getCurrentCellSize();
   const wx = pointer.worldX;
   const wy = pointer.worldY;
 
-  const gx = Math.floor((wx - gridOriginX) / tileSize);
-  const gy = Math.floor((wy - gridOriginY) / tileSize);
+  const gx = Math.floor((wx - GRID_ORIGIN_X) / tileSize);
+  const gy = Math.floor((wy - GRID_ORIGIN_Y) / tileSize);
 
   return { gx, gy };
 };
 
-export const bindVisitorHover = (
-  scene: Phaser.Scene,
-  tileSize: number,
-  gridOriginX = 20,
-  gridOriginY = 60,
-) => {
+export const bindVisitorHover = (scene: Phaser.Scene) => {
   const tip = scene.add.text(0, 0, '', {
     fontFamily: 'monospace',
     fontSize: '12px',
@@ -55,15 +46,19 @@ export const bindVisitorHover = (
   let lastKey = ''; // "x,y" of last hovered cell
 
   const onMove = (pointer: Phaser.Input.Pointer) => {
-    // Don’t show hover when scene is not active
+    // Don't show hover when scene is not active
     if (!scene?.sys?.isActive()) return;
 
-    const { gx, gy } = gridFromPointer(scene, pointer, tileSize, gridOriginX, gridOriginY);
+    const { gx, gy } = gridFromPointer(scene, pointer);
 
     // If pointer is outside the grid, hide
     const st = useGameStore.getState();
-    const h = st.midwayGrid.length;
-    const w = st.midwayGrid[0]?.length ?? 0;
+    const currentGrid =
+      st.currentView.type === 'midway'
+        ? st.midwayGrid
+        : (st.attractions[st.currentView.attractionId]?.grid ?? st.midwayGrid);
+    const h = currentGrid.length;
+    const w = currentGrid[0]?.length ?? 0;
     if (gx < 0 || gy < 0 || gx >= w || gy >= h) {
       if (tip.visible) tip.setVisible(false);
       lastKey = '';

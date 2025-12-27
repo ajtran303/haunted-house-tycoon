@@ -30,7 +30,7 @@ export const RoomSelector = () => {
   const [nextAttractionId, setNextAttractionId] = useState(1);
 
   const btn = (active: boolean) =>
-    `mt-2 border px-2 py-1 ${active ? 'bg-gray-200' : 'hover:bg-gray-100'}`;
+    `mt-3 border px-3 py-2 ${active ? 'bg-gray-200' : 'hover:bg-gray-100'}`;
 
   const inMidway = currentView.type === 'midway';
   const inAttraction = currentView.type === 'attraction';
@@ -72,8 +72,8 @@ export const RoomSelector = () => {
   };
 
   return (
-    <div className="top-2 right-2 border bg-white p-2 text-sm">
-      <div className="mb-1 font-bold">Build</div>
+    <div className="top-3 right-3 border bg-white p-3 text-base">
+      <div className="mb-2 font-bold">Build</div>
 
       {/* Park Entry/Exit - only show on midway if not placed yet */}
       {inMidway && (
@@ -99,22 +99,22 @@ export const RoomSelector = () => {
 
       {/* Create Attraction - only show on midway after park entry/exit placed */}
       {inMidway && entrance && exit && (
-        <div className="mt-2">
+        <div className="mt-3">
           {!showCreateForm ? (
             <button className={btn(false)} onClick={() => setShowCreateForm(true)}>
               + Create Attraction
             </button>
           ) : (
-            <form onSubmit={handleCreateAttractionSubmit} className="border p-2">
+            <form onSubmit={handleCreateAttractionSubmit} className="border p-3">
               <input
                 type="text"
                 value={newAttractionName}
                 onChange={(e) => setNewAttractionName(e.target.value)}
                 placeholder="Attraction name..."
-                className="w-full border px-2 py-1 text-sm"
+                className="w-full border px-3 py-2 text-base"
                 autoFocus
               />
-              <div className="mt-1 flex gap-1">
+              <div className="mt-2 flex gap-2">
                 <button type="submit" className={btn(false)}>
                   Create
                 </button>
@@ -137,8 +137,8 @@ export const RoomSelector = () => {
       {/* Portal buttons - one per attraction without a portal, only show on midway */}
       {inMidway &&
         Object.values(attractions).filter((a) => !attractionsWithPortals.has(a.id)).length > 0 && (
-          <div className="mt-2">
-            <div className="text-xs text-gray-600">Portals:</div>
+          <div className="mt-3">
+            <div className="text-sm text-gray-600">Portals:</div>
             {Object.values(attractions)
               .filter((attraction) => !attractionsWithPortals.has(attraction.id))
               .map((attraction) => (
@@ -157,9 +157,9 @@ export const RoomSelector = () => {
 
       {/* Amenities - midway only, after park entry/exit placed */}
       {inMidway && entrance && exit && (
-        <div className="mt-2">
-          <div className="text-xs text-gray-600">Amenities:</div>
-          <div className="flex flex-wrap gap-1">
+        <div className="mt-3">
+          <div className="text-sm text-gray-600">Amenities:</div>
+          <div className="flex flex-wrap gap-2">
             <button
               className={btn(selected === 'foodStall')}
               onClick={() => dispatch({ type: 'selectRoomType', roomType: 'foodStall' })}
@@ -205,7 +205,7 @@ export const RoomSelector = () => {
         <>
           {/* Entry/Exit buttons - hide after placed */}
           {(!hasAttractionEntry || !hasAttractionExit) && (
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {!hasAttractionEntry && (
                 <button
                   className={btn(selected === 'entry')}
@@ -224,7 +224,7 @@ export const RoomSelector = () => {
               )}
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               className={btn(selected === 'hallway')}
               onClick={() => dispatch({ type: 'selectRoomType', roomType: 'hallway' })}
@@ -241,13 +241,13 @@ export const RoomSelector = () => {
         </>
       )}
 
-      <div className="mt-2 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-3">
         <span>
           Selected: <span className="font-mono">{selected ?? 'none'}</span>
         </span>
         {selected && (
           <button
-            className="border px-2 py-0.5 text-xs hover:bg-gray-100"
+            className="border px-3 py-1 text-sm hover:bg-gray-100"
             onClick={() => dispatch({ type: 'selectRoomType', roomType: null })}
           >
             ✕ Clear

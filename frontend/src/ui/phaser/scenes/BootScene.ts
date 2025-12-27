@@ -3,6 +3,7 @@ import { useGameStore } from '../../../runtime/store';
 import { bindExitToasts } from '../bindExitToasts';
 import { bindPlacementFeedback } from '../bindPlacementFeedback';
 import { bindVisitorHover } from '../bindVisitorHover';
+import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from '../gridSizing';
 import { createGridRenderer } from '../render/renderGrid';
 import { createVisitorsRenderer } from '../render/visitorsRenderer';
 
@@ -75,10 +76,6 @@ export class BootScene {
       document.removeEventListener('visibilitychange', onVisibility);
     };
 
-    const TILE = 24;
-    const GRID_X = 20;
-    const GRID_Y = 120; // Must match ORIGIN_Y in renderGrid.ts and visitorsRenderer.ts
-
     // Expose scene for direct view rebuilds from React (dev only)
     if (DEV_MODE) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,18 +131,18 @@ export class BootScene {
       (visitors) => this.queueVisitorsWork(visitors),
     );
 
-    this.unsubscribeExitToasts = bindExitToasts(this.sceneRef, TILE, GRID_X, GRID_Y);
-    this.unsubscribePlacementFeedback = bindPlacementFeedback(this.sceneRef, TILE, GRID_X, GRID_Y);
+    this.unsubscribeExitToasts = bindExitToasts(this.sceneRef);
+    this.unsubscribePlacementFeedback = bindPlacementFeedback(this.sceneRef);
 
     // Subscribe to cell highlight changes
     this.unsubscribeHighlight = useGameStore.subscribe(
       (s) => s.highlightedCell,
       (cell) => {
-        this.drawHighlight(cell, TILE, GRID_X, GRID_Y);
+        this.drawHighlight(cell);
       },
     );
 
-    this.unsubHover = bindVisitorHover(self, TILE, GRID_X, GRID_Y);
+    this.unsubHover = bindVisitorHover(self);
 
     self.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.unsubHover?.();
@@ -198,12 +195,7 @@ export class BootScene {
     this.rebuildForCurrentView();
   }
 
-  private drawHighlight(
-    cell: { x: number; y: number } | null,
-    tile: number,
-    gridX: number,
-    gridY: number,
-  ) {
+  private drawHighlight(cell: { x: number; y: number } | null) {
     // Clear existing highlight
     if (this.highlightGraphic) {
       this.highlightGraphic.destroy();
@@ -216,8 +208,9 @@ export class BootScene {
     if (!self) return;
 
     // Draw a colored outline around the highlighted cell
-    const x = gridX + cell.x * tile;
-    const y = gridY + cell.y * tile;
+    const tile = getCurrentCellSize();
+    const x = GRID_ORIGIN_X + cell.x * tile;
+    const y = GRID_ORIGIN_Y + cell.y * tile;
 
     this.highlightGraphic = self.add.graphics();
     this.highlightGraphic.lineStyle(3, 0x00ff00, 1); // Green outline

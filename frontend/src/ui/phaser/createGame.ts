@@ -12,8 +12,8 @@ export const createGame = async ({ parent }: CreateGameArgs): Promise<Phaser.Gam
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 900,
     scene: [BootScene],
   });
 };

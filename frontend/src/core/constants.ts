@@ -1,7 +1,7 @@
 import { RoomType } from './types';
 
-export const GRID_WIDTH = 12;
-export const GRID_HEIGHT = 8;
+export const GRID_WIDTH = 18;
+export const GRID_HEIGHT = 12;
 
 export const START_DAY = 1;
 export const START_TICK = 0;

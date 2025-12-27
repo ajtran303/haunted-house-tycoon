@@ -1,5 +1,6 @@
 import type { PlacementEvent, PlacementFailReason } from '../../core/types';
 import { useGameStore } from '../../runtime/store';
+import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from './gridSizing';
 
 const isRenderableScene = (scene: Phaser.Scene): boolean => {
   if (!scene?.sys) return false;
@@ -38,12 +39,7 @@ const placementFailLabel = (reason: PlacementFailReason): string => {
   }
 };
 
-export const bindPlacementFeedback = (
-  scene: Phaser.Scene,
-  tileSize: number,
-  gridOriginX = 20,
-  gridOriginY = 60,
-) => {
+export const bindPlacementFeedback = (scene: Phaser.Scene) => {
   // Don’t replay old events on initial bind.
   const initial = useGameStore.getState();
   const last = initial.placementEvents[initial.placementEvents.length - 1];
@@ -52,7 +48,7 @@ export const bindPlacementFeedback = (
   const safeEnqueueToast = (e: PlacementEvent) => {
     const enqueue = () => {
       if (!isRenderableScene(scene)) return;
-      showPlacementFeedbackToast(scene, e, tileSize, gridOriginX, gridOriginY);
+      showPlacementFeedbackToast(scene, e);
     };
 
     if (scene.time?.delayedCall) scene.time.delayedCall(0, enqueue);
@@ -86,17 +82,12 @@ export const bindPlacementFeedback = (
   return () => unsub();
 };
 
-const showPlacementFeedbackToast = (
-  scene: Phaser.Scene,
-  e: PlacementEvent,
-  tileSize: number,
-  gridOriginX: number,
-  gridOriginY: number,
-) => {
+const showPlacementFeedbackToast = (scene: Phaser.Scene, e: PlacementEvent) => {
   if (!isRenderableScene(scene)) return;
 
-  const cellX = gridOriginX + e.position.x * tileSize;
-  const cellY = gridOriginY + e.position.y * tileSize;
+  const tileSize = getCurrentCellSize();
+  const cellX = GRID_ORIGIN_X + e.position.x * tileSize;
+  const cellY = GRID_ORIGIN_Y + e.position.y * tileSize;
 
   const wx = cellX + tileSize / 2;
   const wy = cellY + tileSize / 2;
@@ -123,10 +114,10 @@ const showPlacementFeedbackToast = (
   // On-cell toast (anchored at cell center)
   const text = scene.add.text(wx, wy, label, {
     fontFamily: 'monospace',
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#ffffff',
     backgroundColor: '#000000',
-    padding: { x: 6, y: 3 },
+    padding: { x: 8, y: 4 },
   });
 
   text.setOrigin(0.5, 0.5);
@@ -135,7 +126,7 @@ const showPlacementFeedbackToast = (
   // Non-blocking: float up slightly + fade out + destroy
   scene.tweens.add({
     targets: text,
-    y: wy - 10,
+    y: wy - 14,
     alpha: 0,
     duration: 650,
     ease: 'Quad.easeOut',

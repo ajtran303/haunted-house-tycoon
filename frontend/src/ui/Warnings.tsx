@@ -47,8 +47,8 @@ const WARNING_CONFIG: WarningConfig[] = [
 ];
 
 // Grid rendering constants (must match Phaser render files)
-const GRID_ORIGIN_Y = 120;
-const CELL_SIZE = 24;
+const GRID_ORIGIN_Y = 160;
+const CELL_SIZE = 36;
 
 export const Warnings = () => {
   const lifecycle = useGameStore((s) => s.lifecycle);
@@ -130,7 +130,7 @@ export const Warnings = () => {
 
   return (
     <div
-      className="fixed right-64 left-0 z-40 flex flex-col gap-1 px-4"
+      className="fixed right-96 left-0 z-40 flex flex-col gap-2 px-6"
       style={{ top: topPosition }}
     >
       {activeWarnings.map((warning) => {
@@ -142,13 +142,13 @@ export const Warnings = () => {
           <button
             key={warning.flag}
             onClick={() => handleDismiss(warning.flag)}
-            className={`flex items-center justify-between rounded px-3 py-1.5 font-mono text-sm text-white transition-colors ${isCritical ? 'bg-orange-600 hover:bg-orange-700' : 'bg-sky-600 hover:bg-sky-700'}`}
+            className={`flex items-center justify-between rounded px-4 py-2 font-mono text-base text-white transition-colors ${isCritical ? 'bg-orange-600 hover:bg-orange-700' : 'bg-sky-600 hover:bg-sky-700'}`}
           >
             <span>
               {warning.label}
               {count != null && ` (${count})`}
             </span>
-            <span className="ml-4 text-xs opacity-75">click to dismiss</span>
+            <span className="ml-6 text-sm opacity-75">click to dismiss</span>
           </button>
         );
       })}

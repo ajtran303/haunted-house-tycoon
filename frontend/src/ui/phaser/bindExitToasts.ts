@@ -1,5 +1,6 @@
 import type { ExitEvent } from '../../core/types';
 import { useGameStore } from '../../runtime/store';
+import { getCurrentCellSize, GRID_ORIGIN_X, GRID_ORIGIN_Y } from './gridSizing';
 
 const isRenderableScene = (scene: Phaser.Scene): boolean => {
   if (!scene?.sys) return false;
@@ -17,12 +18,7 @@ const isRenderableScene = (scene: Phaser.Scene): boolean => {
   return true;
 };
 
-export const bindExitToasts = (
-  scene: Phaser.Scene,
-  tileSize: number,
-  gridOriginX = 20,
-  gridOriginY = 60,
-) => {
+export const bindExitToasts = (scene: Phaser.Scene) => {
   // Don’t replay old events on initial bind.
   const initial = useGameStore.getState();
   const last = initial.exitEvents[initial.exitEvents.length - 1];
@@ -43,7 +39,7 @@ export const bindExitToasts = (
         if (e.location.attractionId !== currentView.attractionId) return;
       }
 
-      showExitToast(scene, e, tileSize, gridOriginX, gridOriginY);
+      showExitToast(scene, e);
     };
 
     if (scene.time?.delayedCall) scene.time.delayedCall(0, enqueue);
@@ -79,26 +75,21 @@ export const bindExitToasts = (
   return () => unsub();
 };
 
-const showExitToast = (
-  scene: Phaser.Scene,
-  e: ExitEvent,
-  tileSize: number,
-  gridOriginX: number,
-  gridOriginY: number,
-) => {
+const showExitToast = (scene: Phaser.Scene, e: ExitEvent) => {
   if (!isRenderableScene(scene)) return;
 
-  const wx = gridOriginX + e.position.x * tileSize + tileSize / 2;
-  const wy = gridOriginY + e.position.y * tileSize + tileSize / 2;
+  const tileSize = getCurrentCellSize();
+  const wx = GRID_ORIGIN_X + e.position.x * tileSize + tileSize / 2;
+  const wy = GRID_ORIGIN_Y + e.position.y * tileSize + tileSize / 2;
 
   const label = e.reason === 'panic' ? 'PANIC!' : 'MISERABLE';
 
   const text = scene.add.text(wx, wy, label, {
     fontFamily: 'monospace',
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#ffffff',
     backgroundColor: '#000000',
-    padding: { x: 6, y: 3 },
+    padding: { x: 8, y: 4 },
   });
 
   text.setOrigin(0.5, 0.5);

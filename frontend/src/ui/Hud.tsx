@@ -53,19 +53,19 @@ export const Hud = () => {
   const pause = useGameStore((s) => s.pause);
 
   const buttonStyle =
-    'mt-2 border px-2 py-1 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md';
+    'mt-3 border px-3 py-2 hover:bg-gray-100 hover:text-gray-900 active:translate-y-0.5 active:shadow-md';
 
-  const hudStyle = 'fixed top-0 right-0 h-full w-64 border-l bg-white p-3 text-sm overflow-y-auto';
+  const hudStyle = 'fixed top-0 right-0 h-full w-96 border-l bg-white p-4 text-base overflow-y-auto';
 
   return (
     <div className={hudStyle}>
       {showBanner && (
-        <div role="status" className="mb-2 border border-black px-2 py-1">
+        <div role="status" className="mb-3 border border-black px-3 py-2">
           New Game Started
         </div>
       )}
-      <div className="mb-1 font-bold">Haunted House Tycoon</div>
-      <div className="mt-2 flex gap-2">
+      <div className="mb-2 text-lg font-bold">Haunted House Tycoon</div>
+      <div className="mt-3 flex gap-3">
         <button className={buttonStyle} onClick={resume}>
           Start/Resume
         </button>
@@ -81,8 +81,8 @@ export const Hud = () => {
 
       {/* View Switcher - only shown when running */}
       {isRunning && (
-        <div className="mb-2 border-t pt-2">
-          <div className="mb-1 font-bold">View</div>
+        <div className="mb-3 border-t pt-3">
+          <div className="mb-2 font-bold">View</div>
           <button
             className={`${buttonStyle} ${currentView.type === 'midway' ? 'bg-gray-200' : ''}`}
             onClick={viewMidway}
@@ -110,7 +110,7 @@ export const Hud = () => {
                   />
                   {attraction.name}
                 </span>
-                <span className="text-xs text-gray-500">{count} Visitors</span>
+                <span className="text-sm text-gray-500">{count} Visitors</span>
               </button>
             );
           })}
