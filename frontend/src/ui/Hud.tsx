@@ -63,9 +63,15 @@ export const Hud = () => {
       {showBanner && (
         <div
           role="status"
-          className="mb-3 rounded border border-green-600 bg-green-900/30 px-3 py-2 text-green-400"
+          className="mb-3 flex items-center justify-between rounded border border-green-600 bg-green-900/30 px-3 py-2 text-green-400"
         >
-          New Game Started
+          <span>New Game Started</span>
+          <button
+            onClick={() => setShowBanner(false)}
+            className="ml-2 text-green-400 hover:text-green-200"
+          >
+            [x]
+          </button>
         </div>
       )}
       <div className="mb-2 text-xl font-bold">Haunted House Tycoon</div>
