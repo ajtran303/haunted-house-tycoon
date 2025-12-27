@@ -14,6 +14,7 @@ export const RoomSelector = () => {
   const targetAttractionId = useGameStore((s) => s.targetAttractionId);
   const setTargetAttraction = useGameStore((s) => s.setTargetAttraction);
   const createAttraction = useGameStore((s) => s.createAttraction);
+  const viewAttraction = useGameStore((s) => s.viewAttraction);
 
   // Check which attractions already have portals placed
   const attractionsWithPortals = new Set<string>();
@@ -67,6 +68,8 @@ export const RoomSelector = () => {
     setNextAttractionId((prev) => prev + 1);
     setNewAttractionName('');
     setShowCreateForm(false);
+    // Navigate to the newly created attraction
+    viewAttraction(id);
   };
 
   const handlePortalSelect = (attractionId: string) => {
@@ -100,51 +103,21 @@ export const RoomSelector = () => {
         </div>
       )}
 
-      {/* Create Attraction - only show on midway after park entry/exit placed */}
-      {inMidway && entrance && exit && (
-        <div className="mt-3">
-          {!showCreateForm ? (
-            <button className={btnInactive} onClick={() => setShowCreateForm(true)}>
-              + Create Attraction
-            </button>
-          ) : (
-            <form
-              onSubmit={handleCreateAttractionSubmit}
-              className="rounded border border-gray-600 p-3"
-            >
-              <input
-                type="text"
-                value={newAttractionName}
-                onChange={(e) => setNewAttractionName(e.target.value)}
-                placeholder="Attraction name..."
-                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-white placeholder-gray-500"
-                autoFocus
-              />
-              <div className="mt-2 flex gap-2">
-                <button type="submit" className={btnInactive}>
-                  Create
-                </button>
-                <button
-                  type="button"
-                  className={btnInactive}
-                  onClick={() => {
-                    setShowCreateForm(false);
-                    setNewAttractionName('');
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      )}
+      {/*
+        Game flow for midway building:
+        1. After entrance/exit placed, show Create Attraction button
+        2. When an attraction exists without a portal, show Portal button (hide Create)
+        3. User must place the portal before creating another attraction
+        4. Amenities only appear after at least one portal is placed
+      */}
 
-      {/* Portal buttons - one per attraction without a portal, only show on midway */}
+      {/* Attractions without portals - must place portal before creating new attraction */}
       {inMidway &&
+        entrance &&
+        exit &&
         Object.values(attractions).filter((a) => !attractionsWithPortals.has(a.id)).length > 0 && (
           <div className="mt-3">
-            <div className="mb-1 text-sm text-gray-500">Portals:</div>
+            <div className="mb-1 text-sm text-gray-500">Place Portal:</div>
             {Object.values(attractions)
               .filter((attraction) => !attractionsWithPortals.has(attraction.id))
               .map((attraction) => (
@@ -161,8 +134,52 @@ export const RoomSelector = () => {
           </div>
         )}
 
-      {/* Amenities - midway only, after park entry/exit placed */}
-      {inMidway && entrance && exit && (
+      {/* Create Attraction - only show when no unplaced portals exist */}
+      {inMidway &&
+        entrance &&
+        exit &&
+        Object.values(attractions).filter((a) => !attractionsWithPortals.has(a.id)).length ===
+          0 && (
+          <div className="mt-3">
+            {!showCreateForm ? (
+              <button className={btnInactive} onClick={() => setShowCreateForm(true)}>
+                + Create Attraction
+              </button>
+            ) : (
+              <form
+                onSubmit={handleCreateAttractionSubmit}
+                className="rounded border border-gray-600 p-3"
+              >
+                <input
+                  type="text"
+                  value={newAttractionName}
+                  onChange={(e) => setNewAttractionName(e.target.value)}
+                  placeholder="Attraction name..."
+                  className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-white placeholder-gray-500"
+                  autoFocus
+                />
+                <div className="mt-2 flex gap-2">
+                  <button type="submit" className={btnInactive}>
+                    Create
+                  </button>
+                  <button
+                    type="button"
+                    className={btnInactive}
+                    onClick={() => {
+                      setShowCreateForm(false);
+                      setNewAttractionName('');
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        )}
+
+      {/* Amenities - midway only, after at least one attraction portal is placed */}
+      {inMidway && entrance && exit && attractionsWithPortals.size > 0 && (
         <div className="mt-3">
           <div className="mb-1 text-sm text-gray-500">Amenities:</div>
           <div className="flex flex-wrap gap-1">

@@ -41,6 +41,7 @@ type Actions = {
 
   // speed
   setSpeed1x: () => void;
+  setSpeed2x: () => void;
   setSpeed4x: () => void;
   setSpeed10x: () => void;
 
@@ -92,6 +93,7 @@ export const useGameStore = create(
       set((s) => (s.lifecycle !== 'failed' ? { ...s, lifecycle: 'failed' as Lifecycle } : s)),
 
     setSpeed1x: () => set({ speed: 1 }),
+    setSpeed2x: () => set({ speed: 2 }),
     setSpeed4x: () => set({ speed: 4 }),
     setSpeed10x: () => set({ speed: 10 }),
 
@@ -415,6 +417,16 @@ export const useGameStore = create(
 
       if (input.type === 'clickCell') {
         if (s.lifecycle !== 'running') return;
+
+        // If no room selected and clicking on a portal, navigate to that attraction
+        if (!s.selectedRoomType && s.currentView.type === 'midway') {
+          const cell = s.midwayGrid[input.y]?.[input.x];
+          if (cell?.roomType === 'attractionPortal' && cell.portalTo) {
+            set({ currentView: { type: 'attraction', attractionId: cell.portalTo } });
+            return;
+          }
+        }
+
         get().placeRoomAt(input.x, input.y);
       }
     },

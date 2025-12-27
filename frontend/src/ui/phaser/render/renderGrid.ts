@@ -94,6 +94,24 @@ export const createGridRenderer = (
     .setStrokeStyle(2, 0xffffff, 1)
     .setVisible(false);
 
+  // Portal highlight (2x2 clickable hint)
+  const portalHighlight = scene.add.graphics();
+  portalHighlight.setDepth(6);
+
+  const drawPortalHighlight = (cellX: number, cellY: number) => {
+    portalHighlight.clear();
+    // Draw glowing outline for 2x2 portal area
+    portalHighlight.lineStyle(3, 0xf0e442, 0.9); // Yellow to match portal color
+    const px = ORIGIN_X + cellX * CELL_SIZE;
+    const py = ORIGIN_Y + cellY * CELL_SIZE;
+    // Portal is 2x2
+    portalHighlight.strokeRect(px, py, CELL_SIZE * 2 - 1, CELL_SIZE * 2 - 1);
+  };
+
+  const hidePortalHighlight = () => {
+    portalHighlight.clear();
+  };
+
   // Hover tooltip (temporary overlay; follow mouse)
   const infoText = scene.add
     .text(0, 0, '', {
@@ -150,7 +168,13 @@ export const createGridRenderer = (
     const cost = cell.occupied && cell.roomType ? ROOM_COST[cell.roomType] : undefined;
     const costStr = cost === undefined ? '—' : String(cost);
     const portalInfo = cell.portalTo ? `\nportal→ ${cell.portalTo}` : '';
-    return `type: ${roomType}\ncost: ${costStr}\nid: ${roomId}${portalInfo}`;
+    // Show click hint for portals when no room is selected
+    const selectedRoomType = useGameStore.getState().selectedRoomType;
+    const clickHint =
+      cell.roomType === 'attractionPortal' && cell.portalTo && !selectedRoomType
+        ? '\n[click to enter]'
+        : '';
+    return `type: ${roomType}\ncost: ${costStr}\nid: ${roomId}${portalInfo}${clickHint}`;
   };
 
   const positionTooltip = (pointer: any) => {
@@ -205,6 +229,19 @@ export const createGridRenderer = (
 
         highlight.setPosition(ORIGIN_X + x * CELL_SIZE, ORIGIN_Y + y * CELL_SIZE).setVisible(true);
 
+        // Show portal highlight when hovering over a portal (and no room selected)
+        const selectedRoomType = useGameStore.getState().selectedRoomType;
+        if (cell.roomType === 'attractionPortal' && cell.portalTo && !selectedRoomType) {
+          // Find top-left of the 2x2 portal by checking if adjacent cells share the roomId
+          let originX = x;
+          let originY = y;
+          const leftCell = currentGrid[y]?.[x - 1];
+          if (leftCell?.roomId === cell.roomId) originX = x - 1;
+          const topCell = currentGrid[y - 1]?.[x];
+          if (topCell?.roomId === cell.roomId) originY = y - 1;
+          drawPortalHighlight(originX, originY);
+        }
+
         infoText.setText(formatHoverInfo(cell)).setVisible(true);
         positionTooltip(pointer);
       });
@@ -219,6 +256,7 @@ export const createGridRenderer = (
         highlight.setVisible(false);
         infoText.setVisible(false);
         hidePlacementPreview();
+        hidePortalHighlight();
       });
 
       row.push(r);
@@ -248,6 +286,7 @@ export const createGridRenderer = (
     highlight.destroy();
     infoText.destroy();
     placementPreview.destroy();
+    portalHighlight.destroy();
     for (const row of rects) for (const r of row) r.destroy();
   };
 
