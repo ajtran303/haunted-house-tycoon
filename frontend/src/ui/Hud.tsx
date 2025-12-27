@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { useGameStore } from '../runtime/store';
+import { MoodLegend } from './MoodLegend';
 import { RoomSelector } from './RoomSelector';
 import { SpeedControls } from './SpeedControls';
 
@@ -128,6 +129,13 @@ export const Hud = () => {
       {isRunning && (
         <div className="mt-4 border-t border-gray-700 pt-4">
           <RoomSelector />
+        </div>
+      )}
+
+      {/* Mood Legend - only shown when running */}
+      {isRunning && (
+        <div className="mt-4 border-t border-gray-700 pt-4">
+          <MoodLegend />
         </div>
       )}
     </div>
