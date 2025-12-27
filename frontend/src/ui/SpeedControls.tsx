@@ -3,6 +3,7 @@ import { useGameStore } from '../runtime/store';
 
 export const SpeedControls = () => {
   const setSpeed1x = useGameStore((s) => s.setSpeed1x);
+  const setSpeed2x = useGameStore((s) => s.setSpeed2x);
   const setSpeed4x = useGameStore((s) => s.setSpeed4x);
   const setSpeed10x = useGameStore((s) => s.setSpeed10x);
   const speed = useGameStore((s) => s.speed);
@@ -17,6 +18,9 @@ export const SpeedControls = () => {
       <div className="flex gap-2">
         <button className={speed === 1 ? btnActive : btnInactive} onClick={setSpeed1x}>
           1x
+        </button>
+        <button className={speed === 2 ? btnActive : btnInactive} onClick={setSpeed2x}>
+          2x
         </button>
         <button className={speed === 4 ? btnActive : btnInactive} onClick={setSpeed4x}>
           4x

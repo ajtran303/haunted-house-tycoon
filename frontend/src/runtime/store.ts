@@ -41,6 +41,7 @@ type Actions = {
 
   // speed
   setSpeed1x: () => void;
+  setSpeed2x: () => void;
   setSpeed4x: () => void;
   setSpeed10x: () => void;
 
@@ -92,6 +93,7 @@ export const useGameStore = create(
       set((s) => (s.lifecycle !== 'failed' ? { ...s, lifecycle: 'failed' as Lifecycle } : s)),
 
     setSpeed1x: () => set({ speed: 1 }),
+    setSpeed2x: () => set({ speed: 2 }),
     setSpeed4x: () => set({ speed: 4 }),
     setSpeed10x: () => set({ speed: 10 }),
 
