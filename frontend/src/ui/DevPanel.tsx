@@ -120,7 +120,7 @@ export const DevPanel = () => {
   };
 
   const toggleBtn =
-    'fixed bottom-2 left-2 z-50 rounded bg-gray-800 px-2 py-1 font-mono text-xs text-white opacity-50 hover:opacity-100';
+    'fixed bottom-3 left-3 z-50 rounded bg-gray-800 px-3 py-2 font-mono text-sm text-white opacity-50 hover:opacity-100';
 
   if (!isOpen) {
     return (
@@ -131,40 +131,40 @@ export const DevPanel = () => {
   }
 
   return (
-    <div className="fixed bottom-2 left-2 z-50 w-64 rounded border border-gray-600 bg-gray-900 p-3 font-mono text-xs text-white">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="font-bold">Dev Panel</span>
+    <div className="fixed bottom-3 left-3 z-50 w-96 rounded border border-gray-600 bg-gray-900 p-4 font-mono text-sm text-white">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-base font-bold">Dev Panel</span>
         <button className="text-gray-400 hover:text-white" onClick={() => setIsOpen(false)}>
           [x]
         </button>
       </div>
 
       {/* Quick Info */}
-      <div className="mb-2 text-gray-400">
+      <div className="mb-3 text-gray-400">
         <div>Money: ${money}</div>
         <div>Visitors: {visitors.length}</div>
         <div>Status: {lifecycle}</div>
       </div>
 
       {/* Cheats */}
-      <div className="mb-2 border-t border-gray-700 pt-2">
-        <div className="mb-1 text-gray-500">Cheats</div>
-        <div className="flex flex-wrap gap-1">
+      <div className="mb-3 border-t border-gray-700 pt-3">
+        <div className="mb-2 text-gray-500">Cheats</div>
+        <div className="flex flex-wrap gap-2">
           <button
-            className="rounded bg-gray-700 px-2 py-0.5 hover:bg-gray-600"
+            className="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600"
             onClick={handleAddMoney}
           >
             +$1000
           </button>
           <button
-            className="rounded bg-gray-700 px-2 py-0.5 hover:bg-gray-600 disabled:opacity-50"
+            className="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
             onClick={handleSpawnVisitors}
             disabled={!entrance}
           >
             +10 Visitors
           </button>
           <button
-            className="rounded bg-gray-700 px-2 py-0.5 hover:bg-gray-600"
+            className="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600"
             onClick={handleClearPark}
           >
             Clear Park
@@ -173,18 +173,18 @@ export const DevPanel = () => {
       </div>
 
       {/* Quick Setup */}
-      <div className="mb-2 border-t border-gray-700 pt-2">
-        <div className="mb-1 text-gray-500">Quick Setup</div>
-        <div className="flex flex-wrap gap-1">
+      <div className="mb-3 border-t border-gray-700 pt-3">
+        <div className="mb-2 text-gray-500">Quick Setup</div>
+        <div className="flex flex-wrap gap-2">
           <button
-            className="rounded bg-gray-700 px-2 py-0.5 hover:bg-gray-600 disabled:opacity-50"
+            className="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600 disabled:opacity-50"
             onClick={handleAutoSetup}
             disabled={!!(entrance && exit)}
           >
             Auto Entry/Exit
           </button>
           <button
-            className="rounded bg-gray-700 px-2 py-0.5 hover:bg-gray-600"
+            className="rounded bg-gray-700 px-3 py-1 hover:bg-gray-600"
             onClick={handleTemplateAttraction}
           >
             + Template Haunt
@@ -193,9 +193,9 @@ export const DevPanel = () => {
       </div>
 
       {/* Debug Toggles */}
-      <div className="border-t border-gray-700 pt-2">
-        <div className="mb-1 text-gray-500">Debug</div>
-        <label className="flex cursor-pointer items-center gap-2">
+      <div className="border-t border-gray-700 pt-3">
+        <div className="mb-2 text-gray-500">Debug</div>
+        <label className="flex cursor-pointer items-center gap-3">
           <input
             type="checkbox"
             checked={devConfig.showVisitorIntent}
@@ -206,9 +206,9 @@ export const DevPanel = () => {
       </div>
 
       {/* Console hint */}
-      <div className="mt-2 border-t border-gray-700 pt-2 text-gray-500">
-        <div className="mb-1">Console:</div>
-        <div className="text-xs leading-relaxed">
+      <div className="mt-3 border-t border-gray-700 pt-3 text-gray-500">
+        <div className="mb-2">Console:</div>
+        <div className="text-sm leading-relaxed">
           __gameState() - get store
           <br />
           __tick() - advance 1 tick

@@ -4,12 +4,9 @@ import { ROOM_COST } from '../../../core/constants';
 import { getRoomCells } from '../../../core/placement';
 import type { Cell, Grid } from '../../../core/types';
 import { useGameStore } from '../../../runtime/store';
+import { getCellSizeForHeight, getCurrentOriginX, GRID_ORIGIN_Y } from '../gridSizing';
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
-
-const CELL_SIZE = 24;
-const ORIGIN_X = 20;
-const ORIGIN_Y = 120; // Account for React top bar (4 rows: header, stats, emotions, deaths)
 
 type GridRenderer = {
   draw: (grid: Grid) => void;
@@ -79,6 +76,9 @@ export const createGridRenderer = (
 ): GridRenderer => {
   const height = grid.length;
   const width = grid[0]?.length ?? 0;
+  const CELL_SIZE = getCellSizeForHeight(height);
+  const ORIGIN_X = getCurrentOriginX();
+  const ORIGIN_Y = GRID_ORIGIN_Y;
 
   // Renderer-local only (no store mutations)
   let clicksEnabled = true;

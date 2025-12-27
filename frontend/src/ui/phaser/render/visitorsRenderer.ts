@@ -1,10 +1,7 @@
 import type { Visitor } from '../../../core/types';
 import { DEV_MODE, devConfig } from '../../../dev/devMode';
 import { getVisitorMood, VisitorMood } from '../../visitorMood';
-
-const CELL_SIZE = 24;
-const ORIGIN_X = 20;
-const ORIGIN_Y = 120; // Account for React top bar (4 rows: header, stats, emotions, deaths)
+import { getCurrentCellSize, getCurrentOriginX, GRID_ORIGIN_Y } from '../gridSizing';
 
 type VisitorsRenderer = {
   draw: (visitors: Visitor[]) => void;
@@ -32,6 +29,8 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
 
   const draw = (visitors: Visitor[]) => {
     const alive = new Set<number>();
+    const CELL_SIZE = getCurrentCellSize();
+    const ORIGIN_X = getCurrentOriginX();
 
     for (const v of visitors) {
       alive.add(v.id);
@@ -39,13 +38,13 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
       // --- dot ---
       let dot = dots.get(v.id);
       if (!dot) {
-        dot = scene.add.circle(0, 0, 4, MOOD_COLOR.neutral);
+        dot = scene.add.circle(0, 0, 6, MOOD_COLOR.neutral); // Slightly larger dot for scaled grid
         dot.setDepth(10);
         dots.set(v.id, dot);
       }
 
       const px = ORIGIN_X + v.position.x * CELL_SIZE + CELL_SIZE / 2;
-      const py = ORIGIN_Y + v.position.y * CELL_SIZE + CELL_SIZE / 2;
+      const py = GRID_ORIGIN_Y + v.position.y * CELL_SIZE + CELL_SIZE / 2;
 
       dot.setPosition(px, py);
 
@@ -59,7 +58,7 @@ export const createVisitorsRenderer = (scene: any): VisitorsRenderer => {
         if (!label) {
           label = scene.add.text(0, 0, '', {
             fontFamily: 'monospace',
-            fontSize: '12px',
+            fontSize: '14px',
           });
           label.setOrigin(0.5, 1); // centered, anchored above
           label.setDepth(11); // above the dot

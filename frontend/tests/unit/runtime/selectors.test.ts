@@ -20,19 +20,13 @@ describe('computeVisitorStats', () => {
   });
 
   it('calculates average happiness correctly', () => {
-    const visitors = [
-      makeVisitor({ id: 1, happiness: 40 }),
-      makeVisitor({ id: 2, happiness: 60 }),
-    ];
+    const visitors = [makeVisitor({ id: 1, happiness: 40 }), makeVisitor({ id: 2, happiness: 60 })];
     const result = computeVisitorStats(visitors);
     expect(result.avgHappiness).toBe(50);
   });
 
   it('calculates average fear correctly', () => {
-    const visitors = [
-      makeVisitor({ id: 1, fear: 20 }),
-      makeVisitor({ id: 2, fear: 40 }),
-    ];
+    const visitors = [makeVisitor({ id: 1, fear: 20 }), makeVisitor({ id: 2, fear: 40 })];
     const result = computeVisitorStats(visitors);
     expect(result.avgFear).toBe(30);
   });
