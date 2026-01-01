@@ -18,8 +18,8 @@ export const NIGHT_START_TICK = Math.floor(TICKS_PER_DAY * 0.5);
 // ECONOMY - STARTING RESOURCES
 // =============================================================================
 
-// Player starts with $1000. Enough to build a small attraction + some runway.
-export const STARTING_MONEY = 1000;
+// Player starts with $1500. Enough to build a small attraction + comfortable runway.
+export const STARTING_MONEY = 1500;
 
 // Admission fee charged when visitor enters the park.
 export const ADMISSION_FEE = 10;
@@ -126,9 +126,9 @@ export const VISITOR_START_HAPPINESS = 60; // Starts positive but has room to gr
 // HAPPINESS SYSTEM
 // =============================================================================
 
-// Happiness decays 1/tick. At start=60, visitor has 60 ticks before hitting 0.
-// Creates pressure to keep visitors engaged or use amenities.
-export const HAPPINESS_DECAY_PER_TICK = 1;
+// Happiness decays 0.5/tick. At start=60, visitor has 120 ticks (~2 days) before hitting 0.
+// Slower decay gives time to reach amenities while still creating pressure.
+export const HAPPINESS_DECAY_PER_TICK = 0.5;
 
 // Happiness thresholds for spending behavior:
 export const HAPPY_SPEND_BOOST_START = 60; // Above this: bonus spending
@@ -174,11 +174,40 @@ export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 30;
 
 // =============================================================================
 // AMENITY EFFECTS (applied once on entry to amenity tile)
+// Scaled to cost: expensive amenities provide stronger effects.
+// Base unit: foodStall ($150) = +5 happiness, -5 fear, $10 purchase
 // =============================================================================
 
-export const AMENITY_HAPPINESS_BOOST = 5; // Instant happiness bump
-export const AMENITY_FEAR_REDUCTION = 5; // Faster fear recovery than midway
-export const AMENITY_BASE_PURCHASE = 10; // Immediate spend when using amenity
+export type AmenityEffect = {
+  happiness: number; // Instant happiness boost
+  fear: number; // Fear reduction (negative = reduces fear)
+  purchase: number; // Immediate spend when using amenity
+};
+
+export const AMENITY_EFFECTS: Record<string, AmenityEffect> = {
+  // $150 - cheap comfort food, modest effect
+  foodStall: { happiness: 5, fear: -5, purchase: 10 },
+
+  // $200 - medical care, focuses on calming fear
+  firstAid: { happiness: 3, fear: -10, purchase: 5 },
+
+  // $250 - basic necessity, balanced effect
+  restroom: { happiness: 8, fear: -5, purchase: 8 },
+
+  // $275 - fun memory, happiness-focused
+  photoBooth: { happiness: 12, fear: -3, purchase: 15 },
+
+  // $300 - retail therapy, high spend + happiness
+  giftShop: { happiness: 10, fear: -5, purchase: 25 },
+
+  // $350 - most expensive, strongest overall effect
+  arcade: { happiness: 15, fear: -8, purchase: 20 },
+};
+
+// Legacy flat constants (for backwards compatibility if needed)
+export const AMENITY_HAPPINESS_BOOST = 5;
+export const AMENITY_FEAR_REDUCTION = 5;
+export const AMENITY_BASE_PURCHASE = 10;
 
 // =============================================================================
 // STAFF SYSTEM

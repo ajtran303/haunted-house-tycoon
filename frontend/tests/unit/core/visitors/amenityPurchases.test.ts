@@ -1,4 +1,4 @@
-import { AMENITY_BASE_PURCHASE } from '../../../../src/core/constants';
+import { AMENITY_EFFECTS } from '../../../../src/core/constants';
 import {
   amenityPurchaseAmount,
   calculateAmenityPurchases,
@@ -10,35 +10,42 @@ describe('amenityPurchaseAmount', () => {
   it('multiplies base purchase by spending multiplier', () => {
     const v = makeVisitor({ fear: 0, happiness: 50 });
     const multiplier = spendingPerTick(v);
-    const expected = AMENITY_BASE_PURCHASE * multiplier;
+    const expected = AMENITY_EFFECTS.foodStall.purchase * multiplier;
 
-    expect(amenityPurchaseAmount(v)).toBe(expected);
+    expect(amenityPurchaseAmount(v, 'foodStall')).toBe(expected);
   });
 
   it('returns higher amount for visitors with high fear (spending bonus)', () => {
     const lowFear = makeVisitor({ fear: 10, happiness: 50 });
     const highFear = makeVisitor({ fear: 70, happiness: 50 });
 
-    expect(amenityPurchaseAmount(highFear)).toBeGreaterThan(amenityPurchaseAmount(lowFear));
+    expect(amenityPurchaseAmount(highFear, 'foodStall')).toBeGreaterThan(amenityPurchaseAmount(lowFear, 'foodStall'));
   });
 
   it('returns higher amount for visitors with high happiness', () => {
     const lowHappy = makeVisitor({ fear: 0, happiness: 30 });
     const highHappy = makeVisitor({ fear: 0, happiness: 90 });
 
-    expect(amenityPurchaseAmount(highHappy)).toBeGreaterThan(amenityPurchaseAmount(lowHappy));
+    expect(amenityPurchaseAmount(highHappy, 'foodStall')).toBeGreaterThan(amenityPurchaseAmount(lowHappy, 'foodStall'));
   });
 
   it('returns 0 for visitors too unhappy to spend', () => {
     const miserable = makeVisitor({ fear: 0, happiness: 5 });
 
-    expect(amenityPurchaseAmount(miserable)).toBe(0);
+    expect(amenityPurchaseAmount(miserable, 'foodStall')).toBe(0);
   });
 
   it('returns 0 for visitors in panic (fear too high)', () => {
     const panicked = makeVisitor({ fear: 95, happiness: 50 });
 
-    expect(amenityPurchaseAmount(panicked)).toBe(0);
+    expect(amenityPurchaseAmount(panicked, 'foodStall')).toBe(0);
+  });
+
+  it('returns different amounts for different amenity types', () => {
+    const v = makeVisitor({ fear: 0, happiness: 50 });
+
+    // giftShop has higher purchase ($25) than foodStall ($10)
+    expect(amenityPurchaseAmount(v, 'giftShop')).toBeGreaterThan(amenityPurchaseAmount(v, 'foodStall'));
   });
 });
 
@@ -82,7 +89,7 @@ describe('calculateAmenityPurchases', () => {
       happiness: 50,
     });
 
-    const expected = amenityPurchaseAmount(v);
+    const expected = amenityPurchaseAmount(v, 'foodStall');
     expect(calculateAmenityPurchases([v], gridWithFood)).toBe(expected);
   });
 
@@ -110,7 +117,7 @@ describe('calculateAmenityPurchases', () => {
       happiness: 50,
     });
 
-    const expected = amenityPurchaseAmount(v1) + amenityPurchaseAmount(v2);
+    const expected = amenityPurchaseAmount(v1, 'giftShop') + amenityPurchaseAmount(v2, 'giftShop');
     expect(calculateAmenityPurchases([v1, v2], gridWithAmenities)).toBe(expected);
   });
 
