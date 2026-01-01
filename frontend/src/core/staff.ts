@@ -1,4 +1,4 @@
-import { MAX_STAFF, STAFF_HIRE_COST, HAUNT_STAFF_CAP } from './constants';
+import { MAX_STAFF, STAFF_HIRE_COST, HAUNT_STAFF_CAP, BASE_STAFF_FEAR_BONUS } from './constants';
 import type { AttractionGrid, GameState } from './types';
 
 export type HireStaffResult =
@@ -148,4 +148,9 @@ export const unassignStaffFromAttraction = (
   }
 
   return { ok: true, staffAssignments: newAssignments };
+};
+
+export const calculateStaffFearBonus = (staffAssigned: number): number => {
+  if (staffAssigned <= 0) return 0;
+  return Math.floor(BASE_STAFF_FEAR_BONUS * Math.sqrt(staffAssigned));
 };

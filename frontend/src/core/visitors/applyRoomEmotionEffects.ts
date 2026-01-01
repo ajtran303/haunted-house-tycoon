@@ -1,6 +1,7 @@
 import type { AttractionGrid, Grid, RoomType, Visitor } from '../types';
 import { applyEmotionDelta } from './emotions';
 import { ROOM_EMOTION_EFFECTS } from './roomEffects';
+import { calculateStaffFearBonus } from '../staff';
 
 const getRoomTypeAt = (grid: Grid, x: number, y: number): RoomType | null => {
   const row = grid[y];
@@ -23,7 +24,11 @@ const getGridForVisitor = (v: Visitor, lookup: GridLookup): Grid | null => {
   return lookup.attractions[v.location.attractionId]?.grid ?? null;
 };
 
-export const applyRoomEmotionEffects = (visitors: Visitor[], lookup: GridLookup): Visitor[] => {
+export const applyRoomEmotionEffects = (
+  visitors: Visitor[],
+  lookup: GridLookup,
+  staffAssignments: Record<string, number> = {},
+): Visitor[] => {
   return visitors.map((v) => {
     const grid = getGridForVisitor(v, lookup);
     if (!grid) return v;
@@ -33,8 +38,17 @@ export const applyRoomEmotionEffects = (visitors: Visitor[], lookup: GridLookup)
 
     // 1) Entry effects: apply once when stepping onto a new tile
     if (didEnterNewTile(v)) {
-      const delta = ROOM_EMOTION_EFFECTS[roomType];
-      return delta ? applyEmotionDelta(v, delta) : v;
+      const baseDelta = ROOM_EMOTION_EFFECTS[roomType];
+
+      // Apply staff fear bonus for scare rooms in attractions
+      if (roomType === 'scare' && v.location.type === 'attraction') {
+        const staffCount = staffAssignments[v.location.attractionId] ?? 0;
+        const staffBonus = calculateStaffFearBonus(staffCount);
+        const baseFear = baseDelta?.fear ?? 0;
+        return applyEmotionDelta(v, { ...baseDelta, fear: baseFear + staffBonus });
+      }
+
+      return baseDelta ? applyEmotionDelta(v, baseDelta) : v;
     }
 
     // 2) Per-tick misery pressure when stuck in a room tile (no movement this tick)
