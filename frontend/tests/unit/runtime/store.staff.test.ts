@@ -82,4 +82,61 @@ describe('store staff actions', () => {
       expect(useGameStore.getState().staffAssignments['haunt-1']).toBe(1);
     });
   });
+
+  describe('assignStaff', () => {
+    it('assigns staff to attraction', () => {
+      // Create attraction with scare rooms
+      useGameStore.getState().createAttraction('haunt-1', 'Test Haunt', 4, 4);
+      const grid = useGameStore.getState().attractions['haunt-1'].grid;
+      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
+      grid[0][1] = { ...grid[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
+      useGameStore.setState({
+        attractions: {
+          'haunt-1': { ...useGameStore.getState().attractions['haunt-1'], grid },
+        },
+        staffHired: 3,
+      });
+
+      useGameStore.getState().assignStaff('haunt-1');
+
+      expect(useGameStore.getState().staffAssignments['haunt-1']).toBe(1);
+    });
+
+    it('does nothing when paused', () => {
+      useGameStore.getState().createAttraction('haunt-1', 'Test Haunt', 4, 4);
+      useGameStore.setState({ staffHired: 3 });
+      useGameStore.getState().pause();
+
+      useGameStore.getState().assignStaff('haunt-1');
+
+      expect(useGameStore.getState().staffAssignments['haunt-1']).toBeUndefined();
+    });
+  });
+
+  describe('unassignStaff', () => {
+    it('unassigns staff from attraction', () => {
+      useGameStore.getState().createAttraction('haunt-1', 'Test Haunt', 4, 4);
+      useGameStore.setState({
+        staffHired: 3,
+        staffAssignments: { 'haunt-1': 2 },
+      });
+
+      useGameStore.getState().unassignStaff('haunt-1');
+
+      expect(useGameStore.getState().staffAssignments['haunt-1']).toBe(1);
+    });
+
+    it('does nothing when paused', () => {
+      useGameStore.getState().createAttraction('haunt-1', 'Test Haunt', 4, 4);
+      useGameStore.setState({
+        staffHired: 3,
+        staffAssignments: { 'haunt-1': 2 },
+      });
+      useGameStore.getState().pause();
+
+      useGameStore.getState().unassignStaff('haunt-1');
+
+      expect(useGameStore.getState().staffAssignments['haunt-1']).toBe(2);
+    });
+  });
 });
