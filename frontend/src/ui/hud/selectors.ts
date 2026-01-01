@@ -1,5 +1,7 @@
 // src/ui/hud/selectors.ts
 import type { GameState } from '../../core/types';
+import { totalUpkeepPerTick } from '../../core/economy';
+import { BANKRUPTCY_WARNING_RUNWAY_TICKS, MONEY_LOW_THRESHOLD } from '../../core/constants';
 
 export type HudSnapshot = {
   money: number;
@@ -21,6 +23,7 @@ export type CriticalSnapshot = {
   deathsInWindow: number;
   panicInWindow: number;
   miseryInWindow: number;
+  runwayTicks: number;
 };
 
 const clamp0to100 = (n: number) => Math.max(0, Math.min(100, n));
@@ -47,8 +50,6 @@ export const selectHudSnapshot = (st: GameState): HudSnapshot => {
   };
 };
 
-// Minimal thresholds (tune later)
-const MONEY_LOW = 100;
 const FEAR_HIGH = 70;
 
 // Rolling windows measured purely in ticks (no TPS needed)
@@ -59,9 +60,18 @@ const DEATH_SPIKE_COUNT = 6; // panic/misery deaths within window => warning
 export const selectCriticalSnapshot = (st: GameState): CriticalSnapshot => {
   const flags = new Set<CriticalFlag>();
 
-  // Money: bankruptcy imminent is strict and should override “low”
-  if (st.money <= 0) flags.add('bankruptcy_imminent');
-  else if (st.money <= MONEY_LOW) flags.add('money_low');
+  // Calculate upkeep and runway for bankruptcy warning
+  const upkeep = totalUpkeepPerTick(st);
+  const runwayTicks = upkeep > 0 ? Math.floor(st.money / upkeep) : Infinity;
+
+  // Money: bankruptcy based on runway, not just current balance
+  if (st.money <= 0 || runwayTicks <= 0) {
+    flags.add('bankruptcy_imminent');
+  } else if (runwayTicks < BANKRUPTCY_WARNING_RUNWAY_TICKS) {
+    flags.add('bankruptcy_imminent');
+  } else if (st.money <= MONEY_LOW_THRESHOLD) {
+    flags.add('money_low');
+  }
 
   // Avg fear high
   const { avgFear } = selectHudSnapshot(st);
@@ -93,5 +103,12 @@ export const selectCriticalSnapshot = (st: GameState): CriticalSnapshot => {
   }
   if (deathsInWindow >= DEATH_SPIKE_COUNT) flags.add('deaths_spiking');
 
-  return { flags, exitsInWindow, deathsInWindow, panicInWindow, miseryInWindow };
+  return {
+    flags,
+    exitsInWindow,
+    deathsInWindow,
+    panicInWindow,
+    miseryInWindow,
+    runwayTicks: runwayTicks === Infinity ? 0 : runwayTicks,
+  };
 };
