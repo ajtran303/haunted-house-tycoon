@@ -26,7 +26,8 @@ export const newGame = (): GameState => ({
   nextRoomId: 1,
   selectedRoomType: 'parkEntry',
 
-  staffEnabled: false,
+  staffHired: 0,
+  staffAssignments: {},
 
   exitEvents: [],
   nextExitEventId: 1,
