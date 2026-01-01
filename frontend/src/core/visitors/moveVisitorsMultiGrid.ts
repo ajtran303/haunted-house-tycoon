@@ -205,6 +205,7 @@ export const moveVisitorsMultiGrid = (
             returnPortalPos: null,
             intent: v.intent, // Keep current intent
             blockingState: null, // Clear blocking state on successful exit
+            staffBonusApplied: false, // Reset for next attraction visit
           },
           blocked: null,
         };

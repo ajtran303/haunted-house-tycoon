@@ -46,6 +46,7 @@ describe('newGame', () => {
       spawnTick: 0,
       exploreStartTick: 0,
       blockingState: null,
+      staffBonusApplied: false,
     });
     state1.midwayGrid[0][0] = { ...state1.midwayGrid[0][0], occupied: true };
 

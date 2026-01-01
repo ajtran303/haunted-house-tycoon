@@ -45,6 +45,7 @@ export type Visitor = {
   spawnTick: number;
   exploreStartTick: number;
   blockingState: BlockingState | null; // Spatial constraint state (null = free to move)
+  staffBonusApplied: boolean; // True if staff fear bonus was applied this attraction visit
 };
 
 export type GameSpeed = 1 | 2 | 4 | 10;

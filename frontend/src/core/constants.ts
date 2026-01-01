@@ -153,7 +153,7 @@ export const FEAR_RECOVERY_PER_TICK = 2; // Midway provides gradual relief
 // Fear thresholds for spending behavior:
 export const FEAR_SPEND_BOOST_START = 20; // Below this: no fear bonus
 export const FEAR_SPEND_BOOST_CAP = 80; // At/above this: max bonus (but not panicking)
-export const FEAR_PANIC_THRESHOLD = 90; // At/above this: visitor exits (panic death)
+export const FEAR_PANIC_THRESHOLD = 100; // At/above this: visitor exits (panic death)
 export const MAX_FEAR_BONUS_PER_TICK = 4; // Max bonus at fear=80
 
 // =============================================================================
@@ -170,7 +170,7 @@ export const BASE_SPEND_PER_TICK = 1;
 
 // How long a visitor explores an attraction before heading to exit.
 // 30 ticks = half a day. Shorter for dev iteration.
-export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 30;
+export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 45;
 
 // =============================================================================
 // AMENITY EFFECTS (applied once on entry to amenity tile)
@@ -219,6 +219,7 @@ export const MAX_STAFF = 10; // Global staff cap
 export const HAUNT_STAFF_CAP = 4; // Max staff per attraction (capped by scare rooms)
 
 // Fear bonus from staff: floor(BASE * sqrt(assigned))
-// 1 staff = +10 fear, 2 staff = +14, 3 staff = +17, 4 staff = +20
+// 1 staff = +6 fear, 2 staff = +8, 3 staff = +10, 4 staff = +12
+// Applied once per attraction visit (not per room).
 // Diminishing returns prevent staff from being a complete solution.
-export const BASE_STAFF_FEAR_BONUS = 10;
+export const BASE_STAFF_FEAR_BONUS = 6;

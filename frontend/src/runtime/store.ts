@@ -175,6 +175,7 @@ export const useGameStore = create(
               spawnTick: nextTick,
               exploreStartTick: nextTick,
               blockingState: null,
+              staffBonusApplied: false,
             };
 
             visitors = [...visitors, v];
