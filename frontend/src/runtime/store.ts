@@ -7,7 +7,12 @@ import { totalUpkeepPerTick } from '../core/economy';
 import { createAttractionGrid, createGrid } from '../core/grid';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
-import { hireStaff as applyHireStaff, fireStaff as applyFireStaff } from '../core/staff';
+import {
+  hireStaff as applyHireStaff,
+  fireStaff as applyFireStaff,
+  assignStaffToAttraction as applyAssignStaff,
+  unassignStaffFromAttraction as applyUnassignStaff,
+} from '../core/staff';
 import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
 import { applyTimeTick } from '../core/time';
 import type {
@@ -69,6 +74,8 @@ type Actions = {
   // Staff management
   hireStaff: () => void;
   fireStaff: () => void;
+  assignStaff: (attractionId: string) => void;
+  unassignStaff: (attractionId: string) => void;
 
   // input
   dispatchInput: (input: Input) => void;
@@ -433,6 +440,26 @@ export const useGameStore = create(
           money: result.money,
           staffAssignments: result.staffAssignments,
         });
+      }
+    },
+
+    assignStaff: (attractionId: string) => {
+      const s = get();
+      if (s.lifecycle !== 'running') return;
+
+      const result = applyAssignStaff(s, attractionId);
+      if (result.ok) {
+        set({ staffAssignments: result.staffAssignments });
+      }
+    },
+
+    unassignStaff: (attractionId: string) => {
+      const s = get();
+      if (s.lifecycle !== 'running') return;
+
+      const result = applyUnassignStaff(s, attractionId);
+      if (result.ok) {
+        set({ staffAssignments: result.staffAssignments });
       }
     },
 

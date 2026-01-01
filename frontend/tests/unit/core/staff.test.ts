@@ -1,6 +1,12 @@
 import { newGame } from '../../../src/core/newGame';
 import { STAFF_HIRE_COST, STAFF_WAGE_PER_TICK, MAX_STAFF, HAUNT_STAFF_CAP } from '../../../src/core/constants';
-import { hireStaff, fireStaff, getAttractionStaffCapacity } from '../../../src/core/staff';
+import {
+  hireStaff,
+  fireStaff,
+  getAttractionStaffCapacity,
+  assignStaffToAttraction,
+  unassignStaffFromAttraction,
+} from '../../../src/core/staff';
 import { makeState } from '../../helpers/factories';
 import { createAttractionGrid } from '../../../src/core/grid';
 
@@ -254,6 +260,168 @@ describe('Haunt Staff Capacity', () => {
       };
 
       expect(getAttractionStaffCapacity(attraction)).toBe(4);
+    });
+  });
+});
+
+describe('Assign Staff to Attractions', () => {
+  const makeAttractionWithScareRooms = (scareCount: number) => {
+    const grid = createAttractionGrid(4, 4);
+    for (let i = 0; i < scareCount; i++) {
+      const x = i % 4;
+      const y = Math.floor(i / 4);
+      grid[y][x] = { ...grid[y][x], type: 'floor', occupied: true, roomType: 'scare', roomId: `s-${i}` };
+    }
+    return {
+      id: 'haunt-1',
+      name: 'Test Haunt',
+      grid,
+      entryPoint: { x: 0, y: 0 },
+      exitPoint: { x: 3, y: 3 },
+    };
+  };
+
+  describe('assignStaffToAttraction', () => {
+    it('assigns one staff to attraction', () => {
+      const attraction = makeAttractionWithScareRooms(2);
+      const state = makeState({
+        staffHired: 3,
+        staffAssignments: {},
+        attractions: { 'haunt-1': attraction },
+      });
+
+      const result = assignStaffToAttraction(state, 'haunt-1');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.staffAssignments['haunt-1']).toBe(1);
+      }
+    });
+
+    it('increments existing assignment', () => {
+      const attraction = makeAttractionWithScareRooms(3);
+      const state = makeState({
+        staffHired: 3,
+        staffAssignments: { 'haunt-1': 1 },
+        attractions: { 'haunt-1': attraction },
+      });
+
+      const result = assignStaffToAttraction(state, 'haunt-1');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.staffAssignments['haunt-1']).toBe(2);
+      }
+    });
+
+    it('fails if attraction does not exist', () => {
+      const state = makeState({
+        staffHired: 3,
+        staffAssignments: {},
+        attractions: {},
+      });
+
+      const result = assignStaffToAttraction(state, 'nonexistent');
+
+      expect(result).toEqual({ ok: false, reason: 'attraction_not_found' });
+    });
+
+    it('fails if no unassigned staff available', () => {
+      const attraction = makeAttractionWithScareRooms(2);
+      const state = makeState({
+        staffHired: 2,
+        staffAssignments: { 'haunt-1': 2 }, // all staff already assigned
+        attractions: { 'haunt-1': attraction },
+      });
+
+      const result = assignStaffToAttraction(state, 'haunt-1');
+
+      expect(result).toEqual({ ok: false, reason: 'no_unassigned_staff' });
+    });
+
+    it('fails if attraction at capacity', () => {
+      const attraction = makeAttractionWithScareRooms(2); // capacity = 2
+      const state = makeState({
+        staffHired: 5,
+        staffAssignments: { 'haunt-1': 2 }, // already at capacity
+        attractions: { 'haunt-1': attraction },
+      });
+
+      const result = assignStaffToAttraction(state, 'haunt-1');
+
+      expect(result).toEqual({ ok: false, reason: 'attraction_at_capacity' });
+    });
+
+    it('respects HAUNT_STAFF_CAP even with many scare rooms', () => {
+      const attraction = makeAttractionWithScareRooms(6); // 6 rooms, but cap is 4
+      const state = makeState({
+        staffHired: 10,
+        staffAssignments: { 'haunt-1': HAUNT_STAFF_CAP }, // at cap
+        attractions: { 'haunt-1': attraction },
+      });
+
+      const result = assignStaffToAttraction(state, 'haunt-1');
+
+      expect(result).toEqual({ ok: false, reason: 'attraction_at_capacity' });
+    });
+  });
+
+  describe('unassignStaffFromAttraction', () => {
+    it('unassigns one staff from attraction', () => {
+      const attraction = makeAttractionWithScareRooms(2);
+      const state = makeState({
+        staffHired: 3,
+        staffAssignments: { 'haunt-1': 2 },
+        attractions: { 'haunt-1': attraction },
+      });
+
+      const result = unassignStaffFromAttraction(state, 'haunt-1');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.staffAssignments['haunt-1']).toBe(1);
+      }
+    });
+
+    it('removes entry when unassigning last staff', () => {
+      const attraction = makeAttractionWithScareRooms(2);
+      const state = makeState({
+        staffHired: 3,
+        staffAssignments: { 'haunt-1': 1 },
+        attractions: { 'haunt-1': attraction },
+      });
+
+      const result = unassignStaffFromAttraction(state, 'haunt-1');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.staffAssignments['haunt-1']).toBeUndefined();
+      }
+    });
+
+    it('fails if no staff assigned to attraction', () => {
+      const attraction = makeAttractionWithScareRooms(2);
+      const state = makeState({
+        staffHired: 3,
+        staffAssignments: {},
+        attractions: { 'haunt-1': attraction },
+      });
+
+      const result = unassignStaffFromAttraction(state, 'haunt-1');
+
+      expect(result).toEqual({ ok: false, reason: 'no_staff_assigned' });
+    });
+
+    it('fails if attraction does not exist', () => {
+      const state = makeState({
+        staffHired: 3,
+        staffAssignments: { 'haunt-1': 2 },
+        attractions: {},
+      });
+
+      const result = unassignStaffFromAttraction(state, 'haunt-1');
+
+      expect(result).toEqual({ ok: false, reason: 'attraction_not_found' });
     });
   });
 });
