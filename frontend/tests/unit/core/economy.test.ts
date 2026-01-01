@@ -1,4 +1,5 @@
-import { totalUpkeepPerTick, upkeepPerTick } from '../../../src/core/economy';
+import { totalUpkeepPerTick, upkeepPerTick, staffWagesPerTick } from '../../../src/core/economy';
+import { STAFF_WAGE_PER_TICK } from '../../../src/core/constants';
 import { createAttractionGrid } from '../../../src/core/grid';
 import { newGame } from '../../../src/core/newGame';
 
@@ -140,5 +141,49 @@ describe('totalUpkeepPerTick', () => {
 
     // portal: 0, scare: 2
     expect(totalUpkeepPerTick(s)).toBe(2);
+  });
+
+  it('includes staff wages in total upkeep', () => {
+    const s = newGame();
+    s.staffHired = 3;
+
+    expect(totalUpkeepPerTick(s)).toBe(3 * STAFF_WAGE_PER_TICK);
+  });
+
+  it('combines room upkeep and staff wages', () => {
+    const s = newGame();
+
+    s.midwayGrid[0][0] = {
+      ...s.midwayGrid[0][0],
+      occupied: true,
+      roomType: 'scare',
+      roomId: 's-1',
+    };
+
+    s.staffHired = 2;
+
+    // scare: 2 + staff wages: 2 * 1 = 4
+    expect(totalUpkeepPerTick(s)).toBe(2 + 2 * STAFF_WAGE_PER_TICK);
+  });
+});
+
+describe('staffWagesPerTick', () => {
+  it('returns 0 when no staff hired', () => {
+    const s = newGame();
+    expect(staffWagesPerTick(s)).toBe(0);
+  });
+
+  it('charges STAFF_WAGE_PER_TICK per hired staff', () => {
+    const s = newGame();
+    s.staffHired = 5;
+    expect(staffWagesPerTick(s)).toBe(5 * STAFF_WAGE_PER_TICK);
+  });
+
+  it('charges for all hired staff regardless of assignment', () => {
+    const s = newGame();
+    s.staffHired = 4;
+    s.staffAssignments = { 'haunt-1': 2 };
+
+    expect(staffWagesPerTick(s)).toBe(4 * STAFF_WAGE_PER_TICK);
   });
 });
