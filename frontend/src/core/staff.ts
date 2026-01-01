@@ -1,5 +1,5 @@
-import { MAX_STAFF, STAFF_HIRE_COST } from './constants';
-import type { GameState } from './types';
+import { MAX_STAFF, STAFF_HIRE_COST, HAUNT_STAFF_CAP } from './constants';
+import type { AttractionGrid, GameState } from './types';
 
 export type HireStaffResult =
   | { ok: true; staffHired: number; money: number }
@@ -73,4 +73,18 @@ export const fireStaff = (state: GameState): FireStaffResult => {
     money: state.money,
     staffAssignments: newAssignments,
   };
+};
+
+export const getAttractionStaffCapacity = (attraction: AttractionGrid): number => {
+  let scareRoomCount = 0;
+
+  for (const row of attraction.grid) {
+    for (const cell of row) {
+      if (cell.roomType === 'scare') {
+        scareRoomCount++;
+      }
+    }
+  }
+
+  return Math.min(HAUNT_STAFF_CAP, scareRoomCount);
 };
