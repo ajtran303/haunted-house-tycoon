@@ -139,4 +139,46 @@ describe('store staff actions', () => {
       expect(useGameStore.getState().staffAssignments['haunt-1']).toBe(2);
     });
   });
+
+  describe('staff lifecycle', () => {
+    it('resets staff on newGame', () => {
+      useGameStore.setState({
+        staffHired: 5,
+        staffAssignments: { 'haunt-1': 3, 'haunt-2': 2 },
+      });
+
+      useGameStore.getState().newGame();
+
+      expect(useGameStore.getState().staffHired).toBe(0);
+      expect(useGameStore.getState().staffAssignments).toEqual({});
+    });
+
+    it('ignores staff actions when failed', () => {
+      useGameStore.setState({
+        lifecycle: 'failed',
+        staffHired: 0,
+        money: 1000,
+      });
+
+      useGameStore.getState().hireStaff();
+
+      expect(useGameStore.getState().staffHired).toBe(0);
+    });
+
+    it('staff state persists on fail but is ignored', () => {
+      useGameStore.setState({
+        staffHired: 5,
+        staffAssignments: { 'haunt-1': 3 },
+      });
+
+      useGameStore.getState().fail();
+
+      // State persists but lifecycle prevents actions
+      expect(useGameStore.getState().lifecycle).toBe('failed');
+      // After newGame, staff is reset
+      useGameStore.getState().newGame();
+      expect(useGameStore.getState().staffHired).toBe(0);
+      expect(useGameStore.getState().staffAssignments).toEqual({});
+    });
+  });
 });
