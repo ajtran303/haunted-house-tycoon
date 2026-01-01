@@ -1,7 +1,8 @@
 import { newGame } from '../../../src/core/newGame';
-import { STAFF_HIRE_COST, STAFF_WAGE_PER_TICK, MAX_STAFF } from '../../../src/core/constants';
-import { hireStaff, fireStaff } from '../../../src/core/staff';
+import { STAFF_HIRE_COST, STAFF_WAGE_PER_TICK, MAX_STAFF, HAUNT_STAFF_CAP } from '../../../src/core/constants';
+import { hireStaff, fireStaff, getAttractionStaffCapacity } from '../../../src/core/staff';
 import { makeState } from '../../helpers/factories';
+import { createAttractionGrid } from '../../../src/core/grid';
 
 describe('Staff as Abstract Resource', () => {
   describe('initial state', () => {
@@ -171,6 +172,88 @@ describe('Hire/Fire Staff', () => {
           (result.staffAssignments['haunt-2'] ?? 0);
         expect(totalAssigned).toBe(1);
       }
+    });
+  });
+});
+
+describe('Haunt Staff Capacity', () => {
+  describe('constants', () => {
+    it('defines HAUNT_STAFF_CAP as 4', () => {
+      expect(HAUNT_STAFF_CAP).toBe(4);
+    });
+  });
+
+  describe('getAttractionStaffCapacity', () => {
+    it('returns 0 for attraction with no scare rooms', () => {
+      const grid = createAttractionGrid(3, 3);
+      // Only entry and exit, no scare rooms
+      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'entry', roomId: 'e-1' };
+      grid[2][2] = { ...grid[2][2], type: 'floor', occupied: true, roomType: 'exit', roomId: 'x-1' };
+
+      const attraction = {
+        id: 'haunt-1',
+        name: 'Test Haunt',
+        grid,
+        entryPoint: { x: 0, y: 0 },
+        exitPoint: { x: 2, y: 2 },
+      };
+
+      expect(getAttractionStaffCapacity(attraction)).toBe(0);
+    });
+
+    it('returns scare room count when below cap', () => {
+      const grid = createAttractionGrid(3, 3);
+      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
+      grid[0][1] = { ...grid[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
+
+      const attraction = {
+        id: 'haunt-1',
+        name: 'Test Haunt',
+        grid,
+        entryPoint: { x: 0, y: 0 },
+        exitPoint: { x: 2, y: 2 },
+      };
+
+      expect(getAttractionStaffCapacity(attraction)).toBe(2);
+    });
+
+    it('caps at HAUNT_STAFF_CAP regardless of scare room count', () => {
+      const grid = createAttractionGrid(4, 4);
+      // Add 6 scare rooms (more than cap of 4)
+      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
+      grid[0][1] = { ...grid[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
+      grid[0][2] = { ...grid[0][2], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-3' };
+      grid[1][0] = { ...grid[1][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-4' };
+      grid[1][1] = { ...grid[1][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-5' };
+      grid[1][2] = { ...grid[1][2], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-6' };
+
+      const attraction = {
+        id: 'haunt-1',
+        name: 'Test Haunt',
+        grid,
+        entryPoint: { x: 0, y: 0 },
+        exitPoint: { x: 3, y: 3 },
+      };
+
+      expect(getAttractionStaffCapacity(attraction)).toBe(HAUNT_STAFF_CAP);
+    });
+
+    it('returns exactly HAUNT_STAFF_CAP when scare rooms equal cap', () => {
+      const grid = createAttractionGrid(3, 3);
+      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
+      grid[0][1] = { ...grid[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
+      grid[1][0] = { ...grid[1][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-3' };
+      grid[1][1] = { ...grid[1][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-4' };
+
+      const attraction = {
+        id: 'haunt-1',
+        name: 'Test Haunt',
+        grid,
+        entryPoint: { x: 0, y: 0 },
+        exitPoint: { x: 2, y: 2 },
+      };
+
+      expect(getAttractionStaffCapacity(attraction)).toBe(4);
     });
   });
 });

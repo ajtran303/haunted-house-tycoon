@@ -106,3 +106,4 @@ export const AMENITY_BASE_PURCHASE = 10;
 export const STAFF_HIRE_COST = 50;
 export const STAFF_WAGE_PER_TICK = 1;
 export const MAX_STAFF = 10;
+export const HAUNT_STAFF_CAP = 4;
