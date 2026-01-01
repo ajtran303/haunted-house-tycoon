@@ -193,10 +193,14 @@ export const useGameStore = create(
         money += calculateAmenityPurchases(moved, s.midwayGrid);
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
-        const withRoomEffects = applyRoomEmotionEffects(moved, {
-          midwayGrid: s.midwayGrid,
-          attractions: s.attractions,
-        });
+        const withRoomEffects = applyRoomEmotionEffects(
+          moved,
+          {
+            midwayGrid: s.midwayGrid,
+            attractions: s.attractions,
+          },
+          s.staffAssignments,
+        );
 
         // Decay happiness (midway only, handled inside decayHappiness)
         const decayed = withRoomEffects.map((v) => (existingIds.has(v.id) ? decayHappiness(v) : v));
