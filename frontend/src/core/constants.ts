@@ -101,3 +101,8 @@ export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 30; // for dev
 export const AMENITY_HAPPINESS_BOOST = 5;
 export const AMENITY_FEAR_REDUCTION = 5;
 export const AMENITY_BASE_PURCHASE = 10;
+
+// Staff constants
+export const STAFF_HIRE_COST = 50;
+export const STAFF_WAGE_PER_TICK = 1;
+export const MAX_STAFF = 10;

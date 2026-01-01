@@ -73,8 +73,9 @@ export type GameState = {
   nextRoomId: number;
   selectedRoomType: RoomType | null;
 
-  // for MVP
-  staffEnabled: false;
+  // Staff system
+  staffHired: number;
+  staffAssignments: Record<string, number>; // attractionId -> assigned staff count
 
   // deaths (panic/misery)
   exitEvents: ExitEvent[];
