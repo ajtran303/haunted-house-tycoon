@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { ADMISSION_FEE, MAX_VISITORS, ROOM_COST } from '../core/constants';
+import { ADMISSION_FEE, MAX_VISITORS, ROOM_COST, STAFF_HIRE_COST, MAX_STAFF } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
 import { createAttractionGrid, createGrid } from '../core/grid';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
+import { hireStaff as applyHireStaff, fireStaff as applyFireStaff } from '../core/staff';
 import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
 import { applyTimeTick } from '../core/time';
 import type {
@@ -64,6 +65,10 @@ type Actions = {
 
   // Portal targeting
   setTargetAttraction: (attractionId: string | null) => void;
+
+  // Staff management
+  hireStaff: () => void;
+  fireStaff: () => void;
 
   // input
   dispatchInput: (input: Input) => void;
@@ -405,6 +410,31 @@ export const useGameStore = create(
 
     // Portal targeting
     setTargetAttraction: (attractionId) => set({ targetAttractionId: attractionId }),
+
+    // Staff management
+    hireStaff: () => {
+      const s = get();
+      if (s.lifecycle !== 'running') return;
+
+      const result = applyHireStaff(s);
+      if (result.ok) {
+        set({ staffHired: result.staffHired, money: result.money });
+      }
+    },
+
+    fireStaff: () => {
+      const s = get();
+      if (s.lifecycle !== 'running') return;
+
+      const result = applyFireStaff(s);
+      if (result.ok) {
+        set({
+          staffHired: result.staffHired,
+          money: result.money,
+          staffAssignments: result.staffAssignments,
+        });
+      }
+    },
 
     // input reducer
     dispatchInput: (input: Input) => {
