@@ -4,6 +4,7 @@ import { useGameStore } from '../runtime/store';
 import { MoodLegend } from './MoodLegend';
 import { RoomSelector } from './RoomSelector';
 import { SpeedControls } from './SpeedControls';
+import { StaffPanel } from './StaffPanel';
 
 export const Hud = () => {
   const lifecycle = useGameStore((s) => s.lifecycle);
@@ -135,6 +136,13 @@ export const Hud = () => {
       {isRunning && (
         <div className="mt-4 border-t border-gray-700 pt-4">
           <RoomSelector />
+        </div>
+      )}
+
+      {/* Staff Panel - only shown when running */}
+      {isRunning && (
+        <div className="mt-4 border-t border-gray-700 pt-4">
+          <StaffPanel />
         </div>
       )}
 

@@ -3,6 +3,7 @@
 import { getRoomCells } from '../../../core/placement';
 import type { Cell, Grid, RoomType } from '../../../core/types';
 import { upkeepPerTick } from '../../../core/economy';
+import { getAttractionStaffCapacity, calculateStaffFearBonus } from '../../../core/staff';
 import { useGameStore } from '../../../runtime/store';
 import { getCellSizeForHeight, getCurrentOriginX, GRID_ORIGIN_Y } from '../gridSizing';
 
@@ -118,6 +119,10 @@ export const createGridRenderer = (
   const portalHighlight = scene.add.graphics();
   portalHighlight.setDepth(6);
 
+  // Staff glow indicator (persistent, shows when staff are assigned)
+  const staffGlow = scene.add.graphics();
+  staffGlow.setDepth(4); // Below portal highlight but above cells
+
   const drawPortalHighlight = (cellX: number, cellY: number) => {
     portalHighlight.clear();
     // Draw glowing outline for 2x2 portal area
@@ -130,6 +135,50 @@ export const createGridRenderer = (
 
   const hidePortalHighlight = () => {
     portalHighlight.clear();
+  };
+
+  // Draw staff glow indicators for portals with assigned staff
+  const drawStaffIndicators = (grid: Grid) => {
+    staffGlow.clear();
+    const state = useGameStore.getState();
+    const drawnPortals = new Set<string>(); // Track which portals we've drawn
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const cell = grid[y][x];
+        if (cell.roomType !== 'attractionPortal' || !cell.portalTo) continue;
+        if (drawnPortals.has(cell.portalTo)) continue; // Only draw once per portal
+
+        const staffAssigned = state.staffAssignments[cell.portalTo] ?? 0;
+        if (staffAssigned <= 0) continue;
+
+        const attraction = state.attractions[cell.portalTo];
+        if (!attraction) continue;
+
+        const capacity = getAttractionStaffCapacity(attraction);
+        if (capacity <= 0) continue;
+
+        // Calculate glow intensity (0.2 to 0.8 based on fill ratio)
+        const fillRatio = Math.min(staffAssigned / capacity, 1);
+        const glowAlpha = 0.2 + fillRatio * 0.6;
+
+        // Find top-left of the 2x2 portal
+        let originX = x;
+        let originY = y;
+        const leftCell = grid[y]?.[x - 1];
+        if (leftCell?.roomId === cell.roomId) originX = x - 1;
+        const topCell = grid[y - 1]?.[x];
+        if (topCell?.roomId === cell.roomId) originY = y - 1;
+
+        // Draw orange glow around the 2x2 portal (orange matches fear/scare theme)
+        const px = ORIGIN_X + originX * CELL_SIZE;
+        const py = ORIGIN_Y + originY * CELL_SIZE;
+        staffGlow.lineStyle(3, 0xe69f00, glowAlpha); // Orange, matches scare color
+        staffGlow.strokeRect(px - 2, py - 2, CELL_SIZE * 2 + 3, CELL_SIZE * 2 + 3);
+
+        drawnPortals.add(cell.portalTo);
+      }
+    }
   };
 
   // Hover tooltip (temporary overlay; follow mouse)
@@ -188,13 +237,36 @@ export const createGridRenderer = (
     const state = useGameStore.getState();
     const selectedRoomType = state.selectedRoomType;
 
-    // Portal: show attraction name + upkeep + click hint
+    // Portal: show attraction name + upkeep + staff info + click hint
     if (cell.roomType === 'attractionPortal' && cell.portalTo) {
       const attraction = state.attractions[cell.portalTo];
       if (attraction) {
         const upkeep = upkeepPerTick(attraction.grid);
+        const staffAssigned = state.staffAssignments[cell.portalTo] ?? 0;
+        const staffCapacity = getAttractionStaffCapacity(attraction);
+        const fearBonus = calculateStaffFearBonus(staffAssigned);
+
+        // Count scare rooms for base fear calculation
+        let scareRoomCount = 0;
+        for (const row of attraction.grid) {
+          for (const c of row) {
+            if (c.roomType === 'scare') scareRoomCount++;
+          }
+        }
+        const baseFear = scareRoomCount * 8; // Base fear per scare room
+
+        const staffLine = staffCapacity > 0 ? `\nStaff: ${staffAssigned}/${staffCapacity}` : '';
+        // Always show fear info if there are scare rooms
+        let fearLine = '';
+        if (baseFear > 0) {
+          if (fearBonus > 0) {
+            fearLine = ` (+${baseFear} base, +${fearBonus} staff)`;
+          } else {
+            fearLine = ` (+${baseFear} fear)`;
+          }
+        }
         const clickHint = !selectedRoomType ? '\n[click to enter]' : '';
-        return `${attraction.name}\nUpkeep: $${upkeep}/tick${clickHint}`;
+        return `${attraction.name}\nUpkeep: $${upkeep}/tick${staffLine}${fearLine}${clickHint}`;
       }
     }
 
@@ -300,6 +372,9 @@ export const createGridRenderer = (
         rects[y][x].setFillStyle(fillForCell(cell));
       }
     }
+
+    // Update staff indicators
+    drawStaffIndicators(next);
   };
 
   const setEnabled = (enabled: boolean) => {
@@ -314,6 +389,7 @@ export const createGridRenderer = (
     infoText.destroy();
     placementPreview.destroy();
     portalHighlight.destroy();
+    staffGlow.destroy();
     for (const row of rects) for (const r of row) r.destroy();
   };
 
