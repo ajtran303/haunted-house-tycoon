@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
 
-import { BANKRUPTCY_WARNING_RUNWAY_TICKS, MONEY_LOW_THRESHOLD } from '../core/constants';
+import {
+  BANKRUPTCY_WARNING_RUNWAY_TICKS,
+  MONEY_LOW_THRESHOLD,
+  SHUTDOWN_WARNING_TICKS,
+} from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
 import { useGameStore } from '../runtime/store';
 
@@ -23,12 +27,12 @@ type CriticalData = {
   exitsInWindow: number;
   deathsInWindow: number;
   runwayTicks: number;
+  shutdownTicks: number; // Ticks until shutdown (0 if not spiking)
 };
 
 const FEAR_HIGH = 70;
 const WINDOW_TICKS = 60;
 const EXIT_SPIKE_COUNT = 6;
-const DEATH_SPIKE_COUNT = 6;
 
 const WARNING_CONFIG: WarningConfig[] = [
   {
@@ -47,8 +51,8 @@ const WARNING_CONFIG: WarningConfig[] = [
   },
   {
     flag: 'deaths_spiking',
-    label: 'DEATHS SPIKING',
-    getCount: (d) => d.deathsInWindow,
+    label: 'SHUTDOWN IMMINENT',
+    getCount: (d) => `${d.shutdownTicks} ticks`,
     severity: 'critical',
   },
 ];
@@ -66,6 +70,7 @@ export const Warnings = () => {
   const midwayGrid = useGameStore((s) => s.midwayGrid);
   const attractions = useGameStore((s) => s.attractions);
   const staffHired = useGameStore((s) => s.staffHired);
+  const deathWarningTicks = useGameStore((s) => s.deathWarningTicks);
   const [dismissed, setDismissed] = useState<Set<CriticalFlag>>(new Set());
 
   const topPosition = WARNINGS_TOP;
@@ -106,22 +111,38 @@ export const Warnings = () => {
     }
     if (exitsInWindow >= EXIT_SPIKE_COUNT) flags.add('exiting_rapidly');
 
-    // Deaths spiking
+    // Deaths spiking - use deathWarningTicks from store (tracks sustained deaths)
     let deathsInWindow = 0;
     for (let i = exitEvents.length - 1; i >= 0; i--) {
       const e = exitEvents[i]!;
       if (e.tick < tick - WINDOW_TICKS) break;
       deathsInWindow++;
     }
-    if (deathsInWindow >= DEATH_SPIKE_COUNT) flags.add('deaths_spiking');
+
+    // Show warning when deaths are spiking (counter is incrementing)
+    const shutdownTicks = SHUTDOWN_WARNING_TICKS - deathWarningTicks;
+    if (deathWarningTicks > 0) {
+      flags.add('deaths_spiking');
+    }
 
     return {
       flags,
       exitsInWindow,
       deathsInWindow,
       runwayTicks: runwayTicks === Infinity ? 0 : runwayTicks,
+      shutdownTicks,
     };
-  }, [money, tick, visitors, exitEvents, parkExitEvents, midwayGrid, attractions, staffHired]);
+  }, [
+    money,
+    tick,
+    visitors,
+    exitEvents,
+    parkExitEvents,
+    midwayGrid,
+    attractions,
+    staffHired,
+    deathWarningTicks,
+  ]);
 
   if (lifecycle !== 'running') {
     return null;

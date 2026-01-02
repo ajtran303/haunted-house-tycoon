@@ -81,6 +81,7 @@ export type GameState = {
   // deaths (panic/misery)
   exitEvents: ExitEvent[];
   nextExitEventId: number;
+  deathWarningTicks: number; // Consecutive ticks with deaths spiking (game over at threshold)
 
   // real park exits
   parkExitEvents: ParkExitEvent[];

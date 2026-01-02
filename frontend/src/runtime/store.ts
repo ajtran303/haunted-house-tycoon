@@ -1,7 +1,14 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { ADMISSION_FEE, MAX_VISITORS, ROOM_COST } from '../core/constants';
+import {
+  ADMISSION_FEE,
+  DEATH_SPIKE_THRESHOLD,
+  DEATH_SPIKE_WINDOW_TICKS,
+  MAX_VISITORS,
+  ROOM_COST,
+  SHUTDOWN_WARNING_TICKS,
+} from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
 import { createAttractionGrid } from '../core/grid';
@@ -216,6 +223,32 @@ export const useGameStore = create(
         const exitEvents = [...s.exitEvents, ...exitResult.events].slice(-50);
         const nextExitEventId = exitResult.nextEventId;
 
+        // Death shutdown check: count deaths in window, update warning counter
+        let deathWarningTicks = s.deathWarningTicks;
+        const deathsInWindow = exitEvents.filter(
+          (e) => e.tick >= nextTick - DEATH_SPIKE_WINDOW_TICKS,
+        ).length;
+
+        if (deathsInWindow >= DEATH_SPIKE_THRESHOLD) {
+          deathWarningTicks += 1;
+        } else {
+          deathWarningTicks = 0; // Reset when deaths drop below threshold
+        }
+
+        // Check for shutdown (sustained deaths)
+        if (deathWarningTicks >= SHUTDOWN_WARNING_TICKS) {
+          return {
+            ...s,
+            ...nextTime,
+            visitors: [],
+            nextVisitorId,
+            lifecycle: 'failed',
+            exitEvents,
+            nextExitEventId,
+            deathWarningTicks,
+          };
+        }
+
         // spending
         const spenders = afterEmotionalExit.filter((v) => existingIds.has(v.id));
         money += totalSpendingPerTick(spenders);
@@ -276,6 +309,7 @@ export const useGameStore = create(
           money,
           exitEvents,
           nextExitEventId,
+          deathWarningTicks,
           parkExitEvents,
           nextParkExitEventId,
         };
