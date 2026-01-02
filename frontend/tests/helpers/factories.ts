@@ -43,6 +43,7 @@ export const makeState = (overrides?: Partial<GameState>): GameState => ({
   staffAssignments: {},
   exitEvents: [],
   nextExitEventId: 1,
+  deathWarningTicks: 0,
   parkExitEvents: [],
   nextParkExitEventId: 1,
   placementEvents: [],

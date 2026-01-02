@@ -54,6 +54,24 @@ This document tracks all tunable constants and their intended effects. Update th
 
 **Design intent:** 30 ticks = half a day. Enough time to pause and strategize.
 
+### Death Shutdown
+
+| Constant                   | Value | Purpose                                   |
+| -------------------------- | ----- | ----------------------------------------- |
+| `DEATH_SPIKE_WINDOW_TICKS` | 60    | Sliding window to count deaths (1 day)    |
+| `DEATH_SPIKE_THRESHOLD`    | 10    | Deaths in window to trigger spike warning |
+| `SHUTDOWN_WARNING_TICKS`   | 60    | Sustained spike ticks before game over    |
+
+**How it works:**
+
+- Count deaths (panic + misery exits) in the last 60 ticks
+- If >= 10 deaths: "deaths spiking" state begins
+- Counter increments each tick while spiking
+- If counter reaches 60: game over (shutdown)
+- If deaths drop below 10: counter resets to 0
+
+**Design intent:** 10 deaths in a day is a lot (you built a death trap). You get a full day to fix it. Stabilize and you're safe.
+
 ## Visitors
 
 ### Spawning
@@ -242,4 +260,8 @@ Result: Staff provide flat boost, manageable fear levels
 [2025-01-01] Panic threshold 90 -> 100
 Reason: More headroom after reducing base fear
 Result: Panic requires more deliberate bad design
+
+[2026-01-01] Added death shutdown system
+Reason: Need fail condition beyond bankruptcy
+Result: 10+ deaths/day sustained for 60 ticks = shutdown
 ```

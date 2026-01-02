@@ -31,6 +31,7 @@ export const newGame = (): GameState => ({
 
   exitEvents: [],
   nextExitEventId: 1,
+  deathWarningTicks: 0,
 
   parkExitEvents: [],
   nextParkExitEventId: 1,

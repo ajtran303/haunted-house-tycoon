@@ -36,6 +36,20 @@ export const BANKRUPTCY_WARNING_RUNWAY_TICKS = 30;
 export const MONEY_LOW_THRESHOLD = 100;
 
 // =============================================================================
+// DEATH SHUTDOWN SYSTEM
+// =============================================================================
+
+// Deaths (panic + misery exits) trigger investigation. Sustained deaths = shutdown.
+// Window: 60 ticks (1 day) to count recent deaths
+// Threshold: 10+ deaths in window triggers "spiking" state (you built a death trap)
+// Grace: 60 ticks of sustained spiking before game over
+// This gives players time to react while creating real pressure.
+
+export const DEATH_SPIKE_WINDOW_TICKS = 60; // Sliding window to count deaths
+export const DEATH_SPIKE_THRESHOLD = 10; // Deaths in window to trigger spike
+export const SHUTDOWN_WARNING_TICKS = 60; // Sustained spike ticks before game over
+
+// =============================================================================
 // GRID POSITIONS
 // =============================================================================
 
