@@ -1,6 +1,6 @@
-export type Lifecycle = 'paused' | 'running' | 'failed';
+export type Lifecycle = 'title' | 'paused' | 'running' | 'failed';
 
-// add more later, i.e hallway, room, scare, entrance, exit, etc.
+// empty for attraction default, floor for midway
 export type CellType = 'empty' | 'floor';
 
 export type Cell = {
@@ -95,6 +95,9 @@ export type GameState = {
 
   // Portal placement target
   targetAttractionId: string | null;
+
+  // Failure summary (captured when game fails)
+  failureSummary: FailureSummary | null;
 };
 
 export type RoomType =
@@ -149,4 +152,21 @@ export type PlacementEvent = {
   roomType: RoomType;
   reason: PlacementFailReason;
   position: Vector;
+};
+
+export type FailureCause = 'bankruptcy' | 'structural' | 'death_shutdown';
+
+export type FailureSummary = {
+  cause: FailureCause;
+  finalMoney: number;
+  activeVisitorsAtFail: number;
+  lifetimeVisitors: number;
+  totalDeaths: number;
+  panicDeaths: number;
+  miseryDeaths: number;
+  daysFailed: number;
+  tickFailed: number;
+  recentParkExits: number;
+  recentDeaths: number;
+  deathWarningTicks: number;
 };

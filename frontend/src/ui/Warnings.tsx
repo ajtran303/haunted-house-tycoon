@@ -43,15 +43,15 @@ const WARNING_CONFIG: WarningConfig[] = [
   },
   { flag: 'money_low', label: 'MONEY LOW', severity: 'warning' },
   { flag: 'fear_high', label: 'FEAR HIGH', severity: 'warning' },
-  {
-    flag: 'exiting_rapidly',
-    label: 'EXITS SPIKING',
-    getCount: (d) => d.exitsInWindow,
-    severity: 'warning',
-  },
+  // {
+  //   flag: 'exiting_rapidly',
+  //   label: 'EXITS SPIKING',
+  //   getCount: (d) => d.exitsInWindow,
+  //   severity: 'warning',
+  // },
   {
     flag: 'deaths_spiking',
-    label: 'SHUTDOWN IMMINENT',
+    label: 'SHUTDOWN IMMINENT - DEATHS SPIKING',
     getCount: (d) => `${d.shutdownTicks} ticks`,
     severity: 'critical',
   },

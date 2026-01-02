@@ -50,6 +50,7 @@ export const makeState = (overrides?: Partial<GameState>): GameState => ({
   nextPlacementEventId: 1,
   highlightedCell: null,
   targetAttractionId: null,
+  failureSummary: null,
   ...overrides,
 });
 

@@ -3,7 +3,7 @@ import { createGrid } from './grid';
 import type { GameState } from './types';
 
 export const newGame = (): GameState => ({
-  lifecycle: 'paused',
+  lifecycle: 'title',
 
   speed: 1,
 
@@ -42,4 +42,6 @@ export const newGame = (): GameState => ({
   highlightedCell: null,
 
   targetAttractionId: null,
+
+  failureSummary: null,
 });

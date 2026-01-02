@@ -1,6 +1,8 @@
 import { DevPanel } from './ui/DevPanel';
+import { FailScreen } from './ui/FailScreen';
 import { Hud } from './ui/Hud';
 import { PhaserHost } from './ui/phaser/PhaserHost';
+import { TitleScreen } from './ui/TitleScreen';
 import { TopBar } from './ui/TopBar';
 import { Warnings } from './ui/Warnings';
 
@@ -15,6 +17,8 @@ export default function App() {
         <TopBar />
         <Warnings />
         <PhaserHost />
+        <FailScreen />
+        <TitleScreen />
       </div>
 
       {/* Sidebar */}
