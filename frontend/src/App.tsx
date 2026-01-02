@@ -2,6 +2,7 @@ import { DevPanel } from './ui/DevPanel';
 import { EndScreen } from './ui/EndScreen';
 import { FailScreen } from './ui/FailScreen';
 import { Hud } from './ui/Hud';
+import { PauseScreen } from './ui/PauseScreen';
 import { PhaserHost } from './ui/phaser/PhaserHost';
 import { TitleScreen } from './ui/TitleScreen';
 import { TopBar } from './ui/TopBar';
@@ -18,6 +19,7 @@ export default function App() {
         <TopBar />
         <Warnings />
         <PhaserHost />
+        <PauseScreen />
         <FailScreen />
         <EndScreen />
         <TitleScreen />
