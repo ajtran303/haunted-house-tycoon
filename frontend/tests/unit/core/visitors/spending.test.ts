@@ -7,9 +7,9 @@ import {
   MAX_FEAR_BONUS_PER_TICK,
   MAX_HAPPY_BONUS_PER_TICK,
   UNHAPPY_SPEND_STOP,
-} from '../constants';
-import type { Visitor } from '../types';
-import { spendingPerTick, totalSpendingPerTick } from './spending';
+} from '../../../../src/core/constants';
+import type { Visitor } from '../../../../src/core/types';
+import { spendingPerTick, totalSpendingPerTick } from '../../../../src/core/visitors/spending';
 
 const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   id: 1,

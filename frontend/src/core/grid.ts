@@ -1,13 +1,13 @@
 import type { Cell, Grid } from './types';
 
-export const createCell = (): Cell => ({
+const createCell = (): Cell => ({
   type: 'floor',
   occupied: false,
   roomId: null,
   roomType: null,
 });
 
-export const createEmptyCell = (): Cell => ({
+const createEmptyCell = (): Cell => ({
   type: 'empty',
   occupied: false,
   roomId: null,

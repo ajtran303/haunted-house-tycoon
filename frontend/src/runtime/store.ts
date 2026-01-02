@@ -344,7 +344,12 @@ export const useGameStore = create(
             exitEvents,
             nextExitEventId,
             deathWarningTicks,
-            failureSummary: buildFailureSummary(s, 'death_shutdown', afterEmotionalExit.length, money),
+            failureSummary: buildFailureSummary(
+              s,
+              'death_shutdown',
+              afterEmotionalExit.length,
+              money,
+            ),
           };
         }
 

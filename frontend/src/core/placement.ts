@@ -1,12 +1,12 @@
 import type { Cell, Grid, RoomType, Vector } from './types';
 
-export type PlaceRoomOk = {
+type PlaceRoomOk = {
   ok: true;
   roomId: string;
   reason?: null;
 };
 
-export type PlaceRoomFail = {
+type PlaceRoomFail = {
   ok: false;
   reason:
     | 'out_of_bounds'
@@ -63,7 +63,7 @@ const SPECIAL_RULES: Partial<Record<RoomType, SpecialRule>> = {
 };
 
 // Multi-cell room shapes defined as cell offsets from placement origin
-export const MULTI_CELL_ROOMS: Partial<Record<RoomType, { cells: Vector[] }>> = {
+const MULTI_CELL_ROOMS: Partial<Record<RoomType, { cells: Vector[] }>> = {
   // 2x2 portal
   attractionPortal: {
     cells: [

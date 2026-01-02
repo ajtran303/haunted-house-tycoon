@@ -7,7 +7,7 @@
  */
 
 import {
-  AMENITY_FEAR_REDUCTION,
+  AMENITY_EFFECTS,
   FEAR_PANIC_THRESHOLD,
   FEAR_RECOVERY_PER_TICK,
 } from '../../../src/core/constants';
@@ -50,6 +50,9 @@ describe('Fear Balance', () => {
   });
 
   it('amenities provide meaningful but not instant fear relief', () => {
+    // Use foodStall as representative amenity (fear: -5)
+    const AMENITY_FEAR_REDUCTION = Math.abs(AMENITY_EFFECTS.foodStall.fear);
+
     // One amenity should not fully negate a scare room
     expect(AMENITY_FEAR_REDUCTION).toBeLessThan(SCARE_FEAR_GAIN);
     // Current: 5 < 6 ✓

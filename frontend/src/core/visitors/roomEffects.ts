@@ -1,7 +1,6 @@
 import { AMENITY_EFFECTS } from '../constants';
 import type { RoomType } from '../types';
-
-export type EmotionDelta = { fear?: number; happiness?: number };
+import type { EmotionDelta } from './emotions';
 
 export const ROOM_EMOTION_EFFECTS: Partial<Record<RoomType, EmotionDelta>> = {
   entry: { happiness: +2 },
