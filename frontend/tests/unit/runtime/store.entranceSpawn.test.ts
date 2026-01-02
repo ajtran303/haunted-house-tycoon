@@ -27,7 +27,7 @@ describe('Entrance placement + spawn gating', () => {
 
   describe('Entrance placement', () => {
     it('does not allow placing entrance when paused', () => {
-      // paused by default after newGame()
+      // title by default after newGame()
       useGameStore.getState().dispatchInput({ type: 'selectRoomType', roomType: 'parkEntry' });
 
       const before = selectCore();
@@ -37,8 +37,8 @@ describe('Entrance placement + spawn gating', () => {
 
       const after = selectCore();
 
-      // no-op on pause
-      expect(after.lifecycle).toBe('paused');
+      // no-op on title screen
+      expect(after.lifecycle).toBe('title');
       expect(after.money).toBe(before.money);
       expect(after.nextRoomId).toBe(before.nextRoomId);
 

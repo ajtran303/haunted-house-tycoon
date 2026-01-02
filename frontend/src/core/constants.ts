@@ -13,6 +13,10 @@ export const START_TICK = 0;
 // 60 ticks = 1 day. At 1x speed, ~1 tick/second, so 1 day = 1 minute real-time.
 export const TICKS_PER_DAY = 60;
 export const NIGHT_START_TICK = Math.floor(TICKS_PER_DAY * 0.5);
+// Season ends on Halloween (day 31).
+// Tuning: Increase for longer games, decrease for quicker sessions.
+// At 1x speed, 1 day = 1 minute real-time. 31 days = ~30 min game.
+export const MAX_DAY = 31;
 
 // =============================================================================
 // ECONOMY - STARTING RESOURCES
@@ -237,3 +241,24 @@ export const HAUNT_STAFF_CAP = 4; // Max staff per attraction (capped by scare r
 // Applied once per attraction visit (not per room).
 // Diminishing returns prevent staff from being a complete solution.
 export const BASE_STAFF_FEAR_BONUS = 6;
+
+// =============================================================================
+// END OF SEASON - STAR RATING THRESHOLDS
+// =============================================================================
+// Stars are cumulative: each threshold must be met IN ADDITION to prior stars.
+// 1★ = survived, 2★ = +positive money, 3★ = +few deaths, 4★ = +happy exits, 5★ = +many visitors
+
+// Fewer than this many deaths earns 3 stars.
+// Tuning: Increase if deaths are too punishing, decrease to reward careful play.
+// With DEATH_SPIKE_THRESHOLD=10 and 31 days, 20 is ~2 spikes tolerated.
+export const STAR_DEATH_THRESHOLD = 20;
+
+// Average exit mood must be >= this for 4 stars.
+// Tuning: Increase to require happier visitors, decrease if too hard.
+// Visitors start at 60 happiness, so this requires maintaining starting mood.
+export const STAR_HAPPY_THRESHOLD = 60;
+
+// Must serve >= this many visitors (normal exits) for 5 stars.
+// Tuning: Increase to require higher throughput, decrease for easier 5-star.
+// At 1 spawn/5 ticks and 31 days, max theoretical spawns = ~372.
+export const STAR_VISITORS_THRESHOLD = 100;

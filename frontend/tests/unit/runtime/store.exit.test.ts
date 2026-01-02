@@ -7,8 +7,8 @@ describe('Exit placement + exit removal', () => {
     useGameStore.getState().newGame();
   });
 
-  it('does not allow placing exit when paused', () => {
-    // paused by default
+  it('does not allow placing exit when on title screen', () => {
+    // title by default
     useGameStore.getState().dispatchInput({ type: 'selectRoomType', roomType: 'parkExit' as any });
 
     const before = useGameStore.getState();
@@ -16,7 +16,7 @@ describe('Exit placement + exit removal', () => {
 
     const after = useGameStore.getState();
 
-    expect(after.lifecycle).toBe('paused');
+    expect(after.lifecycle).toBe('title');
     expect((after as any).exit).toBeNull();
     expect(after.midwayGrid).toEqual(before.midwayGrid);
   });

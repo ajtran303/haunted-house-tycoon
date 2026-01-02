@@ -32,7 +32,7 @@ describe('Failure Summary', () => {
       useGameStore.getState().newGame();
 
       const state = useGameStore.getState();
-      expect(state.lifecycle).toBe('paused');
+      expect(state.lifecycle).toBe('title');
       expect(state.failureSummary).toBeNull();
     });
   });

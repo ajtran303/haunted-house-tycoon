@@ -1,4 +1,4 @@
-export type Lifecycle = 'title' | 'paused' | 'running' | 'failed';
+export type Lifecycle = 'title' | 'paused' | 'running' | 'failed' | 'completed';
 
 // empty for attraction default, floor for midway
 export type CellType = 'empty' | 'floor';
@@ -98,6 +98,10 @@ export type GameState = {
 
   // Failure summary (captured when game fails)
   failureSummary: FailureSummary | null;
+
+  // Season tracking
+  totalRevenue: number;
+  successSummary: SuccessSummary | null;
 };
 
 export type RoomType =
@@ -134,6 +138,7 @@ export type ParkExitEvent = {
   tick: number;
   visitorId: number;
   position: Vector;
+  happiness: number; // Mood at exit (for avg exit mood calculation)
 };
 
 export type PlacementFailReason =
@@ -169,4 +174,15 @@ export type FailureSummary = {
   recentParkExits: number;
   recentDeaths: number;
   deathWarningTicks: number;
+};
+
+export type SuccessSummary = {
+  finalDay: number;
+  finalMoney: number;
+  totalRevenue: number;
+  visitorsServed: number; // Normal park exits
+  totalDeaths: number;
+  avgExitMood: number;
+  attractionsBuilt: number;
+  starRating: number; // 1-5
 };
