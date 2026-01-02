@@ -44,4 +44,7 @@ export const newGame = (): GameState => ({
   targetAttractionId: null,
 
   failureSummary: null,
+
+  totalRevenue: 0,
+  successSummary: null,
 });

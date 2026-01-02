@@ -1,4 +1,5 @@
 import { DevPanel } from './ui/DevPanel';
+import { EndScreen } from './ui/EndScreen';
 import { FailScreen } from './ui/FailScreen';
 import { Hud } from './ui/Hud';
 import { PhaserHost } from './ui/phaser/PhaserHost';
@@ -18,6 +19,7 @@ export default function App() {
         <Warnings />
         <PhaserHost />
         <FailScreen />
+        <EndScreen />
         <TitleScreen />
       </div>
 

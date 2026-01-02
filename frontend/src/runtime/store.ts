@@ -5,9 +5,13 @@ import {
   ADMISSION_FEE,
   DEATH_SPIKE_THRESHOLD,
   DEATH_SPIKE_WINDOW_TICKS,
+  MAX_DAY,
   MAX_VISITORS,
   ROOM_COST,
   SHUTDOWN_WARNING_TICKS,
+  STAR_DEATH_THRESHOLD,
+  STAR_HAPPY_THRESHOLD,
+  STAR_VISITORS_THRESHOLD,
 } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
@@ -30,6 +34,7 @@ import type {
   Lifecycle,
   ParkExitEvent,
   RoomType,
+  SuccessSummary,
   Visitor,
 } from '../core/types';
 import { calculateAmenityPurchases } from '../core/visitors/amenityPurchases';
@@ -135,6 +140,37 @@ const buildFailureSummary = (
   };
 };
 
+const buildSuccessSummary = (state: GameState): SuccessSummary => {
+  const visitorsServed = state.parkExitEvents.length;
+  const totalDeaths = state.exitEvents.length;
+
+  // Calculate average exit mood
+  const avgExitMood =
+    visitorsServed > 0
+      ? state.parkExitEvents.reduce((sum, e) => sum + e.happiness, 0) / visitorsServed
+      : 0;
+
+  const attractionsBuilt = Object.keys(state.attractions).length;
+
+  // Calculate star rating (cumulative criteria)
+  let starRating = 1; // Survived to day 31
+  if (state.money > 0) starRating++; // Positive money
+  if (totalDeaths < STAR_DEATH_THRESHOLD) starRating++; // Few deaths
+  if (avgExitMood >= STAR_HAPPY_THRESHOLD) starRating++; // Happy visitors
+  if (visitorsServed >= STAR_VISITORS_THRESHOLD) starRating++; // Many visitors served
+
+  return {
+    finalDay: state.day,
+    finalMoney: state.money,
+    totalRevenue: state.totalRevenue,
+    visitorsServed,
+    totalDeaths,
+    avgExitMood: Math.round(avgExitMood),
+    attractionsBuilt,
+    starRating,
+  };
+};
+
 export const useGameStore = create(
   subscribeWithSelector<GameState & Actions>((set, get) => ({
     ...newGame(),
@@ -144,7 +180,11 @@ export const useGameStore = create(
     // runtime/store.ts
 
     startRun: () =>
-      set((s) => (s.lifecycle === 'paused' ? { ...s, lifecycle: 'running' as Lifecycle } : s)),
+      set((s) =>
+        s.lifecycle === 'paused' || s.lifecycle === 'title'
+          ? { ...s, lifecycle: 'running' as Lifecycle }
+          : s,
+      ),
 
     pause: () =>
       set((s) => (s.lifecycle === 'running' ? { ...s, lifecycle: 'paused' as Lifecycle } : s)),
@@ -201,6 +241,16 @@ export const useGameStore = create(
           }
         }
 
+        // Season complete: reached end of day 31 (Halloween)
+        if (nextTime.day > MAX_DAY) {
+          return {
+            ...s,
+            ...nextTime,
+            lifecycle: 'completed',
+            successSummary: buildSuccessSummary(s),
+          };
+        }
+
         // get for calculating spending and decay later
         const existingIds = new Set(s.visitors.map((v) => v.id));
 
@@ -208,6 +258,7 @@ export const useGameStore = create(
         let visitors = s.visitors;
         let nextVisitorId = s.nextVisitorId;
         let money = s.money;
+        let totalRevenue = s.totalRevenue;
 
         if (s.entrance && shouldSpawnVisitor(nextTick) && visitors.length < MAX_VISITORS) {
           const ex = s.entrance;
@@ -232,6 +283,7 @@ export const useGameStore = create(
             visitors = [...visitors, v];
             nextVisitorId += 1;
             money += ADMISSION_FEE;
+            totalRevenue += ADMISSION_FEE;
           }
         }
 
@@ -242,7 +294,9 @@ export const useGameStore = create(
         const moved = moveVisitorsMultiGrid(withIntent, s, nextTick);
 
         // Amenity purchases (one-time on entry, uses mood before amenity effect)
-        money += calculateAmenityPurchases(moved, s.midwayGrid);
+        const amenityRevenue = calculateAmenityPurchases(moved, s.midwayGrid);
+        money += amenityRevenue;
+        totalRevenue += amenityRevenue;
 
         // Apply room effects (on entry) to everyone (including newly spawned if they moved)
         const withRoomEffects = applyRoomEmotionEffects(
@@ -296,7 +350,9 @@ export const useGameStore = create(
 
         // spending
         const spenders = afterEmotionalExit.filter((v) => existingIds.has(v.id));
-        money += totalSpendingPerTick(spenders);
+        const spendingRevenue = totalSpendingPerTick(spenders);
+        money += spendingRevenue;
+        totalRevenue += spendingRevenue;
 
         // upkeep (midway + all attractions)
         money -= totalUpkeepPerTick(s);
@@ -321,6 +377,7 @@ export const useGameStore = create(
                     tick: nextTick,
                     visitorId: v.id,
                     position: v.position,
+                    happiness: v.happiness,
                   }));
 
                   parkExitEvents = [...parkExitEvents, ...newEvents].slice(-200);
@@ -353,6 +410,7 @@ export const useGameStore = create(
           visitors: afterDespawn,
           nextVisitorId,
           money,
+          totalRevenue,
           exitEvents,
           nextExitEventId,
           deathWarningTicks,

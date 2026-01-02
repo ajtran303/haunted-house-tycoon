@@ -182,6 +182,38 @@ Effects scaled to cost - expensive amenities provide stronger effects:
 
 **Design intent:** Staff provide a flat boost, not multiplicative scaling. Prevents over-powered scare stacking.
 
+## End of Season
+
+### Season Length
+
+| Constant  | Value | Purpose                       |
+| --------- | ----- | ----------------------------- |
+| `MAX_DAY` | 31    | Season ends on Halloween      |
+
+**Tuning:** At 1x speed, 1 day = 1 minute real-time. 31 days = ~30 min game.
+- Increase for longer, more strategic games
+- Decrease for quicker sessions or testing
+
+### Star Rating Thresholds
+
+Stars are cumulative: each threshold must be met IN ADDITION to prior stars.
+
+| Stars | Requirement                    | Constant                   | Value |
+| ----- | ------------------------------ | -------------------------- | ----- |
+| ★     | Survived to day 31             | (automatic)                | —     |
+| ★★    | + ended with positive money    | (money > 0)                | —     |
+| ★★★   | + fewer than N deaths          | `STAR_DEATH_THRESHOLD`     | 20    |
+| ★★★★  | + avg exit mood >= N           | `STAR_HAPPY_THRESHOLD`     | 60    |
+| ★★★★★ | + N+ visitors served           | `STAR_VISITORS_THRESHOLD`  | 100   |
+
+**Tuning notes:**
+
+- `STAR_DEATH_THRESHOLD = 20`: With DEATH_SPIKE_THRESHOLD=10 triggering warnings, 20 total deaths means ~2 spike events are tolerable. Increase if deaths feel too punishing, decrease to reward careful play.
+
+- `STAR_HAPPY_THRESHOLD = 60`: Visitors start at 60 happiness, so this requires maintaining starting mood through amenities. Increase to require happier visitors, decrease if 4 stars feels too hard.
+
+- `STAR_VISITORS_THRESHOLD = 100`: At 1 spawn per 5 ticks and 31 days (1860 ticks), max theoretical spawns = ~372. 100 is ~27% throughput. Increase for higher throughput requirement, decrease for easier 5-star.
+
 ## Balance Scenarios
 
 ### Fear Math (with new per-visit bonus)
@@ -268,5 +300,13 @@ Result: 10+ deaths/day sustained for 60 ticks = shutdown
 [2025-01-01] Happiness decay 0.5 -> 0.75
 Reason: Nobody is dying from misery
 Result: 80 ticks to decay, more likely deaths
+
+[2026-01-01] Added end of season system
+Reason: No win condition or natural endpoint
+Result: Season ends day 31, star rating 1-5 based on performance
+
+[2026-01-01] Star thresholds: deaths<20, mood>=60, visitors>=100
+Reason: Initial values based on game math
+Result: Needs playtesting - may need adjustment
 
 ```

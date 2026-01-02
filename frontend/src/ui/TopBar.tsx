@@ -48,7 +48,7 @@ export const TopBar = () => {
       <div className="text-2xl font-bold">{viewName}</div>
       <div className="flex items-center gap-8">
         <Stat label="MONEY" value={`$${money}`} />
-        <Stat label="DAY" value={day} />
+        <Stat label="DAY" value={`OCT ${day}`} />
         <Stat label="TIME" value={timeOfDay} />
         <Stat label="VISITORS" value={visitorCount} />
       </div>

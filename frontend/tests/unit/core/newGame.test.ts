@@ -5,10 +5,10 @@ describe('newGame', () => {
     expect(newGame()).toEqual(newGame());
   });
 
-  it('starts paused with ticks', () => {
+  it('starts at title screen with tick 0', () => {
     const state = newGame();
 
-    expect(state.lifecycle).toBe('paused');
+    expect(state.lifecycle).toBe('title');
     expect(state.tick).toBe(0);
   });
 
