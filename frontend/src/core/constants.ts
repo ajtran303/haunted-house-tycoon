@@ -140,9 +140,9 @@ export const VISITOR_START_HAPPINESS = 60; // Starts positive but has room to gr
 // HAPPINESS SYSTEM
 // =============================================================================
 
-// Happiness decays 0.5/tick. At start=60, visitor has 120 ticks (~2 days) before hitting 0.
+// Happiness decays 0.75/tick. At start=60, visitor has 80 ticks (~1.3 days) before hitting 0.
 // Slower decay gives time to reach amenities while still creating pressure.
-export const HAPPINESS_DECAY_PER_TICK = 0.5;
+export const HAPPINESS_DECAY_PER_TICK = 0.75;
 
 // Happiness thresholds for spending behavior:
 export const HAPPY_SPEND_BOOST_START = 60; // Above this: bonus spending

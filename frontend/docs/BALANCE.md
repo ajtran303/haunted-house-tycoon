@@ -100,10 +100,10 @@ This document tracks all tunable constants and their intended effects. Update th
 
 ### Decay & Recovery
 
-| Constant                   | Value | Purpose                          |
-| -------------------------- | ----- | -------------------------------- |
-| `HAPPINESS_DECAY_PER_TICK` | 0.5   | Slow decay, 120 ticks to reach 0 |
-| `FEAR_RECOVERY_PER_TICK`   | 2     | Fear reduction on midway         |
+| Constant                   | Value | Purpose                         |
+| -------------------------- | ----- | ------------------------------- |
+| `HAPPINESS_DECAY_PER_TICK` | 1     | Dev iteration / baseline deaths |
+| `FEAR_RECOVERY_PER_TICK`   | 2     | Fear reduction on midway        |
 
 **Design intent:** Slow happiness decay gives time to reach amenities. Fear recovery only on midway makes it the safe zone.
 
@@ -264,4 +264,9 @@ Result: Panic requires more deliberate bad design
 [2026-01-01] Added death shutdown system
 Reason: Need fail condition beyond bankruptcy
 Result: 10+ deaths/day sustained for 60 ticks = shutdown
+
+[2025-01-01] Happiness decay 0.5 -> 0.75
+Reason: Nobody is dying from misery
+Result: 80 ticks to decay, more likely deaths
+
 ```
