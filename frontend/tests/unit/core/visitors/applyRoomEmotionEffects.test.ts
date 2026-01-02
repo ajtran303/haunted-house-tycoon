@@ -54,7 +54,7 @@ describe('applyRoomEmotionEffects', () => {
     const v = makeVisitor({ happiness: 10, fear: 5 });
     const [next] = applyRoomEmotionEffects([v], makeLookup(grid));
 
-    expect(next.fear).toBe(13); // +8
+    expect(next.fear).toBe(11); // +6
     expect(next.happiness).toBe(10);
   });
 

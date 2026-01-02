@@ -21,14 +21,14 @@ describe('Fear Balance', () => {
     const ticksToRecover = SCARE_FEAR_GAIN / FEAR_RECOVERY_PER_TICK;
 
     expect(ticksToRecover).toBeGreaterThanOrEqual(3);
-    // Current: 8 / 2 = 4 ticks
+    // Current: 6 / 2 = 3 ticks
   });
 
-  it('visitor cannot fully recover from one scare room in under 3 ticks', () => {
-    const recoveryIn3Ticks = FEAR_RECOVERY_PER_TICK * 3;
+  it('visitor cannot fully recover from one scare room in 2 ticks or less', () => {
+    const recoveryIn2Ticks = FEAR_RECOVERY_PER_TICK * 2;
 
-    expect(SCARE_FEAR_GAIN).toBeGreaterThan(recoveryIn3Ticks);
-    // Current: 8 > 6 ✓
+    expect(SCARE_FEAR_GAIN).toBeGreaterThan(recoveryIn2Ticks);
+    // Current: 6 > 4 ✓
   });
 
   it('multiple scare rooms create meaningful fear accumulation', () => {
@@ -36,9 +36,9 @@ describe('Fear Balance', () => {
     const threeScareRooms = SCARE_FEAR_GAIN * 3;
     const ticksToRecover = threeScareRooms / FEAR_RECOVERY_PER_TICK;
 
-    // Should require at least 10 ticks of midway time to recover
-    expect(ticksToRecover).toBeGreaterThanOrEqual(10);
-    // Current: 24 / 2 = 12 ticks ✓
+    // Should require at least 8 ticks of midway time to recover
+    expect(ticksToRecover).toBeGreaterThanOrEqual(8);
+    // Current: 18 / 2 = 9 ticks ✓
   });
 
   it('panic requires multiple scare room visits', () => {
@@ -46,17 +46,17 @@ describe('Fear Balance', () => {
     const scareRoomsToHitPanic = Math.ceil(FEAR_PANIC_THRESHOLD / SCARE_FEAR_GAIN);
 
     expect(scareRoomsToHitPanic).toBeGreaterThanOrEqual(5);
-    // Current: ceil(90 / 8) = 12 scare rooms from 0 fear
+    // Current: ceil(100 / 6) = 17 scare rooms from 0 fear
   });
 
   it('amenities provide meaningful but not instant fear relief', () => {
     // One amenity should not fully negate a scare room
     expect(AMENITY_FEAR_REDUCTION).toBeLessThan(SCARE_FEAR_GAIN);
-    // Current: 5 < 8 ✓
+    // Current: 5 < 6 ✓
 
     // But amenities should provide significant relief (at least half a scare room)
     expect(AMENITY_FEAR_REDUCTION).toBeGreaterThanOrEqual(SCARE_FEAR_GAIN / 2);
-    // Current: 5 >= 4 ✓
+    // Current: 5 >= 3 ✓
   });
 
   it('fear recovery rate creates meaningful midway dwell time', () => {

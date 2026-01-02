@@ -36,7 +36,7 @@ describe('amenityPurchaseAmount', () => {
   });
 
   it('returns 0 for visitors in panic (fear too high)', () => {
-    const panicked = makeVisitor({ fear: 95, happiness: 50 });
+    const panicked = makeVisitor({ fear: 100, happiness: 50 });
 
     expect(amenityPurchaseAmount(panicked, 'foodStall')).toBe(0);
   });

@@ -131,9 +131,10 @@ export const Warnings = () => {
   });
 
   // Clean up stale dismissed flags
-  const staleDismissed = [...dismissed].filter((flag) => !criticalData.flags.has(flag));
+  const dismissedArray = Array.from(dismissed);
+  const staleDismissed = dismissedArray.filter((flag) => !criticalData.flags.has(flag));
   if (staleDismissed.length > 0) {
-    const newDismissed = new Set([...dismissed].filter((flag) => criticalData.flags.has(flag)));
+    const newDismissed = new Set(dismissedArray.filter((flag) => criticalData.flags.has(flag)));
     if (newDismissed.size !== dismissed.size) {
       setTimeout(() => setDismissed(newDismissed), 0);
     }
@@ -144,7 +145,7 @@ export const Warnings = () => {
   }
 
   const handleDismiss = (flag: CriticalFlag) => {
-    setDismissed((prev) => new Set([...prev, flag]));
+    setDismissed((prev) => new Set(Array.from(prev).concat(flag)));
   };
 
   return (

@@ -22,6 +22,8 @@ const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   intent: 'explore',
   spawnTick: 0,
   exploreStartTick: 0,
+  blockingState: null,
+  staffBonusApplied: false,
   ...overrides,
 });
 
