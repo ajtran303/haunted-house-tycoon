@@ -58,6 +58,7 @@ export const moveVisitorsMultiGrid = (
     const locKey =
       v.location.type === 'midway' ? 'midway' : `attraction:${v.location.attractionId}`;
     occupied.get(locKey)?.delete(key(v.position));
+    occupied.get(locKey)?.delete(key(v.position));
 
     const grid = getVisitorGrid(state, v);
     const gridW = grid[0]?.length ?? 0;

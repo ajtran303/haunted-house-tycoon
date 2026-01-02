@@ -24,6 +24,8 @@ import {
 import { applyTimeTick } from '../core/time';
 import type {
   AttractionGrid,
+  FailureCause,
+  FailureSummary,
   GameState,
   Lifecycle,
   ParkExitEvent,
@@ -91,6 +93,48 @@ type Actions = {
 const isVisitorAt = (visitors: Visitor[], x: number, y: number) =>
   visitors.some((v) => v.position.x === x && v.position.y === y);
 
+const buildFailureSummary = (
+  state: GameState,
+  cause: FailureCause,
+  activeVisitors: number,
+  finalMoney: number,
+): FailureSummary => {
+  const WINDOW_TICKS = 60;
+  const currentTick = state.tick;
+
+  let panicDeaths = 0;
+  let miseryDeaths = 0;
+  let recentDeaths = 0;
+
+  for (const e of state.exitEvents) {
+    if (e.reason === 'panic') panicDeaths++;
+    else if (e.reason === 'misery') miseryDeaths++;
+    if (e.tick >= currentTick - WINDOW_TICKS) recentDeaths++;
+  }
+
+  let recentParkExits = 0;
+  for (let i = state.parkExitEvents.length - 1; i >= 0; i--) {
+    const evt = state.parkExitEvents[i];
+    if (!evt || evt.tick < currentTick - WINDOW_TICKS) break;
+    recentParkExits++;
+  }
+
+  return {
+    cause,
+    finalMoney,
+    activeVisitorsAtFail: activeVisitors,
+    lifetimeVisitors: state.nextVisitorId - 1,
+    totalDeaths: panicDeaths + miseryDeaths,
+    panicDeaths,
+    miseryDeaths,
+    daysFailed: state.day,
+    tickFailed: currentTick,
+    recentParkExits,
+    recentDeaths,
+    deathWarningTicks: state.deathWarningTicks,
+  };
+};
+
 export const useGameStore = create(
   subscribeWithSelector<GameState & Actions>((set, get) => ({
     ...newGame(),
@@ -138,7 +182,7 @@ export const useGameStore = create(
               money: 0,
               visitors: [],
               lifecycle: 'failed',
-              // (optional later) add a failure reason/toast/event
+              failureSummary: buildFailureSummary(s, 'structural', s.visitors.length, s.money),
             };
           }
         }
@@ -152,7 +196,7 @@ export const useGameStore = create(
               money: 0,
               visitors: [],
               lifecycle: 'failed',
-              // (optional later) add a failure reason/toast/event
+              failureSummary: buildFailureSummary(s, 'structural', s.visitors.length, s.money),
             };
           }
         }
@@ -246,6 +290,7 @@ export const useGameStore = create(
             exitEvents,
             nextExitEventId,
             deathWarningTicks,
+            failureSummary: buildFailureSummary(s, 'death_shutdown', afterEmotionalExit.length, money),
           };
         }
 
@@ -298,6 +343,7 @@ export const useGameStore = create(
             nextExitEventId,
             parkExitEvents,
             nextParkExitEventId,
+            failureSummary: buildFailureSummary(s, 'bankruptcy', afterDespawn.length, money),
           };
         }
 

@@ -42,4 +42,6 @@ export const newGame = (): GameState => ({
   highlightedCell: null,
 
   targetAttractionId: null,
+
+  failureSummary: null,
 });
