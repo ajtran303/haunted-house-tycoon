@@ -39,6 +39,10 @@ export const FailScreen = () => {
 
   const summary = failureSummary;
 
+  const handleReturnToTitle = () => {
+    newGame();
+  };
+
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70">
       <div className="mx-4 w-full max-w-md rounded-lg border border-red-800 bg-gray-900 p-6 font-mono text-white shadow-2xl">
@@ -85,6 +89,12 @@ export const FailScreen = () => {
             className="w-full rounded bg-green-700 px-4 py-3 font-bold text-white transition-colors hover:bg-green-600"
           >
             Try Again
+          </button>
+          <button
+            onClick={handleReturnToTitle}
+            className="w-full rounded border border-gray-600 px-4 py-2 text-gray-300 transition-colors hover:bg-gray-800"
+          >
+            Return to Title
           </button>
         </div>
       </div>

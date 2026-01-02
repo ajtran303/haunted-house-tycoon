@@ -1,6 +1,6 @@
-export type Lifecycle = 'paused' | 'running' | 'failed';
+export type Lifecycle = 'title' | 'paused' | 'running' | 'failed';
 
-// add more later, i.e hallway, room, scare, entrance, exit, etc.
+// empty for attraction default, floor for midway
 export type CellType = 'empty' | 'floor';
 
 export type Cell = {

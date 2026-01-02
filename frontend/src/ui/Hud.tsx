@@ -38,10 +38,20 @@ export const Hud = () => {
   const viewAttraction = useGameStore((s) => s.viewAttraction);
 
   const [showBanner, setShowBanner] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const handleNewGame = () => {
     newGame();
     setShowBanner(true);
+    setShowResetConfirm(false);
+  };
+
+  const handleResetClick = () => {
+    setShowResetConfirm(true);
+  };
+
+  const handleResetCancel = () => {
+    setShowResetConfirm(false);
   };
 
   const handleAttractionClick = (attractionId: string) => {
@@ -52,6 +62,11 @@ export const Hud = () => {
 
   const resume = useGameStore((s) => s.resume);
   const pause = useGameStore((s) => s.pause);
+
+  // Hide sidebar on title screen (after all hooks to avoid Rules of Hooks violation)
+  if (lifecycle === 'title') {
+    return null;
+  }
 
   const buttonStyle =
     'mt-3 rounded border border-gray-600 px-3 py-2 text-gray-300 hover:bg-gray-700 hover:text-white active:translate-y-0.5';
@@ -83,10 +98,30 @@ export const Hud = () => {
         <button className={buttonStyle} onClick={pause}>
           Pause
         </button>
-        <button onClick={handleNewGame} className={buttonStyle}>
+        <button onClick={handleResetClick} className={buttonStyle}>
           Reset
         </button>
       </div>
+
+      {showResetConfirm && (
+        <div className="mt-3 rounded border border-orange-600 bg-orange-900/30 px-3 py-2">
+          <div className="mb-2 text-orange-400">Are you sure?</div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleNewGame}
+              className="rounded bg-red-700 px-3 py-1 text-white hover:bg-red-600"
+            >
+              Yes, Reset
+            </button>
+            <button
+              onClick={handleResetCancel}
+              className="rounded border border-gray-600 px-3 py-1 text-gray-300 hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {isRunning && (
         <div className="mt-4">
