@@ -1,14 +1,19 @@
-import { newGame } from '../../../src/core/newGame';
-import { STAFF_HIRE_COST, STAFF_WAGE_PER_TICK, MAX_STAFF, HAUNT_STAFF_CAP } from '../../../src/core/constants';
 import {
-  hireStaff,
+  HAUNT_STAFF_CAP,
+  MAX_STAFF,
+  STAFF_HIRE_COST,
+  STAFF_WAGE_PER_TICK,
+} from '../../../src/core/constants';
+import { createAttractionGrid } from '../../../src/core/grid';
+import { newGame } from '../../../src/core/newGame';
+import {
+  assignStaffToAttraction,
   fireStaff,
   getAttractionStaffCapacity,
-  assignStaffToAttraction,
+  hireStaff,
   unassignStaffFromAttraction,
 } from '../../../src/core/staff';
 import { makeState } from '../../helpers/factories';
-import { createAttractionGrid } from '../../../src/core/grid';
 
 describe('Staff as Abstract Resource', () => {
   describe('initial state', () => {
@@ -174,8 +179,7 @@ describe('Hire/Fire Staff', () => {
       if (result.ok) {
         expect(result.staffHired).toBe(1);
         const totalAssigned =
-          (result.staffAssignments['haunt-1'] ?? 0) +
-          (result.staffAssignments['haunt-2'] ?? 0);
+          (result.staffAssignments['haunt-1'] ?? 0) + (result.staffAssignments['haunt-2'] ?? 0);
         expect(totalAssigned).toBe(1);
       }
     });
@@ -193,8 +197,20 @@ describe('Haunt Staff Capacity', () => {
     it('returns 0 for attraction with no scare rooms', () => {
       const grid = createAttractionGrid(3, 3);
       // Only entry and exit, no scare rooms
-      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'entry', roomId: 'e-1' };
-      grid[2][2] = { ...grid[2][2], type: 'floor', occupied: true, roomType: 'exit', roomId: 'x-1' };
+      grid[0][0] = {
+        ...grid[0][0],
+        type: 'floor',
+        occupied: true,
+        roomType: 'entry',
+        roomId: 'e-1',
+      };
+      grid[2][2] = {
+        ...grid[2][2],
+        type: 'floor',
+        occupied: true,
+        roomType: 'exit',
+        roomId: 'x-1',
+      };
 
       const attraction = {
         id: 'haunt-1',
@@ -209,8 +225,20 @@ describe('Haunt Staff Capacity', () => {
 
     it('returns scare room count when below cap', () => {
       const grid = createAttractionGrid(3, 3);
-      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
-      grid[0][1] = { ...grid[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
+      grid[0][0] = {
+        ...grid[0][0],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-1',
+      };
+      grid[0][1] = {
+        ...grid[0][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-2',
+      };
 
       const attraction = {
         id: 'haunt-1',
@@ -226,12 +254,48 @@ describe('Haunt Staff Capacity', () => {
     it('caps at HAUNT_STAFF_CAP regardless of scare room count', () => {
       const grid = createAttractionGrid(4, 4);
       // Add 6 scare rooms (more than cap of 4)
-      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
-      grid[0][1] = { ...grid[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
-      grid[0][2] = { ...grid[0][2], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-3' };
-      grid[1][0] = { ...grid[1][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-4' };
-      grid[1][1] = { ...grid[1][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-5' };
-      grid[1][2] = { ...grid[1][2], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-6' };
+      grid[0][0] = {
+        ...grid[0][0],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-1',
+      };
+      grid[0][1] = {
+        ...grid[0][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-2',
+      };
+      grid[0][2] = {
+        ...grid[0][2],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-3',
+      };
+      grid[1][0] = {
+        ...grid[1][0],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-4',
+      };
+      grid[1][1] = {
+        ...grid[1][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-5',
+      };
+      grid[1][2] = {
+        ...grid[1][2],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-6',
+      };
 
       const attraction = {
         id: 'haunt-1',
@@ -246,10 +310,34 @@ describe('Haunt Staff Capacity', () => {
 
     it('returns exactly HAUNT_STAFF_CAP when scare rooms equal cap', () => {
       const grid = createAttractionGrid(3, 3);
-      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
-      grid[0][1] = { ...grid[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
-      grid[1][0] = { ...grid[1][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-3' };
-      grid[1][1] = { ...grid[1][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-4' };
+      grid[0][0] = {
+        ...grid[0][0],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-1',
+      };
+      grid[0][1] = {
+        ...grid[0][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-2',
+      };
+      grid[1][0] = {
+        ...grid[1][0],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-3',
+      };
+      grid[1][1] = {
+        ...grid[1][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-4',
+      };
 
       const attraction = {
         id: 'haunt-1',
@@ -270,7 +358,13 @@ describe('Assign Staff to Attractions', () => {
     for (let i = 0; i < scareCount; i++) {
       const x = i % 4;
       const y = Math.floor(i / 4);
-      grid[y][x] = { ...grid[y][x], type: 'floor', occupied: true, roomType: 'scare', roomId: `s-${i}` };
+      grid[y][x] = {
+        ...grid[y][x],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: `s-${i}`,
+      };
     }
     return {
       id: 'haunt-1',

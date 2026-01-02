@@ -1,7 +1,7 @@
 // src/ui/hud/selectors.ts
-import type { GameState } from '../../core/types';
-import { totalUpkeepPerTick } from '../../core/economy';
 import { BANKRUPTCY_WARNING_RUNWAY_TICKS, MONEY_LOW_THRESHOLD } from '../../core/constants';
+import { totalUpkeepPerTick } from '../../core/economy';
+import type { GameState } from '../../core/types';
 
 export type HudSnapshot = {
   money: number;

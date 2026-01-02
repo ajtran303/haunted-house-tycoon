@@ -35,6 +35,7 @@ Staff are abstract resources (counts, not entities) that players hire and assign
 ### Staff Are Abstract
 
 Staff have no:
+
 - Individual IDs or entities
 - Spatial position or movement
 - Schedules or shifts
@@ -45,6 +46,7 @@ They are pure counts in game state. This keeps implementation simple and avoids 
 ### Fear Only
 
 Staff affect **only** fear generation in scare rooms. They do not:
+
 - Reduce queues or congestion
 - Affect happiness
 - Speed up visitors
@@ -55,11 +57,11 @@ Staff affect **only** fear generation in scare rooms. They do not:
 Staff bonus uses square root scaling to prevent linear power growth:
 
 ```ts
-staffBonus = floor(BASE_STAFF_FEAR_BONUS * sqrt(staffAssigned))
+staffBonus = floor(BASE_STAFF_FEAR_BONUS * sqrt(staffAssigned));
 ```
 
 | Staff | Bonus (BASE=10) |
-|-------|-----------------|
+| ----- | --------------- |
 | 1     | +10 fear        |
 | 2     | +14 fear        |
 | 3     | +17 fear        |
@@ -71,14 +73,14 @@ This makes the first staff impactful while preventing 4 staff from being 4x dead
 
 ```ts
 // Economy
-export const STAFF_HIRE_COST = 50;         // ~5 admissions to recoup
-export const STAFF_UPKEEP_PER_TICK = 0.5;  // ~25% of a hallway
+export const STAFF_HIRE_COST = 50; // ~5 admissions to recoup
+export const STAFF_UPKEEP_PER_TICK = 0.5; // ~25% of a hallway
 
 // Capacity
-export const HAUNT_STAFF_CAP = 4;          // Max per haunt regardless of size
+export const HAUNT_STAFF_CAP = 4; // Max per haunt regardless of size
 
 // Fear bonus
-export const BASE_STAFF_FEAR_BONUS = 10;   // sqrt scaling applied
+export const BASE_STAFF_FEAR_BONUS = 10; // sqrt scaling applied
 ```
 
 ### Economy Rationale
@@ -95,8 +97,8 @@ Add to `GameState` in `types.ts`:
 
 ```ts
 // Staff state
-staffHired: number;                           // Total hired
-staffAssignments: Record<string, number>;     // attractionId -> assigned count
+staffHired: number; // Total hired
+staffAssignments: Record<string, number>; // attractionId -> assigned count
 ```
 
 No individual staff objects. Just counts.
@@ -115,16 +117,16 @@ const capacity = min(HAUNT_STAFF_CAP, countScareRooms(attraction.grid));
 
 ### Key Files
 
-| File | Role |
-|------|------|
-| `src/core/types.ts` | GameState shape, add staff fields |
-| `src/core/constants.ts` | Staff economy constants |
-| `src/core/economy.ts` | Upkeep calculation (add staff) |
-| `src/core/staff.ts` | New file: staff helpers (capacity, bonus) |
-| `src/core/visitors/applyRoomEmotionEffects.ts` | Apply staff bonus to scare rooms |
-| `src/runtime/store.ts` | Actions: hireStaff, fireStaff, assignStaff |
-| `src/runtime/selectors.ts` | Derived staff stats |
-| `src/ui/StaffPanel.tsx` | New file: staff management UI |
+| File                                           | Role                                       |
+| ---------------------------------------------- | ------------------------------------------ |
+| `src/core/types.ts`                            | GameState shape, add staff fields          |
+| `src/core/constants.ts`                        | Staff economy constants                    |
+| `src/core/economy.ts`                          | Upkeep calculation (add staff)             |
+| `src/core/staff.ts`                            | New file: staff helpers (capacity, bonus)  |
+| `src/core/visitors/applyRoomEmotionEffects.ts` | Apply staff bonus to scare rooms           |
+| `src/runtime/store.ts`                         | Actions: hireStaff, fireStaff, assignStaff |
+| `src/runtime/selectors.ts`                     | Derived staff stats                        |
+| `src/ui/StaffPanel.tsx`                        | New file: staff management UI              |
 
 ### Integration Points
 
@@ -165,16 +167,19 @@ export const getHauntStaffCapacity = (grid: Grid): number => {
 ### Actions
 
 **hireStaff**:
+
 1. Check `money >= STAFF_HIRE_COST`
 2. Deduct cost
 3. Increment `staffHired`
 
 **fireStaff**:
+
 1. Check `staffHired > 0`
 2. If firing would leave assignments orphaned, unassign first (or reject)
 3. Decrement `staffHired`
 
 **assignStaff(attractionId, delta)**:
+
 1. Calculate current assignment and capacity
 2. Validate: `newAssignment >= 0`, `<= capacity`, `<= totalUnassigned + current`
 3. Update `staffAssignments[attractionId]`
@@ -183,19 +188,20 @@ export const getHauntStaffCapacity = (grid: Grid): number => {
 
 ### Unit Tests
 
-| Test | Location |
-|------|----------|
-| Staff constants | `tests/unit/core/staff.test.ts` |
-| Capacity calculation | Same |
-| Bonus formula | Same |
-| Hire/fire actions | `tests/unit/runtime/store.staff.test.ts` |
-| Assignment validation | Same |
-| Upkeep integration | `tests/unit/core/economy.test.ts` |
-| Fear application | `tests/unit/core/visitors/applyRoomEmotionEffects.test.ts` |
+| Test                  | Location                                                   |
+| --------------------- | ---------------------------------------------------------- |
+| Staff constants       | `tests/unit/core/staff.test.ts`                            |
+| Capacity calculation  | Same                                                       |
+| Bonus formula         | Same                                                       |
+| Hire/fire actions     | `tests/unit/runtime/store.staff.test.ts`                   |
+| Assignment validation | Same                                                       |
+| Upkeep integration    | `tests/unit/core/economy.test.ts`                          |
+| Fear application      | `tests/unit/core/visitors/applyRoomEmotionEffects.test.ts` |
 
 ### Test Cases
 
 **Economy:**
+
 - Hire deducts correct cost
 - Cannot hire without funds
 - Fire decrements count
@@ -203,6 +209,7 @@ export const getHauntStaffCapacity = (grid: Grid): number => {
 - Upkeep scales with staffHired
 
 **Assignment:**
+
 - Cannot assign more than hired
 - Cannot assign more than capacity
 - Cannot assign negative
@@ -210,6 +217,7 @@ export const getHauntStaffCapacity = (grid: Grid): number => {
 - Assignment persists across ticks
 
 **Fear:**
+
 - Staff bonus applies on scare room entry
 - Bonus uses sqrt formula
 - No bonus on hallway/entry/exit
@@ -217,6 +225,7 @@ export const getHauntStaffCapacity = (grid: Grid): number => {
 - Fear clamped to bounds
 
 **Lifecycle:**
+
 - Staff reset on newGame
 - Staff cleared on fail
 
@@ -250,6 +259,7 @@ Add collapsible panel in HUD or modal:
 ### Visual Indicators
 
 On portal/attraction tiles:
+
 - Badge or icon showing staff count
 - Intensity scales with assignment (glow, color shift)
 - Could reuse existing room highlight system
@@ -264,16 +274,19 @@ On portal/attraction tiles:
 ## Lifecycle
 
 **newGame:**
+
 - `staffHired = 0`
 - `staffAssignments = {}`
 
 **fail:**
+
 - Staff state is ignored (game over)
 - No cleanup needed beyond state reset
 
 ## Scope Lock
 
 Staff in MVP:
+
 - Only affect fear
 - Only work in scare rooms
 - No movement, schedules, morale

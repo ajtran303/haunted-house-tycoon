@@ -1,7 +1,7 @@
+import { calculateStaffFearBonus } from '../staff';
 import type { AttractionGrid, Grid, RoomType, Visitor } from '../types';
 import { applyEmotionDelta } from './emotions';
 import { ROOM_EMOTION_EFFECTS } from './roomEffects';
-import { calculateStaffFearBonus } from '../staff';
 
 const getRoomTypeAt = (grid: Grid, x: number, y: number): RoomType | null => {
   const row = grid[y];

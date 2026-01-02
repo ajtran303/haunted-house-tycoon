@@ -1,11 +1,8 @@
 import { useMemo, useState } from 'react';
 
-import { useGameStore } from '../runtime/store';
+import { BANKRUPTCY_WARNING_RUNWAY_TICKS, MONEY_LOW_THRESHOLD } from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
-import {
-  BANKRUPTCY_WARNING_RUNWAY_TICKS,
-  MONEY_LOW_THRESHOLD,
-} from '../core/constants';
+import { useGameStore } from '../runtime/store';
 
 type CriticalFlag =
   | 'money_low'
@@ -78,7 +75,9 @@ export const Warnings = () => {
     const flags = new Set<CriticalFlag>();
 
     // Calculate upkeep and runway
-    const upkeep = totalUpkeepPerTick({ midwayGrid, attractions, staffHired } as Parameters<typeof totalUpkeepPerTick>[0]);
+    const upkeep = totalUpkeepPerTick({ midwayGrid, attractions, staffHired } as Parameters<
+      typeof totalUpkeepPerTick
+    >[0]);
     const runwayTicks = upkeep > 0 ? Math.floor(money / upkeep) : Infinity;
 
     // Money warnings: bankruptcy based on runway, not just current balance
@@ -116,7 +115,12 @@ export const Warnings = () => {
     }
     if (deathsInWindow >= DEATH_SPIKE_COUNT) flags.add('deaths_spiking');
 
-    return { flags, exitsInWindow, deathsInWindow, runwayTicks: runwayTicks === Infinity ? 0 : runwayTicks };
+    return {
+      flags,
+      exitsInWindow,
+      deathsInWindow,
+      runwayTicks: runwayTicks === Infinity ? 0 : runwayTicks,
+    };
   }, [money, tick, visitors, exitEvents, parkExitEvents, midwayGrid, attractions, staffHired]);
 
   if (lifecycle !== 'running') {

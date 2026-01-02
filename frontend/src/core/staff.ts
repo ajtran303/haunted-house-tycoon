@@ -1,4 +1,4 @@
-import { MAX_STAFF, STAFF_HIRE_COST, HAUNT_STAFF_CAP, BASE_STAFF_FEAR_BONUS } from './constants';
+import { BASE_STAFF_FEAR_BONUS, HAUNT_STAFF_CAP, MAX_STAFF, STAFF_HIRE_COST } from './constants';
 import type { AttractionGrid, GameState } from './types';
 
 export type HireStaffResult =
@@ -91,7 +91,10 @@ export const getAttractionStaffCapacity = (attraction: AttractionGrid): number =
 
 export type AssignStaffResult =
   | { ok: true; staffAssignments: Record<string, number> }
-  | { ok: false; reason: 'attraction_not_found' | 'no_unassigned_staff' | 'attraction_at_capacity' };
+  | {
+      ok: false;
+      reason: 'attraction_not_found' | 'no_unassigned_staff' | 'attraction_at_capacity';
+    };
 
 export type UnassignStaffResult =
   | { ok: true; staffAssignments: Record<string, number> }

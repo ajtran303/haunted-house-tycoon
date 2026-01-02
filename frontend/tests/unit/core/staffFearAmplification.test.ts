@@ -1,9 +1,9 @@
 import { BASE_STAFF_FEAR_BONUS } from '../../../src/core/constants';
-import { calculateStaffFearBonus } from '../../../src/core/staff';
-import { applyRoomEmotionEffects } from '../../../src/core/visitors/applyRoomEmotionEffects';
 import { createAttractionGrid } from '../../../src/core/grid';
-import { makeVisitor } from '../../helpers/factories';
+import { calculateStaffFearBonus } from '../../../src/core/staff';
 import type { AttractionGrid, Grid } from '../../../src/core/types';
+import { applyRoomEmotionEffects } from '../../../src/core/visitors/applyRoomEmotionEffects';
+import { makeVisitor } from '../../helpers/factories';
 
 describe('Staff Fear Amplification', () => {
   describe('calculateStaffFearBonus', () => {
@@ -40,7 +40,13 @@ describe('Staff Fear Amplification', () => {
   describe('applyRoomEmotionEffects with staff', () => {
     const makeAttractionWithScareRoom = (): AttractionGrid => {
       const grid = createAttractionGrid(3, 3);
-      grid[1][1] = { ...grid[1][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
+      grid[1][1] = {
+        ...grid[1][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-1',
+      };
       return {
         id: 'haunt-1',
         name: 'Test Haunt',
@@ -111,7 +117,13 @@ describe('Staff Fear Amplification', () => {
 
     it('does not apply staff bonus on midway', () => {
       const midwayGrid = createAttractionGrid(3, 3) as Grid;
-      midwayGrid[1][1] = { ...midwayGrid[1][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
+      midwayGrid[1][1] = {
+        ...midwayGrid[1][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-1',
+      };
 
       const visitor = makeVisitor({
         position: { x: 1, y: 1 },
@@ -132,7 +144,13 @@ describe('Staff Fear Amplification', () => {
     it('does not apply staff bonus to non-scare rooms', () => {
       const attraction = makeAttractionWithScareRoom();
       // Put visitor in hallway instead
-      attraction.grid[0][1] = { ...attraction.grid[0][1], type: 'floor', occupied: true, roomType: 'hallway', roomId: 'h-1' };
+      attraction.grid[0][1] = {
+        ...attraction.grid[0][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'hallway',
+        roomId: 'h-1',
+      };
 
       const visitor = makeVisitor({
         position: { x: 1, y: 0 },

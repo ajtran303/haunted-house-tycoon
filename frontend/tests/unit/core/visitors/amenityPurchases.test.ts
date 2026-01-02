@@ -19,14 +19,18 @@ describe('amenityPurchaseAmount', () => {
     const lowFear = makeVisitor({ fear: 10, happiness: 50 });
     const highFear = makeVisitor({ fear: 70, happiness: 50 });
 
-    expect(amenityPurchaseAmount(highFear, 'foodStall')).toBeGreaterThan(amenityPurchaseAmount(lowFear, 'foodStall'));
+    expect(amenityPurchaseAmount(highFear, 'foodStall')).toBeGreaterThan(
+      amenityPurchaseAmount(lowFear, 'foodStall'),
+    );
   });
 
   it('returns higher amount for visitors with high happiness', () => {
     const lowHappy = makeVisitor({ fear: 0, happiness: 30 });
     const highHappy = makeVisitor({ fear: 0, happiness: 90 });
 
-    expect(amenityPurchaseAmount(highHappy, 'foodStall')).toBeGreaterThan(amenityPurchaseAmount(lowHappy, 'foodStall'));
+    expect(amenityPurchaseAmount(highHappy, 'foodStall')).toBeGreaterThan(
+      amenityPurchaseAmount(lowHappy, 'foodStall'),
+    );
   });
 
   it('returns 0 for visitors too unhappy to spend', () => {
@@ -45,7 +49,9 @@ describe('amenityPurchaseAmount', () => {
     const v = makeVisitor({ fear: 0, happiness: 50 });
 
     // giftShop has higher purchase ($25) than foodStall ($10)
-    expect(amenityPurchaseAmount(v, 'giftShop')).toBeGreaterThan(amenityPurchaseAmount(v, 'foodStall'));
+    expect(amenityPurchaseAmount(v, 'giftShop')).toBeGreaterThan(
+      amenityPurchaseAmount(v, 'foodStall'),
+    );
   });
 });
 
