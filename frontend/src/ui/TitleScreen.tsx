@@ -8,7 +8,7 @@ export const TitleScreen = () => {
   }
 
   const handleStart = () => {
-    useGameStore.setState({ lifecycle: 'paused' });
+    useGameStore.getState().startRun();
   };
 
   return (
