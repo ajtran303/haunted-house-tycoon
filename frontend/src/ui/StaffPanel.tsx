@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { useGameStore } from '../runtime/store';
+
 import { MAX_STAFF, STAFF_HIRE_COST } from '../core/constants';
-import { getAttractionStaffCapacity, calculateStaffFearBonus } from '../core/staff';
+import { calculateStaffFearBonus, getAttractionStaffCapacity } from '../core/staff';
+import { useGameStore } from '../runtime/store';
 
 export const StaffPanel = () => {
   const staffHired = useGameStore((s) => s.staffHired);
@@ -39,12 +40,9 @@ export const StaffPanel = () => {
     });
   }, [attractions, staffAssignments]);
 
-  const buttonBase =
-    'px-2 py-1 text-sm rounded border transition-colors';
-  const buttonEnabled =
-    'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white';
-  const buttonDisabled =
-    'border-gray-700 text-gray-600 cursor-not-allowed';
+  const buttonBase = 'px-2 py-1 text-sm rounded border transition-colors';
+  const buttonEnabled = 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white';
+  const buttonDisabled = 'border-gray-700 text-gray-600 cursor-not-allowed';
 
   return (
     <div>

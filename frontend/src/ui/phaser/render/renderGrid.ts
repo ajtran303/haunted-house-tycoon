@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { getRoomCells } from '../../../core/placement';
-import type { Cell, Grid, RoomType } from '../../../core/types';
 import { upkeepPerTick } from '../../../core/economy';
-import { getAttractionStaffCapacity, calculateStaffFearBonus } from '../../../core/staff';
+import { getRoomCells } from '../../../core/placement';
+import { calculateStaffFearBonus, getAttractionStaffCapacity } from '../../../core/staff';
+import type { Cell, Grid, RoomType } from '../../../core/types';
 import { useGameStore } from '../../../runtime/store';
 import { getCellSizeForHeight, getCurrentOriginX, GRID_ORIGIN_Y } from '../gridSizing';
 

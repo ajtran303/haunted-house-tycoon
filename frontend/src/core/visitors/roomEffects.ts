@@ -1,4 +1,4 @@
-import { AMENITY_FEAR_REDUCTION, AMENITY_HAPPINESS_BOOST } from '../constants';
+import { AMENITY_EFFECTS } from '../constants';
 import type { RoomType } from '../types';
 
 export type EmotionDelta = { fear?: number; happiness?: number };
@@ -8,7 +8,7 @@ export const ROOM_EMOTION_EFFECTS: Partial<Record<RoomType, EmotionDelta>> = {
   hallway: {
     /* neutral */
   },
-  scare: { fear: +8 }, // See constants.ts for balance rationale (4:1 vs recovery rate)
+  scare: { fear: +6 }, // 6 fear per room, recovery 2/tick = 3 ticks per room to recover
   exit: {
     /* optional: neutral */
   },
@@ -20,11 +20,17 @@ export const ROOM_EMOTION_EFFECTS: Partial<Record<RoomType, EmotionDelta>> = {
     /* neutral */
   },
 
-  // Amenities - all share same stats (can tune individually later)
-  foodStall: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
-  giftShop: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
-  restroom: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
-  photoBooth: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
-  arcade: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
-  firstAid: { happiness: +AMENITY_HAPPINESS_BOOST, fear: -AMENITY_FEAR_REDUCTION },
+  // Amenities - effects scaled to cost (see constants.ts AMENITY_EFFECTS)
+  foodStall: {
+    happiness: AMENITY_EFFECTS.foodStall.happiness,
+    fear: AMENITY_EFFECTS.foodStall.fear,
+  },
+  giftShop: { happiness: AMENITY_EFFECTS.giftShop.happiness, fear: AMENITY_EFFECTS.giftShop.fear },
+  restroom: { happiness: AMENITY_EFFECTS.restroom.happiness, fear: AMENITY_EFFECTS.restroom.fear },
+  photoBooth: {
+    happiness: AMENITY_EFFECTS.photoBooth.happiness,
+    fear: AMENITY_EFFECTS.photoBooth.fear,
+  },
+  arcade: { happiness: AMENITY_EFFECTS.arcade.happiness, fear: AMENITY_EFFECTS.arcade.fear },
+  firstAid: { happiness: AMENITY_EFFECTS.firstAid.happiness, fear: AMENITY_EFFECTS.firstAid.fear },
 };

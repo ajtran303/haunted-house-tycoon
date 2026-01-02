@@ -1,5 +1,5 @@
-import { totalUpkeepPerTick, upkeepPerTick, staffWagesPerTick } from '../../../src/core/economy';
 import { STAFF_WAGE_PER_TICK } from '../../../src/core/constants';
+import { staffWagesPerTick, totalUpkeepPerTick, upkeepPerTick } from '../../../src/core/economy';
 import { createAttractionGrid } from '../../../src/core/grid';
 import { newGame } from '../../../src/core/newGame';
 

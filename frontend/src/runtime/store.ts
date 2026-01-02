@@ -1,19 +1,19 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { ADMISSION_FEE, MAX_VISITORS, ROOM_COST, STAFF_HIRE_COST, MAX_STAFF } from '../core/constants';
+import { ADMISSION_FEE, MAX_VISITORS, ROOM_COST } from '../core/constants';
 import { VISITOR_START_FEAR, VISITOR_START_HAPPINESS } from '../core/constants';
 import { totalUpkeepPerTick } from '../core/economy';
-import { createAttractionGrid, createGrid } from '../core/grid';
+import { createAttractionGrid } from '../core/grid';
 import { newGame } from '../core/newGame';
 import { placeRoom } from '../core/placement';
+import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
 import {
-  hireStaff as applyHireStaff,
-  fireStaff as applyFireStaff,
   assignStaffToAttraction as applyAssignStaff,
+  fireStaff as applyFireStaff,
+  hireStaff as applyHireStaff,
   unassignStaffFromAttraction as applyUnassignStaff,
 } from '../core/staff';
-import { shouldSpawnVisitor } from '../core/shouldSpawnVisitor';
 import { applyTimeTick } from '../core/time';
 import type {
   AttractionGrid,
@@ -175,6 +175,7 @@ export const useGameStore = create(
               spawnTick: nextTick,
               exploreStartTick: nextTick,
               blockingState: null,
+              staffBonusApplied: false,
             };
 
             visitors = [...visitors, v];

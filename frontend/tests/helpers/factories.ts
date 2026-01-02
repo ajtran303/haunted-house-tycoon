@@ -17,6 +17,7 @@ export const makeVisitor = (overrides?: Partial<Visitor>): Visitor => ({
   spawnTick: 0,
   exploreStartTick: 0,
   blockingState: null,
+  staffBonusApplied: false,
   ...overrides,
 });
 

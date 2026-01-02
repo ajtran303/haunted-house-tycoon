@@ -64,7 +64,7 @@ export const moveVisitorsMultiGrid = (
     const gridH = grid.length;
 
     const getCell = (p: Vector) => grid[p.y]?.[p.x] ?? null;
-    const getMidwayCell = (p: Vector) => state.midwayGrid[p.y]?.[p.x] ?? null;
+    // const getMidwayCell = (p: Vector) => state.midwayGrid[p.y]?.[p.x] ?? null;
     const currentRoomType = getCell(v.position)?.roomType;
 
     // Check if an attraction has both entry and exit tiles placed
@@ -205,6 +205,7 @@ export const moveVisitorsMultiGrid = (
             returnPortalPos: null,
             intent: v.intent, // Keep current intent
             blockingState: null, // Clear blocking state on successful exit
+            staffBonusApplied: false, // Reset for next attraction visit
           },
           blocked: null,
         };

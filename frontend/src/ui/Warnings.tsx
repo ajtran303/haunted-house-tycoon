@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 
+import { BANKRUPTCY_WARNING_RUNWAY_TICKS, MONEY_LOW_THRESHOLD } from '../core/constants';
+import { totalUpkeepPerTick } from '../core/economy';
 import { useGameStore } from '../runtime/store';
 
 type CriticalFlag =
@@ -12,7 +14,7 @@ type CriticalFlag =
 type WarningConfig = {
   flag: CriticalFlag;
   label: string;
-  getCount?: (data: CriticalData) => number;
+  getCount?: (data: CriticalData) => number | string;
   severity: 'critical' | 'warning';
 };
 
@@ -20,16 +22,21 @@ type CriticalData = {
   flags: Set<CriticalFlag>;
   exitsInWindow: number;
   deathsInWindow: number;
+  runwayTicks: number;
 };
 
-const MONEY_LOW = 100;
 const FEAR_HIGH = 70;
 const WINDOW_TICKS = 60;
 const EXIT_SPIKE_COUNT = 6;
 const DEATH_SPIKE_COUNT = 6;
 
 const WARNING_CONFIG: WarningConfig[] = [
-  { flag: 'bankruptcy_imminent', label: 'BANKRUPTCY IMMINENT', severity: 'critical' },
+  {
+    flag: 'bankruptcy_imminent',
+    label: 'BANKRUPTCY IMMINENT',
+    getCount: (d) => (d.runwayTicks > 0 ? `${d.runwayTicks} ticks` : 'NOW'),
+    severity: 'critical',
+  },
   { flag: 'money_low', label: 'MONEY LOW', severity: 'warning' },
   { flag: 'fear_high', label: 'FEAR HIGH', severity: 'warning' },
   {
@@ -56,6 +63,9 @@ export const Warnings = () => {
   const visitors = useGameStore((s) => s.visitors);
   const exitEvents = useGameStore((s) => s.exitEvents);
   const parkExitEvents = useGameStore((s) => s.parkExitEvents);
+  const midwayGrid = useGameStore((s) => s.midwayGrid);
+  const attractions = useGameStore((s) => s.attractions);
+  const staffHired = useGameStore((s) => s.staffHired);
   const [dismissed, setDismissed] = useState<Set<CriticalFlag>>(new Set());
 
   const topPosition = WARNINGS_TOP;
@@ -64,9 +74,20 @@ export const Warnings = () => {
   const criticalData = useMemo((): CriticalData => {
     const flags = new Set<CriticalFlag>();
 
-    // Money warnings
-    if (money <= 0) flags.add('bankruptcy_imminent');
-    else if (money <= MONEY_LOW) flags.add('money_low');
+    // Calculate upkeep and runway
+    const upkeep = totalUpkeepPerTick({ midwayGrid, attractions, staffHired } as Parameters<
+      typeof totalUpkeepPerTick
+    >[0]);
+    const runwayTicks = upkeep > 0 ? Math.floor(money / upkeep) : Infinity;
+
+    // Money warnings: bankruptcy based on runway, not just current balance
+    if (money <= 0 || runwayTicks <= 0) {
+      flags.add('bankruptcy_imminent');
+    } else if (runwayTicks < BANKRUPTCY_WARNING_RUNWAY_TICKS) {
+      flags.add('bankruptcy_imminent');
+    } else if (money <= MONEY_LOW_THRESHOLD) {
+      flags.add('money_low');
+    }
 
     // Avg fear high
     if (visitors.length > 0) {
@@ -94,8 +115,13 @@ export const Warnings = () => {
     }
     if (deathsInWindow >= DEATH_SPIKE_COUNT) flags.add('deaths_spiking');
 
-    return { flags, exitsInWindow, deathsInWindow };
-  }, [money, tick, visitors, exitEvents, parkExitEvents]);
+    return {
+      flags,
+      exitsInWindow,
+      deathsInWindow,
+      runwayTicks: runwayTicks === Infinity ? 0 : runwayTicks,
+    };
+  }, [money, tick, visitors, exitEvents, parkExitEvents, midwayGrid, attractions, staffHired]);
 
   if (lifecycle !== 'running') {
     return null;
@@ -109,9 +135,10 @@ export const Warnings = () => {
   });
 
   // Clean up stale dismissed flags
-  const staleDismissed = [...dismissed].filter((flag) => !criticalData.flags.has(flag));
+  const dismissedArray = Array.from(dismissed);
+  const staleDismissed = dismissedArray.filter((flag) => !criticalData.flags.has(flag));
   if (staleDismissed.length > 0) {
-    const newDismissed = new Set([...dismissed].filter((flag) => criticalData.flags.has(flag)));
+    const newDismissed = new Set(dismissedArray.filter((flag) => criticalData.flags.has(flag)));
     if (newDismissed.size !== dismissed.size) {
       setTimeout(() => setDismissed(newDismissed), 0);
     }
@@ -122,7 +149,7 @@ export const Warnings = () => {
   }
 
   const handleDismiss = (flag: CriticalFlag) => {
-    setDismissed((prev) => new Set([...prev, flag]));
+    setDismissed((prev) => new Set(Array.from(prev).concat(flag)));
   };
 
   return (

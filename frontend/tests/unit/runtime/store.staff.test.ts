@@ -1,5 +1,5 @@
+import { MAX_STAFF, STAFF_HIRE_COST } from '../../../src/core/constants';
 import { useGameStore } from '../../../src/runtime/store';
-import { STAFF_HIRE_COST, MAX_STAFF } from '../../../src/core/constants';
 
 describe('store staff actions', () => {
   beforeEach(() => {
@@ -88,8 +88,20 @@ describe('store staff actions', () => {
       // Create attraction with scare rooms
       useGameStore.getState().createAttraction('haunt-1', 'Test Haunt', 4, 4);
       const grid = useGameStore.getState().attractions['haunt-1'].grid;
-      grid[0][0] = { ...grid[0][0], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-1' };
-      grid[0][1] = { ...grid[0][1], type: 'floor', occupied: true, roomType: 'scare', roomId: 's-2' };
+      grid[0][0] = {
+        ...grid[0][0],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-1',
+      };
+      grid[0][1] = {
+        ...grid[0][1],
+        type: 'floor',
+        occupied: true,
+        roomType: 'scare',
+        roomId: 's-2',
+      };
       useGameStore.setState({
         attractions: {
           'haunt-1': { ...useGameStore.getState().attractions['haunt-1'], grid },

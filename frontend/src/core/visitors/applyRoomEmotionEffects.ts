@@ -1,7 +1,7 @@
+import { calculateStaffFearBonus } from '../staff';
 import type { AttractionGrid, Grid, RoomType, Visitor } from '../types';
 import { applyEmotionDelta } from './emotions';
 import { ROOM_EMOTION_EFFECTS } from './roomEffects';
-import { calculateStaffFearBonus } from '../staff';
 
 const getRoomTypeAt = (grid: Grid, x: number, y: number): RoomType | null => {
   const row = grid[y];
@@ -40,12 +40,20 @@ export const applyRoomEmotionEffects = (
     if (didEnterNewTile(v)) {
       const baseDelta = ROOM_EMOTION_EFFECTS[roomType];
 
-      // Apply staff fear bonus for scare rooms in attractions
+      // Apply staff fear bonus ONCE per attraction visit (on first scare room)
       if (roomType === 'scare' && v.location.type === 'attraction') {
-        const staffCount = staffAssignments[v.location.attractionId] ?? 0;
-        const staffBonus = calculateStaffFearBonus(staffCount);
         const baseFear = baseDelta?.fear ?? 0;
-        return applyEmotionDelta(v, { ...baseDelta, fear: baseFear + staffBonus });
+
+        // Staff bonus only applies once per visit
+        if (!v.staffBonusApplied) {
+          const staffCount = staffAssignments[v.location.attractionId] ?? 0;
+          const staffBonus = calculateStaffFearBonus(staffCount);
+          const updated = applyEmotionDelta(v, { ...baseDelta, fear: baseFear + staffBonus });
+          return { ...updated, staffBonusApplied: true };
+        }
+
+        // Already applied staff bonus, just apply base fear
+        return applyEmotionDelta(v, baseDelta);
       }
 
       return baseDelta ? applyEmotionDelta(v, baseDelta) : v;

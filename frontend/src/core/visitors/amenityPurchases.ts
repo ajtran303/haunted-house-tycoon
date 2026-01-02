@@ -1,4 +1,4 @@
-import { AMENITY_BASE_PURCHASE } from '../constants';
+import { AMENITY_EFFECTS } from '../constants';
 import type { Grid, RoomType, Visitor } from '../types';
 import { spendingPerTick } from './spending';
 
@@ -11,7 +11,7 @@ const AMENITY_ROOM_TYPES: RoomType[] = [
   'firstAid',
 ];
 
-const isAmenity = (roomType: RoomType | null): boolean =>
+const isAmenity = (roomType: RoomType | null): roomType is RoomType =>
   roomType !== null && AMENITY_ROOM_TYPES.includes(roomType);
 
 const didEnterNewTile = (v: Visitor): boolean =>
@@ -24,11 +24,12 @@ const getRoomTypeAt = (grid: Grid, x: number, y: number): RoomType | null => {
 
 /**
  * Calculate purchase amount for a visitor entering an amenity.
- * Uses the existing spending multiplier (fear/happiness bonuses).
+ * Uses per-amenity base purchase scaled by spending multiplier (fear/happiness bonuses).
  */
-export const amenityPurchaseAmount = (v: Visitor): number => {
+export const amenityPurchaseAmount = (v: Visitor, roomType: RoomType): number => {
   const multiplier = spendingPerTick(v);
-  return AMENITY_BASE_PURCHASE * multiplier;
+  const basePurchase = AMENITY_EFFECTS[roomType]?.purchase ?? 10;
+  return basePurchase * multiplier;
 };
 
 /**
@@ -48,7 +49,7 @@ export const calculateAmenityPurchases = (visitors: Visitor[], grid: Grid): numb
     const roomType = getRoomTypeAt(grid, v.position.x, v.position.y);
     if (!isAmenity(roomType)) continue;
 
-    total += amenityPurchaseAmount(v);
+    total += amenityPurchaseAmount(v, roomType);
   }
 
   return total;

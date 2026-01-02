@@ -79,8 +79,10 @@ export const bindHudOverlay = (
     const msgs: string[] = [];
 
     // money warnings
-    if (crit.flags.has('bankruptcy_imminent')) msgs.push('BANKRUPTCY IMMINENT');
-    else if (crit.flags.has('money_low')) msgs.push('MONEY LOW');
+    if (crit.flags.has('bankruptcy_imminent')) {
+      const runway = crit.runwayTicks > 0 ? `${crit.runwayTicks} ticks` : 'NOW';
+      msgs.push(`BANKRUPTCY IMMINENT (${runway})`);
+    } else if (crit.flags.has('money_low')) msgs.push('MONEY LOW');
 
     // risk warnings
     if (crit.flags.has('fear_high')) msgs.push('FEAR HIGH');

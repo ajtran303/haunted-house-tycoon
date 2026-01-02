@@ -84,9 +84,7 @@ export const RoomSelector = () => {
       {/* Park Entry/Exit - only show on midway if not placed yet */}
       {inMidway && (!entrance || !exit) && (
         <div>
-          <div className="mb-2 text-sm text-gray-400">
-            Place entry and exit on grid edges
-          </div>
+          <div className="mb-2 text-sm text-gray-400">Place entry and exit on grid edges</div>
           <div className="flex gap-2">
             {!entrance && (
               <button
