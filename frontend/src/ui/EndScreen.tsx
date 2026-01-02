@@ -11,7 +11,9 @@ const StatItem = ({
 }) => (
   <div className="text-center">
     <div className="text-xs text-gray-500">{label}</div>
-    <div className={`text-lg font-bold ${highlight ? 'text-green-400' : 'text-white'}`}>{value}</div>
+    <div className={`text-lg font-bold ${highlight ? 'text-green-400' : 'text-white'}`}>
+      {value}
+    </div>
   </div>
 );
 

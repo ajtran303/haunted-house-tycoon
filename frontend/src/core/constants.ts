@@ -54,13 +54,6 @@ export const DEATH_SPIKE_THRESHOLD = 10; // Deaths in window to trigger spike
 export const SHUTDOWN_WARNING_TICKS = 60; // Sustained spike ticks before game over
 
 // =============================================================================
-// GRID POSITIONS
-// =============================================================================
-
-export const ENTRANCE_X = 0;
-export const ENTRANCE_Y = 0;
-
-// =============================================================================
 // ROOM COSTS (one-time purchase)
 // =============================================================================
 
@@ -118,15 +111,9 @@ export const TICKS_PER_VISITOR_SPAWN = 5;
 // Hard cap prevents performance issues and forces quality over quantity.
 export const MAX_VISITORS = 50;
 
-// Legacy/testing constant - may be removed.
-export const MONEY_PER_VISITOR_PER_TICK = 5;
-
 // =============================================================================
 // EMOTION BOUNDS
 // =============================================================================
-
-export const EMOTION_MIN = 0;
-export const EMOTION_MAX = 100;
 
 export const EMOTION_BOUNDS = {
   fear: { min: 0, max: 100 },
@@ -196,7 +183,7 @@ export const DEFAULT_EXPLORE_TICKS_BEFORE_EXIT = 45;
 // Base unit: foodStall ($150) = +5 happiness, -5 fear, $10 purchase
 // =============================================================================
 
-export type AmenityEffect = {
+type AmenityEffect = {
   happiness: number; // Instant happiness boost
   fear: number; // Fear reduction (negative = reduces fear)
   purchase: number; // Immediate spend when using amenity
@@ -221,11 +208,6 @@ export const AMENITY_EFFECTS: Record<string, AmenityEffect> = {
   // $350 - most expensive, strongest overall effect
   arcade: { happiness: 15, fear: -8, purchase: 20 },
 };
-
-// Legacy flat constants (for backwards compatibility if needed)
-export const AMENITY_HAPPINESS_BOOST = 5;
-export const AMENITY_FEAR_REDUCTION = 5;
-export const AMENITY_BASE_PURCHASE = 10;
 
 // =============================================================================
 // STAFF SYSTEM

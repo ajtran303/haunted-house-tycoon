@@ -15,7 +15,7 @@ export const getCellSizeForHeight = (gridHeight: number): number => {
 };
 
 // Get the current grid dimensions based on the view
-export const getCurrentGridDimensions = (): { width: number; height: number } => {
+const getCurrentGridDimensions = (): { width: number; height: number } => {
   const state = useGameStore.getState();
   if (state.currentView.type === 'midway') {
     return {
@@ -31,7 +31,7 @@ export const getCurrentGridDimensions = (): { width: number; height: number } =>
 };
 
 // Get the current grid height based on the view
-export const getCurrentGridHeight = (): number => {
+const getCurrentGridHeight = (): number => {
   return getCurrentGridDimensions().height;
 };
 
@@ -47,6 +47,3 @@ export const getCurrentOriginX = (): number => {
   const gridPixelWidth = width * cellSize;
   return Math.floor((CANVAS_WIDTH - gridPixelWidth) / 2);
 };
-
-// Legacy export for compatibility
-export const GRID_ORIGIN_X = 26; // Centered for midway: (700 - 648) / 2
